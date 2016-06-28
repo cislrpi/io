@@ -14,4 +14,22 @@ module.exports = class CELIO {
     getTranscript() {
         return new Transcript(this.pconn, this.config.rabbitMQ.exchange);
     }
+
+    onTopic(topic, handler) {
+        const ex = this.config.rabbitMQ.exchange;
+        this.pconn.then((conn) => conn.createChannel())
+            .then(ch => ch.assertQueue('', {exclusive: true})
+                .then(q => ch.bindQueue(q.queue, ex, topic)
+                    .then(() => ch.consume(q.queue, msg => 
+                        handler(JSON.parse(msg.content.toString())), {noAck: true}))));
+    }
+
+    onCommands(command, handler) {
+        const ex = this.config.rabbitMQ.exchange;
+        this.pconn.then((conn) => conn.createChannel())
+            .then(ch => ch.assertQueue('', {exclusive: true})
+                .then(q => ch.bindQueue(q.queue, ex, `${command}.command`)
+                    .then(() => ch.consume(q.queue, msg => 
+                        handler(JSON.parse(msg.content.toString())), {noAck: true}))));
+    }
 }

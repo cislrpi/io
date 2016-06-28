@@ -27,7 +27,13 @@ module.exports = class Transcript {
     }
 
     switchModel(model) {
-        this.pch.publish(this.exchange, 'stt.command',
-            new Buffer(JSON.stringify({command: 'switch-model', model:model})));
+        this.pch.then((ch)=>ch.publish(this.exchange, 'stt.command',
+            new Buffer(JSON.stringify({command: 'switch-model', model:model}))));
+    }
+
+    publish(source, isFinal, msg) {
+        const topic = isFinal ? 'final' : 'interim';
+        this.pch.then((ch)=>ch.publish(this.exchange, `${source}.${topic}.transcript`,
+            new Buffer(JSON.stringify(msg))));
     }
 }

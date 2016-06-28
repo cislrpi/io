@@ -9,10 +9,15 @@ module.exports = class CELIO {
         this.config = JSON.parse(fs.readFileSync(configFile, 'utf8'));
 
         this.pconn = amqp.connect(this.config.rabbitMQ.url);
+        this.ppubch = this.pconn.then((conn) => conn.createChannel());
     }
 
     getTranscript() {
         return new Transcript(this.pconn, this.config.rabbitMQ.exchange);
+    }
+
+    onCommands(command, handler) {
+        this.onTopic(`${command}.command`, handler);
     }
 
     onTopic(topic, handler) {
@@ -24,12 +29,7 @@ module.exports = class CELIO {
                         handler(JSON.parse(msg.content.toString())), {noAck: true}))));
     }
 
-    onCommands(command, handler) {
-        const ex = this.config.rabbitMQ.exchange;
-        this.pconn.then((conn) => conn.createChannel())
-            .then(ch => ch.assertQueue('', {exclusive: true})
-                .then(q => ch.bindQueue(q.queue, ex, `${command}.command`)
-                    .then(() => ch.consume(q.queue, msg => 
-                        handler(JSON.parse(msg.content.toString())), {noAck: true}))));
+    publishTopic(topic, msg) {
+        this.ppubch.then(ch => ch.publish(this.exchange, topic, new Buffer(JSON.stringify(msg))));
     }
 }

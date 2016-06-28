@@ -30,6 +30,7 @@ module.exports = class CELIO {
     }
 
     publishTopic(topic, msg) {
-        this.ppubch.then(ch => ch.publish(this.exchange, topic, new Buffer(JSON.stringify(msg))));
+        const ex = this.exchange;
+        this.ppubch.then(ch => ch.publish(ex, topic, new Buffer(JSON.stringify(msg))));
     }
 }

@@ -21,7 +21,7 @@ module.exports = class CELIO {
         return new Hotspot(region, this.pconn, this.config.rabbitMQ.exchange);
     }
 
-    onCommands(command, handler) {
+    onCommand(command, handler) {
         this.onTopic(`${command}.command`, handler);
     }
 

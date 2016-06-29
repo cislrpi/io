@@ -20,11 +20,11 @@ module.exports = class Transcript {
     }
 
     switchModel(model) {
-        this.io.publishTopic('switch-model.stt.command', new Buffer(JSON.stringify({model:model})));
+        this.io.publishTopic('switch-model.stt.command', JSON.stringify({model:model}));
     }
 
     publish(source, isFinal, msg) {
         const topic = isFinal ? 'final' : 'interim';
-        this.io.publishTopic(`${source}.${topic}.transcript`, new Buffer(JSON.stringify(msg)));
+        this.io.publishTopic(`${source}.${topic}.transcript`, JSON.stringify(msg));
     }
 }

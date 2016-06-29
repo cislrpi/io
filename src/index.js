@@ -35,6 +35,6 @@ module.exports = class CELIO {
     }
 
     publishTopic(topic, msg) {
-        this.ppubch.then(ch => ch.publish(this.config.rabbitMQ.exchange, topic, msg));
+        this.ppubch.then(ch => ch.publish(this.config.rabbitMQ.exchange, topic, new Buffer(msg)));
     }
 }

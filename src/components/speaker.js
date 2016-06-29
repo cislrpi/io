@@ -8,11 +8,11 @@ module.exports = class Speaker {
             "voice": voice,
             "text": text
         }
-        this.io.publishTopic('text.speaker.command', new Buffer(JSON.stringify(msg)));
+        this.io.publishTopic('text.speaker.command', JSON.stringify(msg));
     }
 
     stop() {
-        this.io.publishTopic('stop.speaker.command', new Buffer(''));
+        this.io.publishTopic('stop.speaker.command', '');
     }
 
     onSpeak(handler) {

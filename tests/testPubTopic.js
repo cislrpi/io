@@ -6,6 +6,6 @@ io.onTopic('test', msg=>console.log('Received', msg.content.toString()));
 
 setTimeout(()=>{
     console.log('Sending ping');
-    io.publishTopic('test', new Buffer('ping'));
+    io.publishTopic('test', 'ping');
 }, 1000);
 

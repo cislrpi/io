@@ -25,15 +25,12 @@ module.exports = class CELIO {
         this.pconn.then((conn) => conn.createChannel())
             .then(ch => ch.assertQueue('', {exclusive: true})
                 .then(q => ch.bindQueue(q.queue, ex, topic)
-                    .then(() => ch.consume(q.queue, msg => 
-                        handler(JSON.parse(msg.content.toString())), {noAck: true}), console.error)));
+                    .then(() => ch.consume(q.queue, msg => handler(msg), {noAck: true}),
+                                console.error)));
     }
 
     publishTopic(topic, msg) {
         const ex = this.exchange;
-        if (typeof msg === 'object') {
-            msg = JSON.stringify(msg);
-        }
-        this.ppubch.then(ch => ch.publish(ex, topic, new Buffer(msg)));
+        this.ppubch.then(ch => ch.publish(ex, topic, msg));
     }
 }

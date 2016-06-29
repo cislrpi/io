@@ -1,11 +1,10 @@
 const Three = require('three');
 
 module.exports = class Hotspot {
-    constructor(region, pconn, exchange) {
+    constructor(region, io) {
         // Construct a rectangle for hit test
         this.setRegion(region);
-        this.pch = pconn.then((conn) => conn.createChannel());
-        this.exchange = exchange;
+        this.io = io;
     }
     /**
      * Set the rectangular region for the hotpot.
@@ -49,22 +48,17 @@ module.exports = class Hotspot {
     }
 
     on(handler) {
-        this.pch.then((ch) => ch.assertQueue('', {exclusive: true})
-            .then(q => ch.bindQueue(q.queue, this.exchange, '#.pointing')
-            .then(() => ch.consume(q.queue, msg => {
-                // Handle absolute pointing right now.
-                if (msg.fields.routingKey.indexOf('absolute') > -1) {
-                    const pointers = JSON.parse(msg.content.toString());
+        this.io.onTopic('*.absolute.pointing', msg => {
+            const pointers = JSON.parse(msg.content.toString());
 
-                    if (Array.isArray(pointers)) {
-                        for (let pointer of pointers) {
-                            handler(this.intersect(pointer));
-                        }
-                    } else {
-                        handler(this.intersect(pointer));
-                    }
+            if (Array.isArray(pointers)) {
+                for (let pointer of pointers) {
+                    handler(this.intersect(pointer));
                 }
-                // TODO: Handle relative pointing devices like mice
-            }, {noAck: true}))));
+            } else {
+                handler(this.intersect(pointer));
+            }
+        });
+        // TODO: Handle relative pointing devices like mice
     }
 }

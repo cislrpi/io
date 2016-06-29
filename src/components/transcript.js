@@ -1,17 +1,12 @@
 const amqp = require('amqplib');
 
 module.exports = class Transcript {
-    constructor(pconn, exchange) {
-        this.pch = pconn.then((conn) => conn.createChannel());
-        this.exchange = exchange;
+    constructor(io) {
+        this.io = io;
     }
 
     _on(topic, handler) {
-        const ex = this.exchange;
-        this.pch.then((ch) => ch.assertQueue('', {exclusive: true}).then(
-            q => ch.bindQueue(q.queue, ex, topic).then(
-                () => ch.consume(q.queue, msg => handler(JSON.parse(msg.content.toString())), {noAck: true})
-            )));
+        this.io.onTopic(topic, msg=>handler(JSON.parse(msg.content.toString())));
     }
 
     onAll(handler) {
@@ -27,13 +22,11 @@ module.exports = class Transcript {
     }
 
     switchModel(model) {
-        this.pch.then((ch)=>ch.publish(this.exchange, 'stt.command',
-            new Buffer(JSON.stringify({command: 'switch-model', model:model}))));
+        this.io.publishTopic('switch-model.stt.command', new Buffer(JSON.stringify({model:model})));
     }
 
     publish(source, isFinal, msg) {
         const topic = isFinal ? 'final' : 'interim';
-        this.pch.then((ch)=>ch.publish(this.exchange, `${source}.${topic}.transcript`,
-            new Buffer(JSON.stringify(msg))));
+        this.io.publishTopic(`${source}.${topic}.transcript`, new Buffer(JSON.stringify(msg)));
     }
 }

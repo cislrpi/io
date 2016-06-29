@@ -3,6 +3,7 @@ const fs = require('fs');
 const amqp = require('amqplib');
 const Transcript = require('./components/transcript');
 const Hotspot = require('./components/hotspot');
+const Speaker = require('./components/speaker');
 
 module.exports = class CELIO {
     constructor() {
@@ -14,15 +15,15 @@ module.exports = class CELIO {
     }
 
     getTranscript() {
-        return new Transcript(this.pconn, this.config.rabbitMQ.exchange);
+        return new Transcript(this);
     }
 
-    defineHotspot(region) {
+    getSpeaker() {
+        return new Speaker(this);
+    }
+
+    createHotspot(region) {
         return new Hotspot(region, this.pconn, this.config.rabbitMQ.exchange);
-    }
-
-    onCommand(command, handler) {
-        this.onTopic(`${command}.command`, handler);
     }
 
     onTopic(topic, handler) {

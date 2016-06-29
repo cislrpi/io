@@ -21,16 +21,14 @@ module.exports = class CELIO {
     }
 
     onTopic(topic, handler) {
-        const ex = this.config.rabbitMQ.exchange;
         this.pconn.then((conn) => conn.createChannel())
             .then(ch => ch.assertQueue('', {exclusive: true})
-                .then(q => ch.bindQueue(q.queue, ex, topic)
+                .then(q => ch.bindQueue(q.queue, this.config.rabbitMQ.exchange, topic)
                     .then(() => ch.consume(q.queue, msg => handler(msg), {noAck: true}),
                                 console.error)));
     }
 
     publishTopic(topic, msg) {
-        const ex = this.exchange;
-        this.ppubch.then(ch => ch.publish(ex, topic, msg));
+        this.ppubch.then(ch => ch.publish(this.config.rabbitMQ.exchange, topic, msg));
     }
 }

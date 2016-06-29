@@ -1,5 +1,3 @@
-const amqp = require('amqplib');
-
 module.exports = class Transcript {
     constructor(io) {
         this.io = io;

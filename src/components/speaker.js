@@ -1,5 +1,3 @@
-const amqp = require('amqplib');
-
 module.exports = class Speaker {
     constructor(io) {
         this.io = io;
@@ -7,17 +5,22 @@ module.exports = class Speaker {
 
     speak(text, voice) {
         const msg = {
-            "command": "speak",
-            "params": {
-                "voice": voice,
-                "text": text
-            }
-        };
+            "voice": voice,
+            "text": text
+        }
         this.io.publishTopic('text.speaker.command', new Buffer(JSON.stringify(msg)));
     }
 
-    onText(handler) {
+    stop() {
+        this.io.publishTopic('stop.speaker.command', new Buffer(''));
+    }
+
+    onSpeak(handler) {
         this.io.onTopic('text.speaker.command',
-            msg=>handler(JSON.parse(msg.content.toString()).params));
+            msg=>handler(JSON.parse(msg.content.toString())));
+    }
+
+    onStop(handler) {
+        this.io.onTopic('stop.speaker.command', ()=>handler());
     }
 };

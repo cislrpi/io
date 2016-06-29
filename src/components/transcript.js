@@ -2,7 +2,7 @@ const amqp = require('amqplib');
 
 module.exports = class Transcript {
     constructor(pconn, exchange) {
-        this.pch = pconn.then((conn) => conn.createChannel())
+        this.pch = pconn.then((conn) => conn.createChannel());
         this.exchange = exchange;
     }
 

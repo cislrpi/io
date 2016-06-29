@@ -2,6 +2,7 @@ const path = require('path');
 const fs = require('fs');
 const amqp = require('amqplib');
 const Transcript = require('./components/transcript');
+const Hotspot = require('./components/hotspot');
 
 module.exports = class CELIO {
     constructor() {
@@ -14,6 +15,10 @@ module.exports = class CELIO {
 
     getTranscript() {
         return new Transcript(this.pconn, this.config.rabbitMQ.exchange);
+    }
+
+    defineHotspot(region) {
+        return new Hotspot(region, this.pconn, this.config.rabbitMQ.exchange);
     }
 
     onCommands(command, handler) {

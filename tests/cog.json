@@ -1,7 +1,0 @@
-{
-  "rabbitMQ": {
-    "url": "amqp://cel:c0grabbit@cel-production.watson.ibm.com",
-    "exchange": "cel-dev"
-  },
-  "id": "test"
-}

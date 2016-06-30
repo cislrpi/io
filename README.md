@@ -23,11 +23,11 @@ For now, you also need to have a cog.json file in your package directory, with a
 The Rabbit url has username and password in it, so please don't share it with others and don't commit it to your repository.
 
 With the io object, you can publish and subscribe to raw messages with the following functions:
-```
+```javascript
 io.publishTopic(topic, msg);
 io.onTopic(topic, function(msg){
   // handle messages
-  content = JSON.parse(msg.content.toString());
+  var content = JSON.parse(msg.content.toString());
 });
 ```
 The topic should have the following format subType.minorType.majorType.

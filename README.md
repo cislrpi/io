@@ -43,8 +43,8 @@ Our convention is to use the topic to declare the message type, and the type sho
 For command messages, we always have the 'command' as the last component of the topic tag. e.g., stop.speaker.command.
 For other events, we have something like closeMic.final.transcript or wand.absolute.pointing.
 
-To subscribe events, the topic can include wildcards '*' and '#'. '*' substitues one word, '#' substitues multiple words.
-For example, *.absolute.pointing subscribe to wand.absolute.pointing and lighthouse.absolute.pointing, whereas #.pointing also subscribes to them plus other pointing events like mouse.relative.pointing.
+To subscribe events, the topic can include wildcards `*` and `#`. `*` substitues one word, `#` substitues multiple words.
+For example, `*.absolute.pointing` subscribes to wand.absolute.pointing and lighthouse.absolute.pointing, whereas `#.pointing` also subscribes to them plus other pointing events like mouse.relative.pointing.
 
 In `onTopic`, the message is in RabbitMQ format and the content is contained in the content field. You need to do JSON parsing yourself.
 In `publishTopic`, you can publish any type of messages, but we recommand using JSON strings.

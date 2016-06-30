@@ -76,4 +76,20 @@ The transcript object has at least the following fields:
 The result field follows the definition of Watson STT.
 The full specification can be seen on [Watson STT website](http://www.ibm.com/smarterplanet/us/en/ibmwatson/developercloud/doc/speech-to-text/output.shtml).
 
+Transcript also has a function for switching language models.
+```
+transcript.switchModel('m_and_a');
+``` 
+Make sure that your transcript worker accepts the specified language model name.
+
 ## Speaker
+The Speaker object allows you to pass text to Text-to-Speech worker to speak.
+```javascript
+var speaker = io.getSpeaker();
+speaker.speak('Hi you');
+```
+Optionally, you can specify TTS voices as the second parameter to the function, e.g., `speaker.speak('Hi', 'en-US_AllisonVoice')`.
+For a full list of voice you can use, check [Watson TTS website](http://www.ibm.com/watson/developercloud/doc/text-to-speech/http.shtml#voices).
+You can also use SSML. Again, check [Watson TTS website](http://www.ibm.com/watson/developercloud/doc/text-to-speech/http.shtml#input).
+
+If you want to subscribe to speaking events, you can use `onBeingSpeak` and `onEndSpeak`.

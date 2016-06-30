@@ -6,16 +6,26 @@ npm install git+ssh://github.ibm.com/celio/CELIO.git
 ```
 
 To use it in nodejs:
-```
+```javascript
 var CELIO = require('celio');
 var io = new CELIO();
+```
+
+For now, you also need to have a cog.json file in your package directory, with at least the following fields:
+```json
+{
+  "rabbitMQ": {
+    "url": "rabbitmq url",
+    "exchange": "exchange name"
+  }
+}
 ```
 
 CELIO has several components.
 
 ## Transcript
 The transcript object has three functions for subscribing to transcripts: `onFinal`, `onInterim`, `onAll`.
-```
+```javascript
 var transcript = io.getTranscript();
 transcript.onFinal(function(msg) => {
     // Do your thing here
@@ -23,7 +33,7 @@ transcript.onFinal(function(msg) => {
 });
 ```
 The transcript object has at least the following fields:
-```
+```javascript
 {
   channel: "channel_id",
   result: {

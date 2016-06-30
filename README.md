@@ -1,4 +1,4 @@
-# CELIO
+# CELIO - Cognitive Environment Library for I/O
 <!-- TOC depthFrom:2 depthTo:6 insertAnchor:false orderedList:false updateOnSave:true withLinks:true -->
 
 - [Intro](#intro)

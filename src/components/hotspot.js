@@ -27,7 +27,7 @@ module.exports = class Hotspot {
      * @param  {Ray} pointer
      * @returns Point
      */
-    intersect(pointer) {
+    _intersect(pointer) {
         if (this.plane) {
             const loc = new Three.Vector3(pointer.loc[0], pointer.loc[1], pointer.loc[2]);
             const aim = new Three.Vector3(pointer.aim[0], pointer.aim[1], pointer.aim[2]);
@@ -53,10 +53,10 @@ module.exports = class Hotspot {
 
             if (Array.isArray(pointers)) {
                 for (let pointer of pointers) {
-                    handler(this.intersect(pointer));
+                    handler(this._intersect(pointer));
                 }
             } else {
-                handler(this.intersect(pointer));
+                handler(this._intersect(pointer));
             }
         });
         // TODO: Handle relative pointing devices like mice

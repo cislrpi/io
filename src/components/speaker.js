@@ -3,6 +3,7 @@ module.exports = class Speaker {
         this.io = io;
     }
 
+    // TODO: add location
     speak(text, voice) {
         const msg = {
             "voice": voice,
@@ -22,5 +23,21 @@ module.exports = class Speaker {
 
     onStop(handler) {
         this.io.onTopic('stop.speaker.command', ()=>handler());
+    }
+
+    beginSpeak() {
+        this.io.publishTopic('begin.speak', '');
+    }
+
+    endSpeak() {
+        this.io.publishTopic('end.speak', '');
+    }
+
+    onBeginSpeak(handler) {
+        this.io.onTopic('begin.speak', ()=>handler());
+    }
+
+    onEndSpeak(handler) {
+        this.io.onTopic('end.speak', ()=>handler());
     }
 };

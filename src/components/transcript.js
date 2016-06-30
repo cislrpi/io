@@ -20,7 +20,7 @@ module.exports = class Transcript {
     }
 
     switchModel(model) {
-        this.io.publishTopic('switch-model.stt.command', JSON.stringify({model:model}));
+        this.io.publishTopic('switch-model.stt.command', JSON.stringify({model}));
     }
 
     publish(source, isFinal, msg) {

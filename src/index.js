@@ -23,7 +23,7 @@ module.exports = class CELIO {
     }
 
     createHotspot(region) {
-        return new Hotspot(region, this.pconn, this.config.rabbitMQ.exchange);
+        return new Hotspot(region, this);
     }
 
     onTopic(topic, handler) {

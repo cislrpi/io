@@ -1,4 +1,5 @@
-<!-- TOC depthFrom:1 depthTo:6 insertAnchor:false orderedList:false updateOnSave:true withLinks:true -->
+# CELIO
+<!-- TOC depthFrom:2 depthTo:6 insertAnchor:false orderedList:false updateOnSave:true withLinks:true -->
 
 - [Intro](#intro)
 - [Transcript](#transcript)
@@ -6,7 +7,7 @@
 
 <!-- /TOC -->
 
-# Intro
+## Intro
 To install this package:
 ```
 npm install git+ssh://github.ibm.com/celio/CELIO.git
@@ -48,7 +49,7 @@ For example, *.absolute.pointing subscribe to wand.absolute.pointing and lightho
 In `onTopic`, the message is in RabbitMQ format and the content is contained in the content field. You need to do JSON parsing yourself.
 In `publishTopic`, you can publish any type of messages, but we recommand using JSON strings.
 
-# Transcript
+## Transcript
 The transcript object has three functions for subscribing to transcripts: `onFinal`, `onInterim`, `onAll`.
 `onFinal` subscribes to only the full sentences.
 `onInterim` subscribes to only the interim results.
@@ -75,4 +76,4 @@ The transcript object has at least the following fields:
 The result field follows the definition of Watson STT.
 The full specification can be seen on [Watson STT website](http://www.ibm.com/smarterplanet/us/en/ibmwatson/developercloud/doc/speech-to-text/output.shtml).
 
-# Speaker
+## Speaker

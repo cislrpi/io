@@ -1,0 +1,12 @@
+{
+    "sys" : {
+        "display" : true,
+        "centralMessaging" : false
+    },
+    "mq" : {
+        "url": "rabbitmq host",
+        "username": "username",
+        "password": "password",
+        "exchange": "exchange"
+    }
+}

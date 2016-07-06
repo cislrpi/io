@@ -255,6 +255,7 @@ display.close({
 
 
 Go back :
+
 ```javascript
 // context is optionally. if it is not specified the window is created under activeApplicationContext
 display.goBack({ 
@@ -268,7 +269,7 @@ Go Forward :
 
 ```javascript
 // context is optionally. if it is not specified the window is created under activeApplicationContext
-display.goBack({ 
+display.goForward({ 
     "screenName" : "front",
     "view_id" : view_obj.view_id
 } )

@@ -85,6 +85,7 @@ The `msg` object has at least the following fields:
 ```javascript
 {
   channel: "channel_id(optional)",
+  speaker: "speaker name(optional)",
   result: {
     alternatives: [{transcript: "message", confidence: 0.9}],
     final: true,

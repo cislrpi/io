@@ -10,16 +10,16 @@ module.exports = class Display extends EventEmitter  {
         this.io = io
         let dw = this.io.display
         this.displayWorker = "http://" + dw.host + ":" + dw.port  + "/execute"
-        this.displayES = new Nes.Client("ws://" + dw.host + ":" + dw.port)
-        this.displayES.connect({}, (err) => {
-            if(err) console.log(err)
-            this.displayES.onUpdate = this.processEvent
-        }) 
+        // this.displayES = new Nes.Client("ws://" + dw.host + ":" + dw.port)
+        // this.displayES.connect({}, (err) => {
+        //     if(err) console.log(err)
+        //     this.displayES.onUpdate = this.processEvent
+        // }) 
     }
 
     processEvent(message){
-        console.log(message);
-        this.emit(message.type, message.data);
+        // console.log(message);
+        // this.emit(message.type, message.data);
     }
 
 

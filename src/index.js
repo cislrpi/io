@@ -64,9 +64,9 @@ module.exports = class CELIO {
             throw new Error('Message exchange not configured.');
     }
 
-    publishTopic(topic, msg) {
+    publishTopic(topic, msg, options) {
         if(this.pconn)
-            this.ppubch.then(ch => ch.publish(this.exchange, topic, Buffer.isBuffer(msg) ? msg : new Buffer(msg)));
+            this.ppubch.then(ch => ch.publish(this.exchange, topic, Buffer.isBuffer(msg) ? msg : new Buffer(msg), options));
         else
             throw new Error('Message exchange not configured.');
     }

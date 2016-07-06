@@ -38,12 +38,15 @@ Your applications can only communicate with each other if they use the same exch
 
 With the io object, you can publish and subscribe to raw messages with the following functions:
 ```js
-io.publishTopic(topic, msg);
+io.publishTopic(topic, msg, options);
 io.onTopic(topic, function(msg){
   // handle messages
   var content = JSON.parse(msg.content.toString());
 });
 ```
+In `publishTopic`, you can use options to specify a header for the message.
+See [amqp.node](http://www.squaremobius.net/amqp.node/channel_api.html#channel_publish) for how to use the header.
+
 The topic should have the following format subType.minorType.majorType.
 Our convention is to use the topic to declare the message type, and the type should be from more specific to less specific.
 For command messages, we always have the 'command' as the last component of the topic tag. e.g., stop.speaker.command.
@@ -73,12 +76,12 @@ The transcript object has three functions for subscribing to transcripts: `onFin
 `onAll` subscribes to both.
 ```javascript
 var transcript = io.getTranscript();
-transcript.onFinal(function(msg) {
+transcript.onFinal(function(msg, fields, properties) {
     // Do your thing here
     var sentence = msg.result.alternatives[0].transcript;
 });
-```
-The transcript object has at least the following fields:
+``` 
+The `msg` object has at least the following fields:
 ```javascript
 {
   channel: "channel_id",
@@ -92,6 +95,8 @@ The transcript object has at least the following fields:
 ```
 The result field follows the definition of Watson STT.
 The full specification can be seen on [Watson STT website](http://www.ibm.com/smarterplanet/us/en/ibmwatson/developercloud/doc/speech-to-text/output.shtml).
+
+`fields` and `properties` contain message header content such as routing key and message id.
 
 Transcript also has a function for switching language models.
 ```

@@ -1,3 +1,5 @@
+const uuid = require('uuid');
+
 module.exports = class Transcript {
     constructor(io) {
         this.io = io;
@@ -30,6 +32,6 @@ module.exports = class Transcript {
 
     publish(source, isFinal, msg) {
         const topic = isFinal ? 'final' : 'interim';
-        this.io.publishTopic(`${source}.${topic}.transcript`, JSON.stringify(msg));
+        this.io.publishTopic(`${source}.${topic}.transcript`, JSON.stringify(msg), {messageId: uuid.v1()});
     }
 };

@@ -5,7 +5,7 @@ let display = io.getDisplay();
 
 
 let view_obj = display.open({
-    "screen" : "front",
+    "screenName" : "front",
     "url" : "https://www.microsoft.com/en-us/",
     "left" : "1100px",
     "top" : "10px",
@@ -28,7 +28,7 @@ setTimeout(()=>{
 
 function setBounds(){
     console.log(display.setBounds({
-         "screen" : "front",
+         "screenName" : "front",
          "view_id": view_obj.view_id,
          "top" : "10px",
          "left" : "10px",
@@ -44,7 +44,7 @@ function setBounds(){
 
 function close_view(){
    console.log( display.close({
-        "screen" : "front",
+        "screenName" : "front",
         "view_id": view_obj.view_id
     })
    )
@@ -52,7 +52,7 @@ function close_view(){
 
 function close_window(){
     console.log( display.closeWindow({
-        "screen" : "front",
+        "screenName" : "front",
         "window_id": view_obj.window_id
     })
     )

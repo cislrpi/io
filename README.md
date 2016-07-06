@@ -2,6 +2,7 @@
 <!-- TOC depthFrom:2 depthTo:6 insertAnchor:false orderedList:false updateOnSave:true withLinks:true -->
 
 - [Intro](#intro)
+- [Config](#config)
 - [Transcript](#transcript)
 - [Speaker](#speaker)
 
@@ -14,7 +15,7 @@ npm install git+ssh://github.ibm.com/celio/CELIO.git
 ```
 
 To use it in nodejs:
-```javascript
+```js
 var CELIO = require('celio');
 var io = new CELIO();
 ```
@@ -22,16 +23,19 @@ var io = new CELIO();
 For now, you also need to have a cog.json file in your package directory, with at least the following fields:
 ```json
 {
-  "rabbitMQ": {
-    "url": "rabbitmq url",
-    "exchange": "exchange name"
+  "mq": {
+    "url": "rabbitmq host",
+    "username": "username",
+    "password": "password",
+    "exchange": "exchange"
   }
 }
 ```
-The Rabbit url has username and password in it, so please don't share it with others and don't commit it to your repository.
+This configuration object has username and password in it, so please don't share it with others and don't commit it to your repository.
+Your applications can only communicate with each other if they use the same exchange.
 
 With the io object, you can publish and subscribe to raw messages with the following functions:
-```javascript
+```js
 io.publishTopic(topic, msg);
 io.onTopic(topic, function(msg){
   // handle messages
@@ -47,7 +51,18 @@ To subscribe events, the topic can include wildcards `*` and `#`. `*` substitues
 For example, `*.absolute.pointing` subscribes to wand.absolute.pointing and lighthouse.absolute.pointing, whereas `#.pointing` also subscribes to them plus other pointing events like mouse.relative.pointing.
 
 In `onTopic`, the message is in RabbitMQ format and the content is contained in the content field. You need to do JSON parsing yourself.
-In `publishTopic`, you can publish any type of messages, but we recommand using JSON strings.
+In `publishTopic`, the message can be of type string, Buffer, ArrayBuffer, Array, or array-like objects. We recommand that you use JSON strings.
+
+## Config
+The `cog.json` file is parsed and saved as a `io.config` object, so that you can query any configurations with the following function:
+```js
+io.config.get('rootKey:nestedKey');
+```
+The config object also reads in command line arguments and environment variables.
+You can use command line arguments to override settings in the cog.json file to temporarily switch exchanges for example.
+
+We use the [nconf](https://github.com/indexzero/nconf) to do this.
+For more information about the config object, you can read the nconf documentation. 
 
 ## Transcript
 The transcript object has three functions for subscribing to transcripts: `onFinal`, `onInterim`, `onAll`.
@@ -92,4 +107,4 @@ Optionally, you can specify TTS voices as the second parameter to the function, 
 For a full list of voice you can use, check [Watson TTS website](http://www.ibm.com/watson/developercloud/doc/text-to-speech/http.shtml#voices).
 You can also use SSML. Again, check [Watson TTS website](http://www.ibm.com/watson/developercloud/doc/text-to-speech/http.shtml#input).
 
-If you want to subscribe to speaking events, you can use `onBeingSpeak` and `onEndSpeak`.
+If you want to subscribe to speaking events, you can use `onBeginSpeak` and `onEndSpeak`.

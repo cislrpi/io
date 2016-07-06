@@ -4,7 +4,10 @@ module.exports = class Transcript {
     }
 
     _on(topic, handler) {
-        this.io.onTopic(topic, msg=>handler(JSON.parse(msg.content.toString())));
+        this.io.onTopic(topic, msg=>{
+            console.log(msg);
+            handler(JSON.parse(msg.content.toString()));
+        });
     }
 
     onAll(handler) {
@@ -23,8 +26,12 @@ module.exports = class Transcript {
         this.io.publishTopic('switch-model.stt.command', JSON.stringify({model}));
     }
 
+    onSwitchModel(handler) {
+        this.io.onTopic('switch-model.stt.command', msg=>handler(JSON.parse(msg.content.toString())));
+    }
+
     publish(source, isFinal, msg) {
         const topic = isFinal ? 'final' : 'interim';
         this.io.publishTopic(`${source}.${topic}.transcript`, JSON.stringify(msg));
     }
-}
+};

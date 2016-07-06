@@ -10,6 +10,7 @@
   "private": true,
   "dependencies": {
     "amqplib": "^0.4.2",
+    "nconf": "^0.8.4",
     "three": "^0.78.0"
   },
   "devDependencies": {

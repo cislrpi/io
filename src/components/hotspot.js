@@ -179,4 +179,4 @@ module.exports = class Hotspot extends EventEmitter {
     onPointerDetach(handler) {
         this.on('detach', handler);
     }
-}
+};

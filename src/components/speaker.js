@@ -8,7 +8,7 @@ module.exports = class Speaker {
         const msg = {
             "voice": voice,
             "text": text
-        }
+        };
         this.io.publishTopic('text.speaker.command', JSON.stringify(msg));
     }
 

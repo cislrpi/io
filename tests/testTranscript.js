@@ -7,6 +7,5 @@ t.onAll(msg => console.log(msg));
 
 setTimeout(()=>{
     console.log('Sending ping');
-    t.publish('test', true, {result: {transcript: 'hello'}});
-    t.switchModel('generic');
+    t.publish('test', true, {result:{alternatives:[{transcript:'hi'}]}});
 }, 1000);

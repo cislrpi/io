@@ -6,6 +6,9 @@
 - [Transcript](#transcript)
 - [Speaker](#speaker)
 - [Display](#display)
+	- [Application Context](#application-context)
+	- [Display Window](#display-window)
+	- [View Object](#view-object)
 
 <!-- /TOC -->
 
@@ -65,6 +68,7 @@ The `cog.json` file is parsed and saved as a `io.config` object, so that you can
 io.config.get('rootKey:nestedKey');
 ```
 The config object also reads in command line arguments and environment variables.
+For environment variables, replace ":" with "_". 
 You can use command line arguments to override settings in the cog.json file to temporarily switch exchanges for example.
 
 We use the [nconf](https://github.com/indexzero/nconf) to do this.

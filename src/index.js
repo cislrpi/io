@@ -10,7 +10,7 @@ const Display = require('./components/display');
 module.exports = class CELIO {
     constructor() {
         const configFile = path.join(process.cwd(), 'cog.json');
-        nconf.argv().file({file: configFile}).env();
+        nconf.argv().file({file: configFile}).env('_');
 
         if (nconf.get('mq')) {
             nconf.required(['mq:url', 'mq:exchange', 'mq:username', 'mq:password' ]);

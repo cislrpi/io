@@ -11,7 +11,8 @@
   "dependencies": {
     "amqplib": "^0.4.2",
     "nconf": "^0.8.4",
-    "three": "^0.78.0"
+    "three": "^0.78.0",
+    "uuid": "^2.0.2"
   },
   "devDependencies": {
     "babel-preset-es2015": "^6.9.0"

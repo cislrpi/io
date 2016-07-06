@@ -1,10 +1,13 @@
+const uuid = require('uuid');
+
 module.exports = class Transcript {
     constructor(io) {
         this.io = io;
     }
 
     _on(topic, handler) {
-        this.io.onTopic(topic, msg=>handler(JSON.parse(msg.content.toString())));
+        this.io.onTopic(topic, msg=>handler(JSON.parse(msg.content.toString()), 
+            msg.fields, msg.properties));
     }
 
     onAll(handler) {
@@ -29,6 +32,6 @@ module.exports = class Transcript {
 
     publish(source, isFinal, msg) {
         const topic = isFinal ? 'final' : 'interim';
-        this.io.publishTopic(`${source}.${topic}.transcript`, JSON.stringify(msg));
+        this.io.publishTopic(`${source}.${topic}.transcript`, JSON.stringify(msg), {messageId: uuid.v1()});
     }
 };

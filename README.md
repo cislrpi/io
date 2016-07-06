@@ -23,7 +23,7 @@ var io = new CELIO();
 For now, you need to have a cog.json file in your package directory, with the following fields:
 ```json
 {
-  "display": "display worker url",
+  "display": { "host" : "localhost" , "port" : 8081},
   "mq": {
     "url": "rabbitmq host",
     "username": "username",

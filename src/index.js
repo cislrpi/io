@@ -5,6 +5,7 @@ const amqp = require('amqplib');
 const Transcript = require('./components/transcript');
 const Hotspot = require('./components/hotspot');
 const Speaker = require('./components/speaker');
+const Display = require('./components/display');
 
 module.exports = class CELIO {
     constructor() {
@@ -45,6 +46,13 @@ module.exports = class CELIO {
             return new Speaker(this);
         else
             throw new Error('Message exchange not configured.');
+    }
+
+    getDisplay(){
+        if(this.display)
+            return new Display(this)
+        else   
+            throw new Error('Display worker not configured.')
     }
 
     createHotspot(region) {

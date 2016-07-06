@@ -84,13 +84,12 @@ transcript.onFinal(function(msg, fields, properties) {
 The `msg` object has at least the following fields:
 ```javascript
 {
-  channel: "channel_id",
+  channel: "channel_id(optional)",
   result: {
     alternatives: [{transcript: "message", confidence: 0.9}],
     final: true,
     keyword_result: {}
-  },
-  time_captured: 1467301438287 //unix_time_in_ms
+  }
 }
 ```
 The result field follows the definition of Watson STT.

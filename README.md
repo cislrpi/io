@@ -23,6 +23,10 @@ var io = new CELIO();
 For now, you also need to have a cog.json file in your package directory, with at least the following fields:
 ```json
 {
+  "sys":{
+    "display" : false,
+    "centralMessaging" : true
+  },
   "mq": {
     "url": "rabbitmq host",
     "username": "username",

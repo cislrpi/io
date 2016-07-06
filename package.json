@@ -5,13 +5,16 @@
   "main": "lib/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "test_display" : "node tests/testDisplay.js --display:host=localhost --display:port=8081"
+    "test_display": "node tests/testDisplay.js --display:host=localhost --display:port=8081"
   },
   "author": "Yedendra Shrinivasan, Yunfeng Zhang",
   "private": true,
   "dependencies": {
     "amqplib": "^0.4.2",
+    "hapi": "^13.5.0",
     "nconf": "^0.8.4",
+    "nes": "^6.2.1",
+    "sync-request": "^3.0.1",
     "three": "^0.78.0",
     "uuid": "^2.0.2"
   },

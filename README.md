@@ -20,13 +20,10 @@ var CELIO = require('celio');
 var io = new CELIO();
 ```
 
-For now, you also need to have a cog.json file in your package directory, with at least the following fields:
+For now, you need to have a cog.json file in your package directory, with the following fields:
 ```json
 {
-  "sys":{
-    "display" : false,
-    "centralMessaging" : true
-  },
+  "display": "display worker url",
   "mq": {
     "url": "rabbitmq host",
     "username": "username",
@@ -35,6 +32,7 @@ For now, you also need to have a cog.json file in your package directory, with a
   }
 }
 ```
+You don't need the `mq` configuration if you're just posting a webpage. For all other stuff, you need the `mq` configuration.
 This configuration object has username and password in it, so please don't share it with others and don't commit it to your repository.
 Your applications can only communicate with each other if they use the same exchange.
 

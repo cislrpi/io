@@ -11,15 +11,12 @@ module.exports = class CELIO {
         const configFile = path.join(process.cwd(), 'cog.json');
         nconf.argv().file({file: configFile}).env();
 
-        nconf.required([ 'sys:display', 'sys:centralMessaging']);
-        if(nconf.get('sys:centralMessaging')){
-            nconf.required([ 'mq:url', 'mq:exchange', 'mq:username', 'mq:password' ]);
+        if (nconf.get('mq')) {
+            nconf.required(['mq:url', 'mq:exchange', 'mq:username', 'mq:password' ]);
             this.exchange = nconf.get('mq:exchange');
 
             const ca = nconf.get('mq:ca');
-            const username = nconf.get('mq:username');
-
-            const auth = (typeof username !== 'undefined') ? (username + ':' + nconf.get('mq:password')) + "@" : (''); 
+            const auth = nconf.get('mq:username') + ':' + nconf.get('mq:password') + "@"; 
 
             if (ca) {
                 this.pconn = amqp.connect(`amqps://${auth}${nconf.get('mq:url')}`, {
@@ -31,44 +28,46 @@ module.exports = class CELIO {
             
             this.ppubch = this.pconn.then((conn) => conn.createChannel());
         }
+
+        this.display = nconf.get('display');
         this.config = nconf;
     }
 
     getTranscript() {
-        if(nconf.get('sys:centralMessaging'))
+        if(this.pconn)
             return new Transcript(this);
         else
-            throw { name : 'CentralMessagingError', message: "centralMessaging is not enabled."};
+            throw new Error('Message exchange not configured.');
     }
 
     getSpeaker() {
-        if(nconf.get('sys:centralMessaging'))
+        if(this.pconn)
             return new Speaker(this);
         else
-            throw { name : 'CentralMessagingError', message: "centralMessaging is not enabled."};
+            throw new Error('Message exchange not configured.');
     }
 
     createHotspot(region) {
-        if(nconf.get('sys:centralMessaging'))
+        if(this.pconn)
             return new Hotspot(region, this);
         else
-            throw { name : 'CentralMessagingError', message: "centralMessaging is not enabled."};
+            throw new Error('Message exchange not configured.');
     }
 
     onTopic(topic, handler) {
-        if(nconf.get('sys:centralMessaging'))
+        if(this.pconn)
             this.pconn.then((conn) => conn.createChannel())
                 .then(ch => ch.assertQueue('', {exclusive: true})
                     .then(q => ch.bindQueue(q.queue, this.exchange, topic)
                         .then(() => ch.consume(q.queue, msg => handler(msg), {noAck: true}))));
         else
-            throw { name : 'CentralMessagingError', message: "centralMessaging is not enabled."};
+            throw new Error('Message exchange not configured.');
     }
 
     publishTopic(topic, msg) {
-        if(nconf.get('sys:centralMessaging'))
+        if(this.pconn)
             this.ppubch.then(ch => ch.publish(this.exchange, topic, Buffer.isBuffer(msg) ? msg : new Buffer(msg)));
         else
-            throw { name : 'CentralMessagingError', message: "centralMessaging is not enabled."};
+            throw new Error('Message exchange not configured.');
     }
 };

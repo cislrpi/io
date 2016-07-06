@@ -129,16 +129,19 @@ var display = io.getDisplay();
 An application context is used to group brower windows related to the application. "default" is the default application context. So when you open url without setting application context, the window is added to the default application context. 
 
 - You can open or switch an application context
+
 ```javascript
 display.setAppContext("context_name")
 
 ```
+
 Setting a application context will automatically hide the display windows of other application context
 - You can close an application context
+
  ```javascript
 display.closeAppContext("context_name")
-
 ```
+
 Closing an application context will automatically close all display windows
 
 - You can get active application context

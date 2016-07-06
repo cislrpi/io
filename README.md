@@ -249,6 +249,8 @@ display.close({
 
 
 - You can navigate the view object (webpage) history
+
+
 Go back :
 ```javascript
 // context is optionally. if it is not specified the window is created under activeApplicationContext

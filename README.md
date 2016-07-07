@@ -279,3 +279,10 @@ display.goForward({
 } )
 
 ```
+
+### TODO
+- Introduce object notation for DisplayWindow and ViewObject
+- Emit events from DisplayWindow and ViewObject
+- Add Sketching layer - tied to DisplayWindow and ViewObject
+- Add background presence layer
+- Distributed drawing using  d3.js and three.js

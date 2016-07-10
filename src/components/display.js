@@ -25,7 +25,11 @@ module.exports = class Display extends EventEmitter  {
 
     postRequest( data ){
         let resp =  Request('POST', this.displayWorker, {json : data})
-        return JSON.parse(resp.getBody('utf8'))
+        try{
+            return JSON.parse(resp.getBody('utf8'))
+        }catch(e){
+            return resp.getBody('utf8')
+        }
     }
 
     getActiveContext(){

@@ -6,5 +6,7 @@ const speaker = io.getSpeaker();
 speaker.speak('<speak><express-as type="Uncertainty">How can I help you with mergers and aquisitions?</express-as></speak>', {
     voice: 'en-US_AllisonVoice'
 });
-// setTimeout(()=>speaker.stop(), 1500);
+setTimeout(()=>{
+    speaker.speak('hello');
+}, 2000);
 

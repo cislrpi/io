@@ -5,6 +5,9 @@ module.exports = class Speaker {
 
     // TODO: add location
     speak(text, options) {
+        if (!options) {
+            options = {};
+        }
         options.text = text;
         this.io.publishTopic('text.speaker.command', JSON.stringify(options));
     }

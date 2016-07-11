@@ -15,7 +15,7 @@
 ## Intro
 To install this package:
 ```
-npm install git+ssh://github.ibm.com/celio/CELIO.git
+npm install git+https://339d380eea8359dccca11d429f894ba5a22b1b1d:x-oauth-basic@github.ibm.com/celio/CELIO.git
 ```
 
 To use it in nodejs:

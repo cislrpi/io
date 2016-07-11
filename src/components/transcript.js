@@ -32,9 +32,10 @@ module.exports = class Transcript {
 
     publish(source, isFinal, msg) {
         const topic = isFinal ? 'final' : 'interim';
-        this.io.publishTopic(`${source}.${topic}.transcript`, JSON.stringify(msg), {
-            timestamp: new Date().getTime(),
-            messageId: uuid.v1()
-        });
+        if (!msg.time_captured) {
+            msg.time_captured = new Date().getTime();
+        }
+        msg.messageId = uuid.v1();
+        this.io.publishTopic(`${source}.${topic}.transcript`, JSON.stringify(msg));
     }
 };

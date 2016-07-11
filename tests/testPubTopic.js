@@ -2,10 +2,9 @@ const CELIO = require('../lib/index.js');
 
 const io = new CELIO();
 
-io.onTopic('test', msg=>console.log('Received', msg.content.toString()));
+io.onTopic('test', msg=>console.log(new Date().getTime() - JSON.parse(msg.content.toString()).time));
 
-setTimeout(()=>{
-    console.log('Sending ping');
-    io.publishTopic('test', 'ping');
-}, 1000);
-
+setInterval(()=>{
+    // console.log('Sending ping');
+    io.publishTopic('test', JSON.stringify({time: new Date().getTime()}));
+}, 10);

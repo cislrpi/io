@@ -84,6 +84,7 @@ var transcript = io.getTranscript();
 transcript.onFinal(function(msg, fields, properties) {
     // Do your thing here
     var sentence = msg.result.alternatives[0].transcript;
+    // For the most part, you don't need fields and properties
 });
 ``` 
 The `msg` object has at least the following fields:
@@ -115,7 +116,7 @@ The Speaker object allows you to pass text to Text-to-Speech worker to speak.
 var speaker = io.getSpeaker();
 speaker.speak('Hi you');
 ```
-Optionally, you can specify TTS voices as the second parameter to the function, e.g., `speaker.speak('Hi', 'en-US_AllisonVoice')`.
+Optionally, you can specify TTS voices in the second parameter to the function, e.g., `speaker.speak('Hi', {voice:'en-US_AllisonVoice'})`.
 For a full list of voice you can use, check [Watson TTS website](http://www.ibm.com/watson/developercloud/doc/text-to-speech/http.shtml#voices).
 You can also use SSML. Again, check [Watson TTS website](http://www.ibm.com/watson/developercloud/doc/text-to-speech/http.shtml#input).
 

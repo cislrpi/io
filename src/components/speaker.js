@@ -4,12 +4,9 @@ module.exports = class Speaker {
     }
 
     // TODO: add location
-    speak(text, voice) {
-        const msg = {
-            "voice": voice,
-            "text": text
-        };
-        this.io.publishTopic('text.speaker.command', JSON.stringify(msg));
+    speak(text, options) {
+        options.text = text;
+        this.io.publishTopic('text.speaker.command', JSON.stringify(options));
     }
 
     stop() {

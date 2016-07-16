@@ -6,8 +6,7 @@ module.exports = class Transcript {
     }
 
     _on(topic, handler) {
-        this.io.onTopic(topic, msg=>handler(JSON.parse(msg.content.toString()), 
-            msg.fields, msg.properties));
+        this.io.onTopic(topic, (msg, fields, properties)=>handler(JSON.parse(msg.toString()), fields, properties));
     }
 
     onAll(handler) {

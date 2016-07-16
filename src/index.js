@@ -50,9 +50,9 @@ module.exports = class CELIO {
 
     getDisplay(){
         if(this.display)
-            return new Display(this)
+            return new Display(this);
         else   
-            throw new Error('Display worker not configured.')
+            throw new Error('Display worker not configured.');
     }
 
     createHotspot(region) {
@@ -67,7 +67,7 @@ module.exports = class CELIO {
             this.pconn.then((conn) => conn.createChannel())
                 .then(ch => ch.assertQueue('', {exclusive: true})
                     .then(q => ch.bindQueue(q.queue, this.exchange, topic)
-                        .then(() => ch.consume(q.queue, msg => handler(msg), {noAck: true}))));
+                        .then(() => ch.consume(q.queue, msg => handler(msg.content, msg.fields, msg.properties), {noAck: true}))));
         else
             throw new Error('Message exchange not configured.');
     }

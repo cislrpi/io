@@ -43,9 +43,9 @@ Your applications can only communicate with each other if they use the same exch
 With the io object, you can publish and subscribe to raw messages with the following functions:
 ```js
 io.publishTopic(topic, msg, options);
-io.onTopic(topic, function(msg){
+io.onTopic(topic, function(msg, headers){
   // handle messages
-  var content = JSON.parse(msg.content.toString());
+  var content = JSON.parse(msg.toString());
 });
 ```
 In `publishTopic`, you can use options to specify a header for the message.

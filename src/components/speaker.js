@@ -18,7 +18,7 @@ module.exports = class Speaker {
 
     onSpeak(handler) {
         this.io.onTopic('text.speaker.command',
-            msg=>handler(JSON.parse(msg.content.toString())));
+            msg=>handler(JSON.parse(msg.toString())));
     }
 
     onStop(handler) {

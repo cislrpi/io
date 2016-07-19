@@ -26,7 +26,7 @@ module.exports = class Transcript {
     }
 
     onSwitchModel(handler) {
-        this.io.onTopic('switch-model.stt.command', msg=>handler(JSON.parse(msg.content.toString())));
+        this.io.onTopic('switch-model.stt.command', msg=>handler(JSON.parse(msg.toString())));
     }
 
     publish(source, isFinal, msg) {

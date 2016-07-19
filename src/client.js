@@ -7,6 +7,7 @@ const Display = require('./components/display');
 module.exports = class CELIO {
     constructor(mq) {
         const client = Stomp.over(new WebSocket(`ws://${mq.url}:15674/ws`));
+        client.debug = null;
         this.pconn = new Promise(function(resolve, reject) {
             client.connect(mq.username, mq.password, ()=>resolve(client), reject);
         });

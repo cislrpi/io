@@ -10,7 +10,7 @@ module.exports = class Hotspot extends EventEmitter {
         this.pointerStates = new Map();
 
         io.onTopic('*.absolute.pointing', msg => {
-            const pointers = JSON.parse(msg.content.toString());
+            const pointers = JSON.parse(msg.toString());
 
             if (Array.isArray(pointers)) {
                 for (let pointer of pointers) {

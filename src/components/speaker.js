@@ -1,6 +1,7 @@
 module.exports = class Speaker {
     constructor(io) {
         this.io = io;
+        this.expiration = 5000;
     }
 
     // TODO: add location
@@ -9,11 +10,12 @@ module.exports = class Speaker {
             options = {};
         }
         options.text = text;
-        return this.io.call('text.speaker.command', JSON.stringify(options), 2000);
+        return this.io.call('text.speaker.command', JSON.stringify(options),
+            {expiration: this.expiration}, this.expiration);
     }
 
     onSpeak(handler, noAck) {
-        this.io.serve('text.speaker.command',
+        this.io.onCall('text.speaker.command',
             (msg, _, __, ackFunc) => handler(JSON.parse(msg.toString()), ackFunc), noAck);
     }
 

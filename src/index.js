@@ -66,30 +66,35 @@ module.exports = class CELIO {
             throw new Error('Message exchange not configured.');
     }
 
-    call(queue, content, timeout) {
+    call(queue, content, options, timeout) {
         if (this.pch) {
+            if (!timeout) {
+                timeout = 30000; // Set default timeout to 30 seconds.
+            }
             return new Promise((resolve, reject) => {
                 this._connectBroker().then(conn => conn.createChannel()
                     .then(ch => ch.assertQueue('', {exclusive: true})
                         .then(q => {
-                            const correlationId = uuid.v1();
+                            options.correlationId = uuid.v1();
+                            options.replyTo = q.queue;
+                            let timeoutID;
                             ch.consume(q.queue, msg => {
                                 if (msg.properties.correlationId === correlationId) {
                                     resolve(msg.content, msg.fields, msg.properties);
+                                    clearTimeout(timeoutID);
                                     conn.close();
                                 };
                             }, {noAck: true});
-                            ch.sendToQueue(queue, Buffer.isBuffer(content) ? content : new Buffer(content),
-                                {correlationId, replyTo: q.queue});
+                            ch.sendToQueue(queue, Buffer.isBuffer(content) ? content : new Buffer(content), options);
                             
-                            // Set time out
+                            // Time out the response when the caller has been waiting for too long
                             if (typeof timeout === 'number') {
-                                setTimeout(()=>{
+                                timeoutID = setTimeout(()=>{
                                     reject(new Error(`Request timed out after ${timeout} ms.`));
                                     conn.close();
                                 }, timeout);
                             }
-                })));
+                }))).catch(reject);
             });
         }
         else
@@ -97,7 +102,7 @@ module.exports = class CELIO {
     }
 
     // when noAck is false, the handler should acknowledge the message using the provided function;
-    serve(queue, handler, noAck) {
+    onCall(queue, handler, noAck) {
         if (this.pch)
             this.pch.then(ch => {
                 if (typeof noAck === 'undefined') noAck = true;

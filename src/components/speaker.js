@@ -9,16 +9,16 @@ module.exports = class Speaker {
             options = {};
         }
         options.text = text;
-        this.io.publishTopic('text.speaker.command', JSON.stringify(options));
+        return this.io.call('text.speaker.command', JSON.stringify(options), 2000);
+    }
+
+    onSpeak(handler, noAck) {
+        this.io.serve('text.speaker.command',
+            (msg, _, __, ackFunc) => handler(JSON.parse(msg.toString()), ackFunc), noAck);
     }
 
     stop() {
         this.io.publishTopic('stop.speaker.command', '');
-    }
-
-    onSpeak(handler) {
-        this.io.onTopic('text.speaker.command',
-            msg=>handler(JSON.parse(msg.toString())));
     }
 
     onStop(handler) {

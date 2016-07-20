@@ -4,9 +4,9 @@ const io = new CELIO();
 const t = io.getTranscript();
 
 t.onFinal((msg, fields, properties) => {
-    console.log(fields);
-    console.log(properties);
-    // console.log(JSON.stringify(msg));
+    // console.log(fields);
+    // console.log(properties);
+    console.log(JSON.stringify(msg));
 });
 
 setTimeout(()=>{

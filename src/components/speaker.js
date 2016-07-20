@@ -4,31 +4,29 @@ module.exports = class Speaker {
         this.expiration = 5000;
     }
 
-    // TODO: add location
     speak(text, options) {
         if (!options) {
             options = {};
         }
         options.text = text;
-        return this.io.call('text.speaker.command', JSON.stringify(options),
-            {expiration: this.expiration}, this.expiration);
+        return this.io.call('text.speaker.command', JSON.stringify(options), {expiration: this.expiration});
     }
 
-    onSpeak(handler, noAck) {
+    doSpeak(handler, noAck) {
         this.io.onCall('text.speaker.command',
-            (msg, _, __, ackFunc) => handler(JSON.parse(msg.toString()), ackFunc), noAck);
+            (msg, _, ackFunc) => handler(JSON.parse(msg.toString()), ackFunc), noAck);
     }
 
     stop() {
-        this.io.publishTopic('stop.speaker.command', '');
+        this.io.call('stop.speaker.command', '');
     }
 
-    onStop(handler) {
-        this.io.onTopic('stop.speaker.command', ()=>handler());
+    doStop(handler) {
+        this.io.onCall('stop.speaker.command', ()=>handler());
     }
 
-    beginSpeak() {
-        this.io.publishTopic('begin.speak', '');
+    beginSpeak(msg) {
+        this.io.publishTopic('begin.speak', JSON.stringify(msg));
     }
 
     endSpeak() {
@@ -36,7 +34,9 @@ module.exports = class Speaker {
     }
 
     onBeginSpeak(handler) {
-        this.io.onTopic('begin.speak', ()=>handler());
+        this.io.onTopic('begin.speak', msg=>{
+            handler(JSON.parse(msg.toString()));
+        });
     }
 
     onEndSpeak(handler) {

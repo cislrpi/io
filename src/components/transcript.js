@@ -6,8 +6,8 @@ module.exports = class Transcript {
     }
 
     _on(topic, handler) {
-        this.io.onTopic(topic, (msg, fields, properties)=>
-            handler(JSON.parse(msg.toString()), fields, properties));
+        this.io.onTopic(topic, (msg, headers)=>
+            handler(JSON.parse(msg.toString()), headers));
     }
 
     onAll(handler) {
@@ -23,11 +23,11 @@ module.exports = class Transcript {
     }
 
     switchModel(model) {
-        this.io.publishTopic('switch-model.stt.command', JSON.stringify({model}));
+        this.io.call('switch-model.stt.command', JSON.stringify({model}));
     }
 
-    onSwitchModel(handler) {
-        this.io.onTopic('switch-model.stt.command', msg=>handler(JSON.parse(msg.toString())));
+    doSwitchModel(handler) {
+        this.io.onCall('switch-model.stt.command', msg=>handler(JSON.parse(msg.toString())));
     }
 
     publish(source, isFinal, msg) {

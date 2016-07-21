@@ -101,7 +101,7 @@ module.exports = class CELIO {
     }
 
     // when noAck is false, the handler should acknowledge the message using the provided function;
-    onCall(queue, handler, noAck=true) {
+    doCall(queue, handler, noAck=true) {
         if (this.pch)
             this.pch.then(ch => {
                 ch.prefetch(1);

@@ -23,11 +23,11 @@ module.exports = class Transcript {
     }
 
     switchModel(model) {
-        this.io.call('switch-model.stt.command', JSON.stringify({model}));
+        this.io.publishTopic('switch-model.stt.command', JSON.stringify({model}));
     }
 
     doSwitchModel(handler) {
-        this.io.onCall('switch-model.stt.command', msg=>handler(JSON.parse(msg.toString())));
+        this.io.onTopic('switch-model.stt.command', msg=>handler(JSON.parse(msg.toString())));
     }
 
     publish(source, isFinal, msg) {

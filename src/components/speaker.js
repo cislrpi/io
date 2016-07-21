@@ -13,7 +13,7 @@ module.exports = class Speaker {
     }
 
     doSpeak(handler, noAck) {
-        this.io.onCall('text.speaker.command',
+        this.io.doCall('text.speaker.command',
             (msg, _, ackFunc) => handler(JSON.parse(msg.toString()), ackFunc), noAck);
     }
 
@@ -22,7 +22,7 @@ module.exports = class Speaker {
     }
 
     doStop(handler) {
-        this.io.onCall('stop.speaker.command', ()=>handler());
+        this.io.doCall('stop.speaker.command', ()=>handler());
     }
 
     beginSpeak(msg) {

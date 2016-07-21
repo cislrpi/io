@@ -74,7 +74,7 @@ module.exports = class CELIO {
             throw new Error('Message exchange not configured.');
     }
 
-    onCall(queue, handler, noAck=true) {
+    doCall(queue, handler, noAck=true) {
         // if (this.pconn)
         //     this.pconn.then(client => {
         //         // ch.prefetch(1); 

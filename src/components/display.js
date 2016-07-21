@@ -2,28 +2,34 @@
 const Request = require('sync-request')
 const EventEmitter = require('events')
 const Nes = require('nes')
+const uuid = require('uuid')
+
+const DisplayWindow = require('./displaywindow')
+
 
 module.exports = class Display extends EventEmitter  {
     constructor (io) {
-        super();
-
-        this.io = io
-        let dw = this.io.display
-        this.displayWorker = "http://" + dw.host + ":" + dw.port  + "/execute"
-        // this.displayES = new Nes.Client("ws://" + dw.host + ":" + dw.port)
-        // this.displayES.connect({}, (err) => {
-        //     if(err) console.log(err)
-        //     this.displayES.onUpdate = this.processEvent
-        // }) 
+        super()
+        this.conf = io.display
+        this.client_id = uuid.v1()
+        this.displayWorker = "http://" + this.conf.host + ":" + this.conf.port  + "/execute"
+        this.displayWindows = new Map()
+        this.viewObjects = new Map()
+        io.onTopic('display.*', (m) => this._processEvent(m));
     }
 
-    processEvent(message){
-        // console.log(message);
-        // this.emit(message.type, message.data);
+    _processEvent(message){
+        console.log("process event" , message.content.toString());
+        try{
+            const m = JSON.parse(message.content.toString())
+            this.emit(m.type, m.data)
+        }catch(e){
+            console.log(e)
+        }
     }
 
-
-    postRequest( data ){
+    _postRequest( data ){
+        data.client_id = this.client_id
         let resp =  Request('POST', this.displayWorker, {json : data})
         try{
             return JSON.parse(resp.getBody('utf8'))
@@ -32,13 +38,37 @@ module.exports = class Display extends EventEmitter  {
         }
     }
 
-    getActiveContext(){
+    /*
+        returns an array of screen details 
+            - screenName
+            - x
+            - y
+            - width
+            - height
+            - touchSupport
+    */
+    getScreens(){
+        let cmd = {
+            command : "get-screens"
+        }
+        return this._postRequest(cmd)
+    }
+
+
+    /*
+        returns the active app context  as string
+    */
+    getAppContext(){
         let cmd = {
             command : "get-active-app-context"
         }
-        return this.postRequest(cmd);
+        return this._postRequest(cmd)
     }
 
+    /*
+        set the active app context  
+        args: context (string)
+    */
     setAppContext(context){
         let cmd = {
             command : "set-app-context",
@@ -47,9 +77,13 @@ module.exports = class Display extends EventEmitter  {
             }
         }
         this.activeContext = context
-        return this.postRequest(cmd)
+        return this._postRequest(cmd)
     }
 
+    /*
+        closes an app context  
+        args: context (string)
+    */
     closeAppContext(context) {
         let cmd = {
             command : "close-app-context",
@@ -57,102 +91,58 @@ module.exports = class Display extends EventEmitter  {
                 context : context
             }
         }
-        return this.postRequest(cmd)
+        return this._postRequest(cmd)
     }
 
+    /*
+        creates a displayWindow 
+        args: options (json object)
+            - screenName (string)
+            - appContext (string)
+            - template (string - relative path to the template file)
+            - x
+            - y
+            - width
+            - height
+            - contentGrid (json Object)
+                (for uniform grid)
+                - row (integer, no of rows)
+                - col (integer, no of cols)
+                - rowHeight ( float array, height percent for each row - 0.0 to 1.0 )
+                - colWidth ( float array,  width percent for each col - 0.0 to 1.0 )
+                - padding (float) // in px or em
+                (for custom grid)
+                - custom ( array of json Object)
+                   [{ "label" : "cel-id-1",  left, top, width, height}, // in px or em or percent
+                    { "label" : "cel-id-2",  left, top, width, height},
+                    { "label" : "cel-id-3",  left, top, width, height},
+                    ...
+                    ]
+            - gridBackground (json Object)
+                {
+                    "row|col" : "backgroundColor",
+                    "cel-id-1" : "backgroundColor",
+                    "cel-id-2" : "backgroundColor",
+                }
+        
+    */
     createWindow(options){
+        if(!options.template)
+            options.template = "index.html"
+
         let cmd = {
             command : 'create-window',
             options : options
         }
-        return this.postRequest(cmd)
+        return new DisplayWindow(this, this._postRequest(cmd))      
+    }
+    
+    getWindowById(id){
+        return this.displayWindows.get(id)
     }
 
-    hideWindow(options){
-        let cmd = {
-            command : 'hide-window',
-            options : options
-        }
-        return this.postRequest(cmd)
+    getViewObjectById(id){
+        return this.viewObjects.get(id)
     }
-
-    showWindow(options){
-        let cmd = {
-            command : 'show-window',
-            options : options
-        }
-        return this.postRequest(cmd)
-    }
-
-    closeWindow(options){
-        let cmd = {
-            command : 'close-window',
-            options : options
-        }
-        return this.postRequest(cmd)
-    }
-
-    open(options){
-        let cmd = {
-            command : 'open',
-            options : options
-        }
-        return this.postRequest(cmd)
-    }
-
-    reload(options){
-        let cmd = {
-            command : 'reload',
-            options : options
-        }
-        return this.postRequest(cmd)
-    }
-
-    hide(options){
-         let cmd = {
-            command : 'hide',
-            options : options
-        }
-        return this.postRequest(cmd)
-    }
-
-    show(options){
-         let cmd = {
-            command : 'show',
-            options : options
-        }
-        return this.postRequest(cmd)
-    }
-
-    close(options){
-         let cmd = {
-            command : 'close',
-            options : options
-        }
-        return this.postRequest(cmd)
-    }
-
-    setBounds(options){
-         let cmd = {
-            command : 'set-bounds',
-            options : options
-        }
-        return this.postRequest(cmd)
-    }
-
-    goBack(options){
-         let cmd = {
-            command : 'back',
-            options : options
-        }
-        return this.postRequest(cmd)
-    }
-
-    goForward(options){
-         let cmd = {
-            command : 'forward',
-            options : options
-        }
-        return this.postRequest(cmd)
-    }
+    
 }

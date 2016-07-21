@@ -11,10 +11,16 @@
   "private": true,
   "dependencies": {
     "amqplib": "^0.4.2",
+    "chai": "^3.5.0",
+    "chai-eventemitter": "^1.1.1",
     "hapi": "^13.5.0",
+    "mocha": "^2.5.3",
     "nconf": "^0.8.4",
     "nes": "^6.2.1",
     "stompjs": "^2.3.3",
+    "sinon": "^1.17.4",
+    "sinon-chai": "^2.8.0",
+    "sleep": "^3.0.1",
     "sync-request": "^3.0.1",
     "three": "^0.78.0",
     "uuid": "^2.0.2"

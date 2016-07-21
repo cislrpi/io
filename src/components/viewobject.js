@@ -12,7 +12,6 @@ module.exports = class ViewObject extends EventEmitter {
 
     destroy(){
         this.display.viewObjects.delete(this.view_id)
-        console.log(this.display.viewObjects.keys())
         this.display = null
         this.view_id = null
         this.screenName = null
@@ -66,7 +65,6 @@ module.exports = class ViewObject extends EventEmitter {
             }
         }
         let s = this.display._postRequest(cmd)
-        console.log(s)
         if(s.status == "success"){
            this.destroy()
         }

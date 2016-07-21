@@ -108,7 +108,6 @@ module.exports = class DisplayWindow extends EventEmitter {
             }
         }
         let s = this.display._postRequest(cmd)
-        console.log(s)
         s.viewObjects.forEach( (v) => {
             let view = this.display.getViewObjectById(v)
             if(view)

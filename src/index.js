@@ -6,7 +6,8 @@ const Transcript = require('./components/transcript');
 const Hotspot = require('./components/hotspot');
 const Speaker = require('./components/speaker');
 const Display = require('./components/display');
-const uuid = require('uuid'); 
+const uuid = require('uuid');
+const _ = require('lodash');
 
 module.exports = class CELIO {
     constructor() {
@@ -17,25 +18,23 @@ module.exports = class CELIO {
             nconf.required(['mq:url', 'mq:exchange', 'mq:username', 'mq:password' ]);
             this.exchange = nconf.get('mq:exchange');
 
-            this.ca = nconf.get('mq:ca');
-            this.auth = nconf.get('mq:username') + ':' + nconf.get('mq:password') + "@"; 
+            const ca = nconf.get('mq:ca');
+            const auth = nconf.get('mq:username') + ':' + nconf.get('mq:password') + "@"; 
+
+            if (ca) {
+                this.pconn = amqp.connect(`amqps://${auth}${nconf.get('mq:url')}`, {
+                    ca: [fs.readFileSync(ca)]
+                });
+            } else {
+                this.pconn = amqp.connect(`amqp://${auth}${nconf.get('mq:url')}`);
+            }
 
             // Make a shared channel for publishing and subscribe            
-            this.pch = this._connectBroker().then(conn => conn.createChannel());
+            this.pch = this.pconn.then(conn => conn.createChannel());
         }
 
         this.display = nconf.get('display');
         this.config = nconf;
-    }
-
-    _connectBroker() {
-        if (this.ca) {
-            return amqp.connect(`amqps://${this.auth}${nconf.get('mq:url')}`, {
-                ca: [fs.readFileSync(this.ca)]
-            });
-        } else {
-            return amqp.connect(`amqp://${this.auth}${nconf.get('mq:url')}`);
-        }
     }
 
     getTranscript() {
@@ -66,34 +65,34 @@ module.exports = class CELIO {
             throw new Error('Message exchange not configured.');
     }
 
-    call(queue, content, options, timeout) {
+    call(queue, content, options) {
         if (this.pch) {
-            if (!timeout) {
-                timeout = 30000; // Set default timeout to 30 seconds.
-            }
             return new Promise((resolve, reject) => {
-                this._connectBroker().then(conn => conn.createChannel()
+                this.pconn.then(conn => conn.createChannel()
                     .then(ch => ch.assertQueue('', {exclusive: true})
                         .then(q => {
                             options.correlationId = uuid.v1();
                             options.replyTo = q.queue;
+                            if (!options.expiration) {
+                                options.expiration = 3000; // default to 3 sec;
+                            }
                             let timeoutID;
+                            // Time out the response when the caller has been waiting for too long
+                            if (typeof options.expiration === 'number') {
+                                timeoutID = setTimeout(()=>{
+                                    reject(new Error(`Request timed out after ${options.expiration} ms.`));
+                                    ch.close();
+                                }, options.expiration+500);
+                            }
+
                             ch.consume(q.queue, msg => {
-                                if (msg.properties.correlationId === correlationId) {
-                                    resolve(msg.content, msg.fields, msg.properties);
+                                if (msg.properties.correlationId === options.correlationId) {
+                                    resolve(msg.content, _.merge(msg.fields, msg.properties));
                                     clearTimeout(timeoutID);
-                                    conn.close();
+                                    ch.close();
                                 };
                             }, {noAck: true});
                             ch.sendToQueue(queue, Buffer.isBuffer(content) ? content : new Buffer(content), options);
-                            
-                            // Time out the response when the caller has been waiting for too long
-                            if (typeof timeout === 'number') {
-                                timeoutID = setTimeout(()=>{
-                                    reject(new Error(`Request timed out after ${timeout} ms.`));
-                                    conn.close();
-                                }, timeout);
-                            }
                 }))).catch(reject);
             });
         }
@@ -102,18 +101,22 @@ module.exports = class CELIO {
     }
 
     // when noAck is false, the handler should acknowledge the message using the provided function;
-    onCall(queue, handler, noAck) {
+    doCall(queue, handler, noAck=true) {
         if (this.pch)
             this.pch.then(ch => {
-                if (typeof noAck === 'undefined') noAck = true;
                 ch.prefetch(1);
-                return ch.assertQueue(queue, {durable: false}).then(q => ch.consume(q.queue, msg => {
-                    const result = handler(msg.content, msg.fields, msg.properties, function ack() {ch.ack(msg);});
-
-                    if (result) {
-                        ch.sendToQueue(msg.properties.replyTo, Buffer.isBuffer(result) ? result : new Buffer(result),
-                            {correlationId: msg.properties.correlationId});
+                ch.assertQueue(queue, {durable: false}).then(q => ch.consume(q.queue, msg => {
+                    let result = handler(msg.content, _.merge(msg.fields, msg.properties),
+                        function ack() {ch.ack(msg);});
+                    
+                    // If there is no return, we still send something back so that 
+                    // the caller knows it's executed and it won't time out.
+                    if (!result) {
+                        result = '';
                     }
+                    
+                    ch.sendToQueue(msg.properties.replyTo, Buffer.isBuffer(result) ? result : new Buffer(result),
+                            {correlationId: msg.properties.correlationId});
                 }, {noAck}));
             });
         else
@@ -125,7 +128,7 @@ module.exports = class CELIO {
             this.pch.then(ch => ch.assertQueue('', {exclusive: true})
                 .then(q => ch.bindQueue(q.queue, this.exchange, topic)
                     .then(() => ch.consume(q.queue, msg => 
-                        handler(msg.content, msg.fields, msg.properties), {noAck: true}))));
+                        handler(msg.content, _.merge(msg.fields, msg.properties), {noAck: true})))));
         else
             throw new Error('Message exchange not configured.');
     }

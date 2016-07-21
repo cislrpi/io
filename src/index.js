@@ -111,7 +111,7 @@ module.exports = class CELIO {
                     
                     // If there is no return, we still send something back so that 
                     // the caller knows it's executed and it won't time out.
-                    if (result) {
+                    if (!result) {
                         result = '';
                     }
                     

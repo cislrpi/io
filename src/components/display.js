@@ -19,9 +19,9 @@ module.exports = class Display extends EventEmitter  {
     }
 
     _processEvent(message){
-        console.log("process event" , message.content.toString());
+        console.log("process event" , message.toString());
         try{
-            const m = JSON.parse(message.content.toString())
+            const m = JSON.parse(message.toString())
             this.emit(m.type, m.data)
         }catch(e){
             console.log(e)

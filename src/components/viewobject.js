@@ -36,7 +36,7 @@ module.exports = class ViewObject extends EventEmitter {
 
     setCSSStyle(css_string){
          let cmd = {
-            command : 'set-css-style',
+            command : 'set-webview-css-style',
             options : {
                 view_id : this.view_id,
                 cssText : css_string

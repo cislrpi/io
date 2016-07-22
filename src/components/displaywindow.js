@@ -33,6 +33,15 @@ module.exports = class DisplayWindow extends EventEmitter {
             throw new Error("DisplayWindow is already deleted.")        
     }
 
+    //todo
+
+    addToGrid(label, bounds){
+
+    }
+
+
+    // setting DisplayWindow cssText
+
     /*
         returns the gridlayout
 
@@ -65,6 +74,17 @@ module.exports = class DisplayWindow extends EventEmitter {
         if(animation)
             cmd.options.animation_options = animation
 
+        return this.display._postRequest(cmd)
+    }
+
+    setCSSStyle(css_string){
+         let cmd = {
+            command : 'set-displaywindow-css-style',
+            options : {
+                window_id : this.window_id,
+                cssText : css_string
+            }
+        }
         return this.display._postRequest(cmd)
     }
 
@@ -146,8 +166,8 @@ module.exports = class DisplayWindow extends EventEmitter {
         options:
             - url
             - position (label or grid-top & grid-left)
-            - width // in px or em or percent 
-            - height // in px or em or percent
+            - width // in px or em 
+            - height // in px or em 
             - cssText (string)
             - nodeintegration (boolean)
     */

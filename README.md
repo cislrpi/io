@@ -126,60 +126,138 @@ If you want to subscribe to speaking events, you can use `onBeginSpeak` and `onE
 ## Display
 The Display object enables you to manipulate content of the displays
 
+### Application Context
+An application context is used to group brower windows related to the application. "default" is the default application context. So when you open url without setting application context, the window is added to the default application context. 
+
+### Display Window 
+Within an application context, you can open multiple display windows. The display window always occupies entire display screen and only one of the display window is shown and receives user interaction such as pointing. 
+
+### View Object
+Within a display window, you can open webpages as view objects.
+
+
+###  CELIO API
+
+#### getDisplay
+returns display object
+
 ```javascript
 var display = io.getDisplay();
 ```
 
-### Application Context
-An application context is used to group brower windows related to the application. "default" is the default application context. So when you open url without setting application context, the window is added to the default application context. 
 
-- You can open or switch an application context
+### DISPLAY API
+
+
+#### getScreens
+returns an array of screen details 
+
+```javascript
+var screens = display.getScreens();
+/*
+[ { id: 2077751741,
+    bounds: { x: 0, y: 0, width: 1920, height: 1200 },
+    workArea: { x: 0, y: 23, width: 1920, height: 1173 },
+    size: { width: 1920, height: 1200 },
+    workAreaSize: { width: 1920, height: 1173 },
+    scaleFactor: 2,
+    rotation: 0,
+    touchSupport: 'unknown' } ]
+*/
+```
+
+#### setAppContext
+opens or switches an application context
 
 ```javascript
 display.setAppContext("context_name")
 
 ```
-
 Setting a application context will automatically hide the display windows of other application context
-- You can close an application context
+
+#### closeAppContext
+closes an application context
 
  ```javascript
 display.closeAppContext("context_name")
 ```
-
 Closing an application context will automatically close all display windows
 
-- You can get active application context
+
+#### getActiveContext
+returns active application context
 
  ```javascript
 display.getActiveContext()
 
 ```
 
-### Display Window 
-Within an application context, you can open multiple display windows. The display window always occupies entire display screen and only one of the display window is shown and receives user interaction such as pointing. 
-- You can create a display window
+
+#### createWindow
+creates a display window
 
  ```javascript
-// context is optionally. if it is not specified the window is created under activeApplicationContext
-let win_obj = display.createWindow({ context : "context_name" } )
+let win_obj = display.createWindow({
+          "screenName" : "front",
+          "appContext" : "default",
+          "x" : screens[0].workArea.x,
+          "y" : screens[0].workArea.y,
+          "width"  : screens[0].workArea.width,
+          "height" : screens[0].workArea.height,
+          "contentGrid" : {
+              "row" : 2,
+              "col" : 3,
+              "padding" : 5
+          },
+          "gridBackground" : {
+              "1|1" : "white",
+              "1|2" : "grey",
+              "1|3" : "white",
+              "2|1" : "grey",
+              "2|2" : "white",
+              "2|3" : "grey"
+          }
+      } )
 
-// win_obj = { "window_id" : 1, "screenName": "front", "status" : "success"}  or { "error" : "error details" }
 ```
 
-- You can show, hide and close a display window using its id + screenName combination
+#### getWindowById
+retrieves window object using id. Id is an integer
+
+```javascript
+    display.getWindowById( 5 )
+```
+
+
+#### getViewObjectById
+retrieves view object using id. Id is an uuid string
+
+```javascript
+    display.getViewObjectById( "uuid-string" )
+```
+
+
+### DisplayWindow API
+
+#### id
+return the DisplayWindow id
+
+
+#### show, hide and close
+- show, hide and close a display window using its id + screenName combination
 
  ```javascript
-// context is optionally. if it is not specified the window is created under activeApplicationContext
-var res = display.hideWindow({ context : "context_name", screenName : win_obj.screenName , window_id : win_obj.window_id })
-var res = display.showWindow({ context : "context_name", screenName : win_obj.screenName , window_id : win_obj.window_id })
-var res = display.closeWindow({ context : "context_name", screenName : win_obj.screenName , window_id : win_obj.window_id })
+var res = win_obj.hide()
+var res = win_obj.show()
+var res = win_obj.close()
 
 // res = {"status" : "success"} or { "error" : "error details" }
 ```
 
-### View Object
-Within a display window, you can open webpages as view objects.
+
+#### getGrid
+return the grid details
+
 
 - You can open a url directly without opening a display window or even setting an application context. It opens on current display window under the active application context.
  ```javascript

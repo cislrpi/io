@@ -17,6 +17,7 @@ describe('Display', function() {
   let display = io.getDisplay();
   let screens = display.getScreens();
   console.log(display.client_id)
+  console.log(screens)
   
 
   describe('#AppContext', function() {

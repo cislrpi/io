@@ -32,8 +32,10 @@ module.exports = class Display extends EventEmitter  {
         data.client_id = this.client_id
         let resp =  Request('POST', this.displayWorker, {json : data})
         try{
+             console.log(JSON.parse(resp.getBody('utf8')))
             return JSON.parse(resp.getBody('utf8'))
         }catch(e){
+            console.log(resp.getBody('utf8'))
             return resp.getBody('utf8')
         }
     }

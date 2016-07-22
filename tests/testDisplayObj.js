@@ -11,13 +11,15 @@ chai.use(sinonChai);
 let should = chai.should()
 let expect = chai.expect
 describe('Display', function() {
-  const CELIO = require('../lib/index.js');
+  const CELIO = require('../src/index.js');
   const io = new CELIO();
 
   let display = io.getDisplay();
   let screens = display.getScreens();
   console.log(display.client_id)
   console.log(screens)
+  let sc = screens.filter( c => c.screenName == "front")[0]
+  console.log(sc)
   
 
   describe('#AppContext', function() {
@@ -51,13 +53,15 @@ describe('Display', function() {
     let win
     it('should return the window object', function(done) {
       display.setAppContext("default")
+      console.log(display.getAppContext())
+      
       win = display.createWindow({
           "screenName" : "front",
           "appContext" : "default",
-          "x" : screens[0].workArea.x,
-          "y" : screens[0].workArea.y,
-          "width"  : screens[0].workArea.width,
-          "height" : screens[0].workArea.height,
+          "x" : sc.bounds.x,
+          "y" : sc.bounds.y,
+          "width"  : sc.bounds.width,
+          "height" : sc.bounds.height,
           "contentGrid" : {
               "row" : 2,
               "col" : 3,
@@ -72,6 +76,7 @@ describe('Display', function() {
               "2|3" : "grey"
           }
       })
+      console.log(win)
       win.should.be.a("object")
       setTimeout(done, 1500)
     })
@@ -150,10 +155,10 @@ describe('Display', function() {
       win1 = display.createWindow({
           "screenName" : "front",
           "appContext" : "default",
-          "x" : screens[0].workArea.x,
-          "y" : screens[0].workArea.y,
-          "width"  : screens[0].workArea.width,
-          "height" : screens[0].workArea.height,
+          "x" : sc.bounds.x,
+          "y" : sc.bounds.y,
+          "width"  : sc.bounds.width,
+          "height" : sc.bounds.height,
           "contentGrid" : {
               "row" : 2,
               "col" : 3,

@@ -34,6 +34,17 @@ module.exports = class ViewObject extends EventEmitter {
         return this.display._postRequest(cmd)
     }
 
+    setCSSStyle(css_string){
+         let cmd = {
+            command : 'set-css-style',
+            options : {
+                view_id : this.view_id,
+                cssText : css_string
+            }
+        }
+        return this.display._postRequest(cmd)
+    }
+
     reload(){
         this.checkStatus()
         let cmd = {

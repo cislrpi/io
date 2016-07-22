@@ -180,7 +180,7 @@ describe('Display', function() {
                 "grid-left" : 2
             },
             "nodeintegration" : true,
-            "cssText":"border : 2px solid red; overflow:hidden;"
+            "cssText":"body{border : 2px solid red; overflow:hidden;}"
         })
 
         vb1.should.be.a("object")
@@ -195,7 +195,7 @@ describe('Display', function() {
                 "grid-left" : 1
             },
             "nodeintegration" : true,
-            "cssText":"border : 2px solid red; overflow:hidden;"
+            "cssText":"body{border : 2px solid red; overflow:hidden;}"
         })
         vb2.should.be.a("object")
         setTimeout(done, 1500)
@@ -224,10 +224,6 @@ describe('Display', function() {
     it('should move vb1 front of vb2', function(done){
       let b = grid["2|2"]
       let s = vb1.setBounds({
-        "left" : b.x + "px",
-        "top" : b.y + "px",
-        "height" : b.height + "px",
-        "width" : b.width + "px",
         "zIndex" : 5,
         "animation_options" : {
             duration : 1000,
@@ -238,6 +234,20 @@ describe('Display', function() {
       s.status.should.equal("success")
       setTimeout(done, 1500)
     })
+
+    it('should change url of vb1', function(done){
+      let s = vb1.setUrl("http://www.merriam-webster.com/dictionary/inspiration")
+      s.status.should.equal("success")
+      setTimeout(done, 1500)
+    })
+
+    
+    it('should change css style of vb1', function(done){
+      let s = vb1.setCSSStyle("body{border : 6px solid green; overflow:hidden;}")
+      s.status.should.equal("success")
+      setTimeout(done, 1500)
+    })
+
 
 
     it('should close vb2', function(done){

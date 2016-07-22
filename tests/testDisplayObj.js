@@ -235,6 +235,13 @@ describe('Display', function() {
       setTimeout(done, 1500)
     })
 
+    it('should change css style of vb1', function(done){
+        let s = vb1.setCSSStyle("body{border : 6px solid green; overflow:hidden;}")
+        s.status.should.equal("success")
+        setTimeout(done, 1500)
+      })
+
+
     it('should change url of vb1', function(done){
       let s = vb1.setUrl("http://www.merriam-webster.com/dictionary/inspiration")
       s.status.should.equal("success")
@@ -242,13 +249,7 @@ describe('Display', function() {
     })
 
     
-    it('should change css style of vb1', function(done){
-      let s = vb1.setCSSStyle("body{border : 6px solid green; overflow:hidden;}")
-      s.status.should.equal("success")
-      setTimeout(done, 1500)
-    })
-
-
+  
 
     it('should close vb2', function(done){
       let s = vb2.close()

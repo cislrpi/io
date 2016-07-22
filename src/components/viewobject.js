@@ -23,6 +23,17 @@ module.exports = class ViewObject extends EventEmitter {
             throw new Error("ViewObject is already deleted.")        
     }
 
+    setUrl(url){
+        let cmd = {
+            command : 'set-url',
+            options : {
+                view_id : this.view_id,
+                url : url
+            }
+        }
+        return this.display._postRequest(cmd)
+    }
+
     reload(){
         this.checkStatus()
         let cmd = {

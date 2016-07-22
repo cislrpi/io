@@ -8,7 +8,7 @@ let sinon = require("sinon");
 let sinonChai = require("sinon-chai");
 chai.use(sinonChai);
 
-const sleep = require('sleep')
+// const sleep = require('sleep')
 
 let should = chai.should()
 let expect = chai.expect
@@ -38,7 +38,7 @@ describe('Display', function() {
     })
 
     beforeEach(function(done) {
-       sleep.usleep(1800000)
+      //  sleep.usleep(1800000)
        done()
     })
 
@@ -126,7 +126,7 @@ describe('Display', function() {
     // })
 
     beforeEach(function(done) {
-       sleep.usleep(1800000)
+      //  sleep.usleep(1800000)
        done()
     })
 
@@ -255,7 +255,7 @@ describe('Display', function() {
     })
 
     beforeEach(function(done) {
-       sleep.usleep(1800000)
+      //  sleep.usleep(1800000)
        done()
     })
 

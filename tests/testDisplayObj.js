@@ -8,9 +8,6 @@ let sinon = require("sinon");
 let sinonChai = require("sinon-chai");
 chai.use(sinonChai);
 
-let sleep_constructor = require('sleepjs');
-let sleep = new sleep_constructor(2);
-
 let should = chai.should()
 let expect = chai.expect
 describe('Display', function() {
@@ -138,9 +135,7 @@ describe('Display', function() {
     //   x.status.should.equal("success")
     // })
 
-    beforeEach(function(done) {
-      //  sleep().then(()=>{return  done() })
-        
+    beforeEach(function(done) {        
         done()
     })
 
@@ -279,7 +274,6 @@ describe('Display', function() {
     })
 
     beforeEach(function(done) {
-      //  sleep().then(()=>{ return done() })
         done()
     })
 

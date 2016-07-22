@@ -77,12 +77,12 @@ module.exports = class DisplayWindow extends EventEmitter {
         return this.display._postRequest(cmd)
     }
 
-    setCSSStyle(css_string){
+    setFontSize(px_string){
          let cmd = {
-            command : 'set-displaywindow-css-style',
+            command : 'set-displaywindow-font-size',
             options : {
                 window_id : this.window_id,
-                cssText : css_string
+                fontSize : px_string
             }
         }
         return this.display._postRequest(cmd)

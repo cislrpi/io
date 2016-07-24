@@ -181,6 +181,8 @@ module.exports = class DisplayWindow extends EventEmitter {
             options : options
         }
         let s = this.display._postRequest(cmd)
+        s.width = parseFloat(options.width)
+        s.height = parseFloat(options.height)
         return new ViewObject(this.display, s)
     }
 }

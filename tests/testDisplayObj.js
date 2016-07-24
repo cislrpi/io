@@ -208,7 +208,7 @@ describe('Display', function() {
     })
 
 
-    it('should setbounds of vb2 to double height', function(done){
+    it('should setbounds of vb2 to double width', function(done){
       let a = grid["1|1"]
       let b = grid["2|1"]
       let w = a.width + b.width
@@ -228,8 +228,10 @@ describe('Display', function() {
     })
 
     it('should move vb1 front of vb2', function(done){
-      let b = grid["2|2"]
+      let b = grid["center"]
       let s = vb1.setBounds({
+        "left" : b.x + "px",
+        "top" : b.y + "px",
         "zIndex" : 5,
         "animation_options" : {
             duration : 1000,

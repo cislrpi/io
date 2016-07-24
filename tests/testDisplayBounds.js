@@ -68,7 +68,7 @@ describe('Display', function() {
         setTimeout(done, 1500)
     })
 
-     it('should return the view object - vb1', function(done) {
+     it('should return the view object - vb4', function(done) {
         vb4 =  win1.createViewObject({
             "url" : "http://nytimes.com",
             // "position" : {
@@ -93,8 +93,9 @@ describe('Display', function() {
       let s = vb4.setBounds({
         "left" : "4.0em",
         "top" : "2.0em",
-        "width" : "4.0em",
-        "height" : "4.0em",
+        "width" : "6.0em",
+        "height" : "6.0em",
+        "scaleContent" : true,
         "animation_options" : {
             duration : 1000,
             fill : 'forwards',
@@ -112,6 +113,7 @@ describe('Display', function() {
         "top" : "1.0em",
         "width" : "4.0em",
         "height" : "4.0em",
+        "scaleContent" : true,
         "animation_options" : {
             duration : 1000,
             fill : 'forwards',
@@ -122,6 +124,23 @@ describe('Display', function() {
       setTimeout(done, 1500)
     })
 
+    it('should setbounds of vb4', function(done){
+      
+      let s = vb4.setBounds({
+        "left" : "1.0em",
+            "top" : "1.0em",
+            "width" : "4.0em",
+            "height" : "4.0em",
+        "scaleContent" : true,
+        "animation_options" : {
+            duration : 1000,
+            fill : 'forwards',
+            easing : 'linear'
+         }
+      })
+      s.status.should.equal("success")
+      setTimeout(done, 1500)
+    })
     
 
     beforeEach(function(done) {

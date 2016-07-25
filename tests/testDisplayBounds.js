@@ -109,8 +109,8 @@ describe('Display', function() {
      it('should setbounds of vb1', function(done){
       
       let s = vb1.setBounds({
-        "left" : "0.10em",
-        "top" : "0.10em",
+        "left" : "0.0em",
+        "top" : "0.0em",
         "width" : "1.0em",
         "height" : "1.0em",
         "scaleContent" : true,

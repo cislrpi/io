@@ -41,7 +41,7 @@ describe('Display', function() {
     })
 
      it('should set font size of the displaywindow', function(done) {
-       let ss =  win1.setFontSize("300px")
+       let ss =  win1.setFontSize("3840px")
         ss.should.be.a("object")
         setTimeout(done, 1500)
     })
@@ -62,11 +62,11 @@ describe('Display', function() {
         setTimeout(done, 1500)
     })
 
-     it('should set font size of the displaywindow', function(done) {
-       let ss =  win1.setFontSize("3840px")
-        ss.should.be.a("object")
-        setTimeout(done, 1500)
-    })
+    //  it('should set font size of the displaywindow', function(done) {
+    //    let ss =  win1.setFontSize("3840px")
+    //     ss.should.be.a("object")
+    //     setTimeout(done, 1500)
+    // })
 
      it('should return the view object - vb4', function(done) {
         vb4 =  win1.createViewObject({

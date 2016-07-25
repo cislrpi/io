@@ -9,6 +9,7 @@ module.exports = class ViewObject extends EventEmitter {
         this.window_id = options.window_id
         this.o_width = options.width
         this.o_height = options.height
+        this.o_diagonal = Math.sqrt( Math.pow(this.o_width,2) + Math.pow(this.o_height,2) )
         this.display.viewObjects.set( this.view_id, this)
     }
 
@@ -99,7 +100,9 @@ module.exports = class ViewObject extends EventEmitter {
         this.checkStatus()
         if(options.scaleContent){
             let w = parseFloat(options.width)
-            options.scale = w * 1.0 /this.o_width
+            let h = parseFloat(optios.height)
+            let dia = Math.sqrt( Math.pow(w,2) + Math.pow(h,2) )
+            options.scale = dia * 1.0 /this.o_diagonal
         }
         options.view_id = this.view_id
          let cmd = {

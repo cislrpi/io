@@ -51,9 +51,9 @@ describe('Display', function() {
         vb1 =  win1.createViewObject({
             "url" : "http://nytimes.com",
             "left" : "1.0em",
-            "top" : "1.0em",
-            "width" : "4.0em",
-            "height" : "4.0em",
+            "top" : "0.0em",
+            "width" : "1.0em",
+            "height" : "1.0em",
             "nodeintegration" : true,
             "cssText":"body{border : 2px solid red; overflow:hidden;}"
         })
@@ -63,7 +63,7 @@ describe('Display', function() {
     })
 
      it('should set font size of the displaywindow', function(done) {
-       let ss =  win1.setFontSize("100px")
+       let ss =  win1.setFontSize("3840px")
         ss.should.be.a("object")
         setTimeout(done, 1500)
     })
@@ -75,10 +75,10 @@ describe('Display', function() {
             //     "grid-top" : 2,
             //     "grid-left" : 2
             // },
-            "left" : "1.0em",
-            "top" : "1.0em",
-            "width" : "4.0em",
-            "height" : "4.0em",
+            "left" : "0.0em",
+            "top" : "0.0em",
+            "width" : "1.0em",
+            "height" : "1.0em",
             "nodeintegration" : true,
             "cssText":"body{border : 2px solid red; overflow:hidden;}"
         })
@@ -91,10 +91,10 @@ describe('Display', function() {
     it('should setbounds of vb4', function(done){
       
       let s = vb4.setBounds({
-        "left" : "4.0em",
-        "top" : "2.0em",
-        "width" : "6.0em",
-        "height" : "6.0em",
+        "left" : "1.0em",
+        "top" : "0.5em",
+        "width" : "0.5em",
+        "height" : "0.5em",
         "scaleContent" : true,
         "animation_options" : {
             duration : 1000,
@@ -109,10 +109,10 @@ describe('Display', function() {
      it('should setbounds of vb1', function(done){
       
       let s = vb1.setBounds({
-        "left" : "6.0em",
-        "top" : "1.0em",
-        "width" : "4.0em",
-        "height" : "4.0em",
+        "left" : "0.0em",
+        "top" : "0.0em",
+        "width" : "1.0em",
+        "height" : "1.0em",
         "scaleContent" : true,
         "animation_options" : {
             duration : 1000,
@@ -127,10 +127,10 @@ describe('Display', function() {
     it('should setbounds of vb4', function(done){
       
       let s = vb4.setBounds({
-        "left" : "1.0em",
-            "top" : "1.0em",
-            "width" : "4.0em",
-            "height" : "4.0em",
+        "left" : "2.0em",
+            "top" : "0.0em",
+            "width" : "1.0em",
+            "height" : "1.0em",
         "scaleContent" : true,
         "animation_options" : {
             duration : 1000,

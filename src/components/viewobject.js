@@ -7,9 +7,9 @@ module.exports = class ViewObject extends EventEmitter {
         this.view_id = options.view_id
         this.screenName = options.screenName
         this.window_id = options.window_id
-        this.o_width = options.width
-        this.o_height = options.height
-        this.o_diagonal = Math.sqrt( Math.pow(this.o_width,2) + Math.pow(this.o_height,2) )
+        // this.o_width = options.width
+        // this.o_height = options.height
+        // this.o_diagonal = Math.sqrt( Math.pow(this.o_width,2) + Math.pow(this.o_height,2) )
         this.display.viewObjects.set( this.view_id, this)
     }
 
@@ -98,12 +98,12 @@ module.exports = class ViewObject extends EventEmitter {
 
     setBounds(options){
         this.checkStatus()
-        if(options.scaleContent){
-            let w = parseFloat(options.width)
-            let h = parseFloat(options.height)
-            let dia = Math.sqrt( Math.pow(w,2) + Math.pow(h,2) )
-            options.scale = dia * 1.0 /this.o_diagonal
-        }
+        // if(options.scaleContent){
+        //     let w = parseFloat(options.width)
+        //     let h = parseFloat(options.height)
+        //     let dia = Math.sqrt( Math.pow(w,2) + Math.pow(h,2) )
+        //     options.scale = dia * 1.0 /this.o_diagonal
+        // }
         options.view_id = this.view_id
          let cmd = {
             command : 'set-bounds',

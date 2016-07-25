@@ -109,8 +109,8 @@ describe('Display', function() {
      it('should setbounds of vb1', function(done){
       
       let s = vb1.setBounds({
-        "left" : "0.00001em",
-        "top" : "0.00001em",
+        "left" : "0.001em",
+        "top" : "0.001em",
         "width" : "1.0em",
         "height" : "1.0em",
         "scaleContent" : true,
@@ -124,23 +124,23 @@ describe('Display', function() {
       setTimeout(done, 1500)
     })
 
-    //  it('should setbounds of vb1', function(done){
+     it('should setbounds of vb1', function(done){
       
-    //   let s = vb1.setBounds({
-    //     "left" : "0.10em",
-    //     "top" : "0.10em",
-    //     "width" : "0.50em",
-    //     "height" : "0.250em",
-    //     "scaleContent" : true,
-    //     "animation_options" : {
-    //         duration : 1000,
-    //         fill : 'forwards',
-    //         easing : 'linear'
-    //      }
-    //   })
-    //   s.status.should.equal("success")
-    //   setTimeout(done, 1500)
-    // })
+      let s = vb1.setBounds({
+        "left" : "0.10em",
+        "top" : "0.10em",
+        "width" : "0.50em",
+        "height" : "0.250em",
+        "scaleContent" : true,
+        "animation_options" : {
+            duration : 1000,
+            fill : 'forwards',
+            easing : 'linear'
+         }
+      })
+      s.status.should.equal("success")
+      setTimeout(done, 1500)
+    })
 
     // it('should setbounds of vb4', function(done){
       

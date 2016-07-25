@@ -100,7 +100,7 @@ module.exports = class ViewObject extends EventEmitter {
         this.checkStatus()
         if(options.scaleContent){
             let w = parseFloat(options.width)
-            let h = parseFloat(optios.height)
+            let h = parseFloat(options.height)
             let dia = Math.sqrt( Math.pow(w,2) + Math.pow(h,2) )
             options.scale = dia * 1.0 /this.o_diagonal
         }

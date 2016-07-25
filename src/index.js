@@ -15,7 +15,8 @@ module.exports = class CELIO {
         nconf.argv().file({file: configFile}).env('_');
 
         if (nconf.get('mq')) {
-            nconf.required(['mq:url', 'mq:exchange', 'mq:username', 'mq:password' ]);
+            nconf.required(['mq:url', 'mq:username', 'mq:password']);
+            nconf.defaults({'mq:exchange': 'amq.topic'});
             this.exchange = nconf.get('mq:exchange');
 
             const ca = nconf.get('mq:ca');
@@ -101,11 +102,11 @@ module.exports = class CELIO {
     }
 
     // when noAck is false, the handler should acknowledge the message using the provided function;
-    doCall(queue, handler, noAck=true) {
+    doCall(queue, handler, noAck=true, exclusive=true) {
         if (this.pch)
             this.pch.then(ch => {
                 ch.prefetch(1);
-                ch.assertQueue(queue, {durable: false}).then(q => ch.consume(q.queue, msg => {
+                ch.assertQueue(queue, {exclusive}).then(q => ch.consume(q.queue, msg => {
                     let result = handler(msg.content, _.merge(msg.fields, msg.properties),
                         function ack() {ch.ack(msg);});
                     

@@ -66,7 +66,7 @@ module.exports = class CELIO {
             throw new Error('Message exchange not configured.');
     }
 
-    call(queue, content, options) {
+    call(queue, content, options={}) {
         if (this.pch) {
             return new Promise((resolve, reject) => {
                 this.pconn.then(conn => conn.createChannel()
@@ -88,7 +88,12 @@ module.exports = class CELIO {
 
                             ch.consume(q.queue, msg => {
                                 if (msg.properties.correlationId === options.correlationId) {
-                                    resolve(msg.content, _.merge(msg.fields, msg.properties));
+                                    if (msg.properties.headers.error) {
+                                        reject(new Error(msg.properties.headers.error));
+                                    } else {
+                                        resolve(msg.content, _.merge(msg.fields, msg.properties));
+                                    }
+                                    
                                     clearTimeout(timeoutID);
                                     ch.close();
                                 };
@@ -108,16 +113,24 @@ module.exports = class CELIO {
                 ch.prefetch(1);
                 ch.assertQueue(queue, {exclusive}).then(q => ch.consume(q.queue, msg => {
                     let result = handler(msg.content, _.merge(msg.fields, msg.properties),
-                        function ack() {ch.ack(msg);});
+                        noAck ? undefined : function ack() {ch.ack(msg);});
                     
-                    // If there is no return, we still send something back so that 
-                    // the caller knows it's executed and it won't time out.
-                    if (!result) {
-                        result = '';
+                    // If the result is an error then 
+                    if (result instanceof Error) {
+                        ch.sendToQueue(msg.properties.replyTo, new Buffer(''),
+                            {correlationId: msg.properties.correlationId, headers: {error: result.message}});
+                    } else {
+                        // If there is no return, we still send something back so that 
+                        // the caller knows it's executed and it won't time out.
+                        if (!result) {
+                            result = '';
+                        }
+                        
+                        ch.sendToQueue(msg.properties.replyTo, Buffer.isBuffer(result) ? result : new Buffer(result),
+                                {correlationId: msg.properties.correlationId});
                     }
                     
-                    ch.sendToQueue(msg.properties.replyTo, Buffer.isBuffer(result) ? result : new Buffer(result),
-                            {correlationId: msg.properties.correlationId});
+                    
                 }, {noAck}));
             });
         else

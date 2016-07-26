@@ -61,7 +61,13 @@ module.exports = class CELIO {
 
                     rpcClient.onreceive = msg => {
                         if (msg.headers['correlation-id'] === headers['correlation-id']) {
-                            resolve(msg.body, msg.headers);
+                            console.error(msg.headers);
+                            if (msg.headers.error) {
+                                reject(new Error(msg.headers.error));
+                            } else {
+                                resolve(msg.body, msg.headers);
+                            }
+                            
                             clearTimeout(timeoutID);
                             rpcClient.disconnect();
                         };
@@ -74,26 +80,9 @@ module.exports = class CELIO {
             throw new Error('Message exchange not configured.');
     }
 
-    doCall(queue, handler, noAck=true) {
-        // if (this.pconn)
-        //     this.pconn.then(client => {
-        //         // ch.prefetch(1); 
-        //         if (!noAck) {
-        //             headers.ack = 'client';
-        //         }
-        //         client.subscribe(`/amq/queue/${queue}`, msg => {
-        //             let result = handler(msg.body, msg.headers, function ack() {msg.ack();});
-
-        //             if (!result) {
-        //                 result = '';
-        //             }
-
-        //             client.send(msg.headers['reply-to'], {'correlation-id': msg.headers['correlation-id']}, result);
-        //         }, headers);
-        //     });
-        // else
-        throw new Error('Webclient should not handle RPC calls.');
-    }
+    // Webclient should not handle RPC calls.
+    // doCall(queue, handler, noAck=true) {
+    // }
 
     onTopic(topic, handler) {
         if (this.pconn) {

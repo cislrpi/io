@@ -142,7 +142,7 @@ module.exports = class CELIO {
             this.pch.then(ch => ch.assertQueue('', {exclusive: true})
                 .then(q => ch.bindQueue(q.queue, this.exchange, topic)
                     .then(() => ch.consume(q.queue, msg => 
-                        handler(msg.content, _.merge(msg.fields, msg.properties), {noAck: true})))));
+                        handler(msg.content, _.merge(msg.fields, msg.properties)), {noAck: true}))));
         else
             throw new Error('Message exchange not configured.');
     }

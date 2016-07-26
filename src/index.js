@@ -16,7 +16,7 @@ module.exports = class CELIO {
 
         if (nconf.get('mq')) {
             nconf.required(['mq:url', 'mq:username', 'mq:password']);
-            nconf.defaults({'mq:exchange': 'amq.topic'});
+            nconf.defaults({'mq':{'exchange': 'amq.topic'}});
             this.exchange = nconf.get('mq:exchange');
 
             const ca = nconf.get('mq:ca');

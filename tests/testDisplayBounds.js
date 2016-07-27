@@ -35,7 +35,7 @@ describe('Display', function() {
       })
       grid = win1.getGrid()
       win1.openDevTools()
-      win1.setFontSize("3840px")
+      win1.setFontSize("380px")
       win1.should.be.a("object")
       setTimeout(done, 1500)
     })
@@ -52,10 +52,10 @@ describe('Display', function() {
             "url" : "http://nytimes.com",
             "left" : "1.0em",
             "top" : "0.0em",
-            "width" : "1.0em",
-            "height" : "1.0em",
+            "width" : "3.0em",
+            "height" : "3.0em",
             "nodeintegration" : true,
-            "cssText":"body{border : 2px solid red; overflow:hidden;}"
+            "cssText":"body{border : 2px solid white; overflow:hidden;}"
         })
 
         vb1.should.be.a("object")
@@ -68,24 +68,24 @@ describe('Display', function() {
     //     setTimeout(done, 1500)
     // })
 
-    //  it('should return the view object - vb4', function(done) {
-    //     vb4 =  win1.createViewObject({
-    //         "url" : "http://nytimes.com",
-    //         // "position" : {
-    //         //     "grid-top" : 2,
-    //         //     "grid-left" : 2
-    //         // },
-    //         "left" : "0.0em",
-    //         "top" : "0.0em",
-    //         "width" : "1.0em",
-    //         "height" : "1.0em",
-    //         "nodeintegration" : true,
-    //         "cssText":"body{border : 2px solid red; overflow:hidden;}"
-    //     })
+     it('should return the view object - vb4', function(done) {
+        vb4 =  win1.createViewObject({
+            "url" : "http://nytimes.com",
+            // "position" : {
+            //     "grid-top" : 2,
+            //     "grid-left" : 2
+            // },
+            "left" : "1.5em",
+            "top" : "0.0em",
+            "width" : "3.0em",
+            "height" : "4.0em",
+            "nodeintegration" : true,
+            "cssText":"body{border : 2px solid red; overflow:hidden;}"
+        })
 
-    //     vb4.should.be.a("object")
-    //     setTimeout(done, 2500)
-    // })
+        vb4.should.be.a("object")
+        setTimeout(done, 1500)
+    })
 
 
     // it('should setbounds of vb4', function(done){
@@ -109,10 +109,10 @@ describe('Display', function() {
      it('should setbounds of vb1', function(done){
       
       let s = vb1.setBounds({
-        "left" : "0.001em",
-        "top" : "0.001em",
-        "width" : "1.0em",
-        "height" : "1.0em",
+        "left" : "0.1em",
+        "top" : "0.1em",
+        "width" : "2.0em",
+        "height" : "2.0em",
         "scaleContent" : true,
         "animation_options" : {
             duration : 1000,
@@ -124,23 +124,23 @@ describe('Display', function() {
       setTimeout(done, 1500)
     })
 
-     it('should setbounds of vb1', function(done){
+    //  it('should setbounds of vb1', function(done){
       
-      let s = vb1.setBounds({
-        "left" : "0.10em",
-        "top" : "0.10em",
-        "width" : "0.50em",
-        "height" : "0.250em",
-        "scaleContent" : true,
-        "animation_options" : {
-            duration : 1000,
-            fill : 'forwards',
-            easing : 'linear'
-         }
-      })
-      s.status.should.equal("success")
-      setTimeout(done, 1500)
-    })
+    //   let s = vb1.setBounds({
+    //     "left" : "0.10em",
+    //     "top" : "0.10em",
+    //     "width" : "0.50em",
+    //     "height" : "0.250em",
+    //     "scaleContent" : true,
+    //     "animation_options" : {
+    //         duration : 1000,
+    //         fill : 'forwards',
+    //         easing : 'linear'
+    //      }
+    //   })
+    //   s.status.should.equal("success")
+    //   setTimeout(done, 1500)
+    // })
 
     // it('should setbounds of vb4', function(done){
       

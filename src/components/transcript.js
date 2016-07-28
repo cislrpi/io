@@ -26,6 +26,10 @@ module.exports = class Transcript {
         this.io.publishTopic('switch-model.stt.command', model);
     }
 
+    tagChannel(workerID, channelIndex, name) {
+        this.io.call(workerID, JSON.stringify({command: 'tag-channel', channelIndex, name}));
+    }
+
     addKeywords(words) {
         this.io.publishTopic('add-keywords.stt.command', JSON.stringify(words));
     }

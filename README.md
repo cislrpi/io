@@ -10,6 +10,7 @@
 	- [Switch model](#switch-model)
 	- [Stop publishing](#stop-publishing)
 	- [Add keywords](#add-keywords)
+	- [Tag channel with speaker name](#tag-channel-with-speaker-name)
 - [Speaker](#speaker)
 - [Display](#display)
 	- [Application Context](#application-context)
@@ -118,7 +119,8 @@ transcript.onFinal(function(msg, headers) {
 The `msg` object has at least the following fields:
 ```js
 {
-  channel: "channel_id(optional)",
+  workerID: "id",
+  channelIndex: num,
   speaker: "speaker name(optional)",
   result: {
     alternatives: [{transcript: "message", confidence: 0.9}],
@@ -144,6 +146,10 @@ transcript.stopPublishing();
 ### Add keywords
 ```js
 transcript.addKeywords(words) // words is an array of strings
+```
+### Tag channel with speaker name
+```js
+transcript.tagChannel(workerID, channelIndex, speaker_name);
 ```
 
 ## Speaker

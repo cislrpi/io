@@ -1,8 +1,6 @@
 const Stomp = require('stompjs/lib/stomp').Stomp;
 const Transcript = require('./components/transcript');
-const Hotspot = require('./components/hotspot');
 const Speaker = require('./components/speaker');
-const Display = require('./components/display');
 function uuid(a){return a?(a^Math.random()*16>>a/4).toString(16):([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g,uuid);};
 
 module.exports = class CELIO {
@@ -34,12 +32,12 @@ module.exports = class CELIO {
             throw new Error('Message exchange not configured.');
     }
 
-    getDisplay(){
-        if (this.display)
-            return new Display(this);
-        else   
-            throw new Error('Display worker not configured.');
-    }
+    // getDisplay(){
+    //     if (this.display)
+    //         return new Display(this);
+    //     else   
+    //         throw new Error('Display worker not configured.');
+    // }
 
     call(queue, content, headers={}) {
         if (this.pconn) {

@@ -79,7 +79,7 @@ module.exports = class Hotspot extends EventEmitter {
             // A pointer attached
             let pointerState = this.pointerStates.get(pointer.details.name);
             if (!pointerState) {
-                pointerState = {within: false, downButtons: new Set()}
+                pointerState = {within: false, downButtons: new Set()};
                 this.pointerStates.set(pointer.details.name, pointerState);
                 this.emit('attach', pointer);
             }

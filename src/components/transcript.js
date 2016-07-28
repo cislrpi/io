@@ -26,16 +26,12 @@ module.exports = class Transcript {
         this.io.publishTopic('switch-model.stt.command', model);
     }
 
-    doSwitchModel(handler) {
-        this.io.onTopic('switch-model.stt.command', msg=>handler(msg.toString()));
-    }
-
     addKeywords(words) {
         this.io.publishTopic('add-keywords.stt.command', JSON.stringify(words));
     }
 
-    doAddKeywords(handler) {
-        this.io.onTopic('add-keywords.stt.command', msg=>handler(JSON.parse(msg.toString())));
+    stopPublishing() {
+        this.io.publishTopic('stop-publishing.stt.command', '');
     }
 
     publish(source, isFinal, msg) {

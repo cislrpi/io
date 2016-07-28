@@ -1,18 +1,32 @@
 # CELIO - Cognitive Environment Library for I/O
 <!-- TOC depthFrom:2 depthTo:6 insertAnchor:false orderedList:false updateOnSave:true withLinks:true -->
 
-- [Intro](#intro)
+- [Setup](#setup)
+- [Publish and Subscribe](#publish-and-subscribe)
+	- [Publish](#publish)
+	- [Subscribe](#subscribe)
 - [Config](#config)
 - [Transcript](#transcript)
+	- [Switch model](#switch-model)
+	- [Stop publishing](#stop-publishing)
+	- [Add keywords](#add-keywords)
 - [Speaker](#speaker)
 - [Display](#display)
 	- [Application Context](#application-context)
 	- [Display Window](#display-window)
 	- [View Object](#view-object)
+	- [CELIO API](#celio-api)
+		- [getDisplay](#getdisplay)
+	- [DISPLAY API](#display-api)
+		- [getScreens](#getscreens)
+		- [setAppContext](#setappcontext)
+		- [closeAppContext](#closeappcontext)
+		- [createWindow](#createwindow)
+		- [getGrid](#getgrid)
 
 <!-- /TOC -->
 
-## Intro
+## Setup
 To install this package:
 ```
 npm install git+ssh://github.ibm.com/celio/CELIO.git
@@ -31,21 +45,36 @@ For now, you need to have a cog.json file in your package directory, with the fo
   "mq": {
     "url": "rabbitmq host",
     "username": "username",
-    "password": "password",
-    "exchange": "exchange"
+    "password": "password"
   }
 }
 ```
+
 You don't need the `mq` configuration if you're just posting a webpage. For all other stuff, you need the `mq` configuration.
 This configuration object has username and password in it, so please don't share it with others and don't commit it to your repository.
 Your applications can only communicate with each other if they use the same exchange.
 
-With the io object, you can publish and subscribe to raw messages with the following functions:
+To use it in the browser with webpack or other compilers:
 ```js
-io.publishTopic(topic, msg, options);
-io.onTopic(topic, function(msg, headers){
+var CELIO = require('celio/lib/client');
+var io = new CELIO({
+    "url": "rabbitmq host",
+    "username": "username",
+    "password": "password"
+})
+```
+
+## Publish and Subscribe
+With the io object, you can publish and subscribe to raw messages with the following functions:
+### Publish
+```js
+io.publishTopic(topic, content, options);
+```
+### Subscribe
+```js
+io.onTopic(topic, function(content, headers){
   // handle messages
-  var content = JSON.parse(msg.toString());
+  var msg = JSON.parse(content.toString());
 });
 ```
 In `publishTopic`, you can use options to specify a header for the message.
@@ -59,7 +88,6 @@ For other events, we have something like closeMic.final.transcript or wand.absol
 To subscribe events, the topic can include wildcards `*` and `#`. `*` substitues one word, `#` substitues multiple words.
 For example, `*.absolute.pointing` subscribes to wand.absolute.pointing and lighthouse.absolute.pointing, whereas `#.pointing` also subscribes to them plus other pointing events like mouse.relative.pointing.
 
-In `onTopic`, the message is in RabbitMQ format and the content is contained in the content field. You need to do JSON parsing yourself.
 In `publishTopic`, the message can be of type string, Buffer, ArrayBuffer, Array, or array-like objects. We recommand that you use JSON strings.
 
 ## Config
@@ -79,16 +107,16 @@ The transcript object has three functions for subscribing to transcripts: `onFin
 `onFinal` subscribes to only the full sentences.
 `onInterim` subscribes to only the interim results.
 `onAll` subscribes to both.
-```javascript
+```js
 var transcript = io.getTranscript();
-transcript.onFinal(function(msg, fields, properties) {
+transcript.onFinal(function(msg, headers) {
     // Do your thing here
     var sentence = msg.result.alternatives[0].transcript;
     // For the most part, you don't need fields and properties
 });
 ``` 
 The `msg` object has at least the following fields:
-```javascript
+```js
 {
   channel: "channel_id(optional)",
   speaker: "speaker name(optional)",
@@ -96,19 +124,27 @@ The `msg` object has at least the following fields:
     alternatives: [{transcript: "message", confidence: 0.9}],
     final: true,
     keyword_result: {}
-  }
+  },
+  messageId: "uuid string"
+  time_captured: unix_time
 }
 ```
 The result field follows the definition of Watson STT.
 The full specification can be seen on [Watson STT website](http://www.ibm.com/smarterplanet/us/en/ibmwatson/developercloud/doc/speech-to-text/output.shtml).
 
-`fields` and `properties` contain message header content such as routing key and message id.
-
-Transcript also has a function for switching language models.
+The transcript object supports a few other features:
+### Switch model
+```js
+transcript.switchModel('model name');
 ```
-transcript.switchModel('m_and_a');
-``` 
-Make sure that your transcript worker accepts the specified language model name.
+### Stop publishing
+```js
+transcript.stopPublishing();
+```
+### Add keywords
+```js
+transcript.addKeywords(words) // words is an array of strings
+```
 
 ## Speaker
 The Speaker object allows you to pass text to Text-to-Speech worker to speak.
@@ -120,8 +156,7 @@ Optionally, you can specify TTS voices in the second parameter to the function, 
 For a full list of voice you can use, check [Watson TTS website](http://www.ibm.com/watson/developercloud/doc/text-to-speech/http.shtml#voices).
 You can also use SSML. Again, check [Watson TTS website](http://www.ibm.com/watson/developercloud/doc/text-to-speech/http.shtml#input).
 
-If you want to subscribe to speaking events, you can use `onBeginSpeak` and `onEndSpeak`.
-
+If you want to subscribe to speaking events, you can use `onBeginSpeak` and `onEndSpeak`. `onBeginSpeak` will give you the message that is spoken. 
 
 ## Display
 The Display object enables you to manipulate content of the displays
@@ -365,3 +400,14 @@ display.goForward({
 - Add Sketching layer - tied to DisplayWindow and ViewObject
 - Add background presence layer
 - Distributed drawing using  d3.js and three.js
+
+## RPC
+### io.call(queue, content, options)
+*queue* is the queue name, *content* is the RPC parameter.
+This funciton returns a promise that contains the result or error of the RPC.
+
+### doCall(queue, handler, noAck=true, exclusive=true)
+Again, *queue* is the queue name, handler is a callback function that handles the RPC call.
+The handler can return a string, a Buffer, an ArrayBuffer, an Array, or an array-like object.
+We recommand that you use JSON strings.
+If the handler returns an Error object, it will trigger an exception in the caller site.

@@ -422,9 +422,11 @@ This funciton returns a promise that contains the result or error of the RPC.
 *ack* is the acknowledge function, and will only be provided if noAck is set to false. Normally you don't need this.
 
 Again, *queue* is the queue name, handler is a callback function that handles the RPC call.
-The handler can return a string, a Buffer, an ArrayBuffer, an Array, or an array-like object.
+The *reply* function accepts a string, a Buffer, an ArrayBuffer, an Array, an array-like object, or an Error object.
 We recommand that you use JSON strings.
-If the handler returns an Error object, it will trigger an exception in the caller site.
+If an Error object is used, it will trigger an exception in the caller site.
+
+The *reply* function should only be called once.
 
 ## Setting up a rabbitmq server
 Please follow the installation guide here:

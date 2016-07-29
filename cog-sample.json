@@ -1,8 +1,8 @@
 {
     "mq": {
        "url": "localhost",
-       "username": "cel",
-       "password": "c0grabbit",
+       "username": "guest",
+       "password": "guest",
     },
     "display" : {
         "host" : "localhost",

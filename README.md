@@ -1,5 +1,5 @@
 # CELIO - Cognitive Environment Library for I/O
-<!-- TOC depthFrom:2 depthTo:6 insertAnchor:false orderedList:false updateOnSave:true withLinks:true -->
+<!-- TOC depthFrom:2 depthTo:4 insertAnchor:false orderedList:false updateOnSave:true withLinks:true -->
 
 - [Setup](#setup)
 - [Publish and Subscribe](#publish-and-subscribe)
@@ -415,7 +415,17 @@ display.goForward({
 This funciton returns a promise that contains the result or error of the RPC.
 
 ### doCall(queue, handler, noAck=true, exclusive=true)
+*handler* has the following sigature:
+`handler(request, reply, ack)`.
+*request* is an object with three fields *content*, *field*, *properties*. Use content to get the message sent by the client.
+*reply* is a function. Use it to send a message back to the caller.
+*ack* is the acknowledge function, and will only be provided if noAck is set to false. Normally you don't need this.
+
 Again, *queue* is the queue name, handler is a callback function that handles the RPC call.
 The handler can return a string, a Buffer, an ArrayBuffer, an Array, or an array-like object.
 We recommand that you use JSON strings.
 If the handler returns an Error object, it will trigger an exception in the caller site.
+
+## Setting up a rabbitmq server
+Please follow the installation guide here:
+https://www.rabbitmq.com/download.html

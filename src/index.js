@@ -111,26 +111,23 @@ module.exports = class CELIO {
         if (this.pch)
             this.pch.then(ch => {
                 ch.prefetch(1);
-                ch.assertQueue(queue, {exclusive}).then(q => ch.consume(q.queue, msg => {
-                    let result = handler(msg.content, _.merge(msg.fields, msg.properties),
-                        noAck ? undefined : function ack() {ch.ack(msg);});
-                    
-                    // If the result is an error then 
-                    if (result instanceof Error) {
-                        ch.sendToQueue(msg.properties.replyTo, new Buffer(''),
-                            {correlationId: msg.properties.correlationId, headers: {error: result.message}});
-                    } else {
-                        // If there is no return, we still send something back so that 
-                        // the caller knows it's executed and it won't time out.
-                        if (!result) {
-                            result = '';
+                ch.assertQueue(queue, {exclusive}).then(q => ch.consume(q.queue, request => {
+                    let replyCount = 0;
+                    function reply(response) {
+                        if (replyCount >= 1) {
+                            throw new Error('Replied more than once.');
                         }
-                        
-                        ch.sendToQueue(msg.properties.replyTo, Buffer.isBuffer(result) ? result : new Buffer(result),
-                                {correlationId: msg.properties.correlationId});
+                        replyCount++;
+                        if (response instanceof Error) {
+                            ch.sendToQueue(request.properties.replyTo, new Buffer(''),
+                                {correlationId: request.properties.correlationId, headers: {error: response.message}});
+                        } else {
+                            ch.sendToQueue(request.properties.replyTo, Buffer.isBuffer(response) ? result : new Buffer(response),
+                                {correlationId: request.properties.correlationId});
+                        }
                     }
-                    
-                    
+
+                    handler(request, reply, noAck ? undefined : function ack() {ch.ack(request);});
                 }, {noAck}));
             });
         else

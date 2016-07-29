@@ -1,6 +1,12 @@
 const Three = require('three');
 const EventEmitter = require('events');
 
+const lowCutOffFreq = .25;
+const highCutOffFreq = 5;
+const lowv = 10;
+const highv = 200;
+const vanishTime = 1000;
+
 module.exports = class Hotspot extends EventEmitter {
     constructor(region, io) {
         super();
@@ -21,17 +27,16 @@ module.exports = class Hotspot extends EventEmitter {
             }
         });
 
-        // TODO: generate detach event;
         setInterval(()=>{
             const now = new Date();
 
             for (let [key, ps] of this.pointerStates) {
-                if (now - ps.lastSeen > 1000) {
+                if (now - ps.lastSeen > vanishTime) {
                     this.pointerStates.delete(key);
                     this.emit('detach', key);
                 }
             }
-        }, 1000);
+        }, vanishTime);
     }
     /**
      * Set the rectangular region for the hotpot.
@@ -79,9 +84,30 @@ module.exports = class Hotspot extends EventEmitter {
             // A pointer attached
             let pointerState = this.pointerStates.get(pointer.details.name);
             if (!pointerState) {
-                pointerState = {within: false, downButtons: new Set()};
+                pointerState = {within: false, downButtons: new Set(), lastX: pointer.x, lastY: pointer.y, lastTimeCaptured: pointer.detail.time_captured};
                 this.pointerStates.set(pointer.details.name, pointerState);
                 this.emit('attach', pointer);
+            } else {
+                // smooth pointer x,y
+                let denom;
+                const dt = pointer.details.time_captured - pointerState.lastTimeCaptured;
+                // v is mm/s
+                v = ((pointer.x - pointerState.lastX) * (pointer.x - pointerState.lastX) +
+                    (pointer.y - pointerState.lastY) * (pointer.y - pointerState.lastY)) * 1000 / dt;
+                if (v < lowv) {
+                    denom = 2*Math.PI*dt*lowCutOffFreq;
+                } else if (v > highv) {
+                    denom = 2*Math.PI*dt*highCutOffFreq;
+                    alpha = denom / (denom + 1);
+                } else {
+                    const freq = (v - lowv) / (highv - lowv) * (highCutoffFreq - lowCutoffFreq);
+                    denom = 2*Math.PI*dt*freq;
+                }
+                const alpha = denom / (denom + 1);
+                pointer.x = pointerState.lastX + alpha * (pointer.x - pointerState.lastX);
+                pointer.y = pointerState.lastY + alpha * (pointer.y - pointerState.lastY);
+                pointerState.lastX = pointer.x;
+                pointerState.lastY = pointer.y;
             }
 
             pointerState.lastSeen = new Date();

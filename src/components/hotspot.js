@@ -84,7 +84,7 @@ module.exports = class Hotspot extends EventEmitter {
             // A pointer attached
             let pointerState = this.pointerStates.get(pointer.details.name);
             if (!pointerState) {
-                pointerState = {within: false, downButtons: new Set(), lastX: pointer.x, lastY: pointer.y, lastTimeCaptured: pointer.detail.time_captured};
+                pointerState = {within: false, downButtons: new Set(), lastX: pointer.x, lastY: pointer.y, lastTimeCaptured: pointer.details.time_captured};
                 this.pointerStates.set(pointer.details.name, pointerState);
                 this.emit('attach', pointer);
             } else {
@@ -92,22 +92,23 @@ module.exports = class Hotspot extends EventEmitter {
                 let denom;
                 const dt = pointer.details.time_captured - pointerState.lastTimeCaptured;
                 // v is mm/s
-                v = ((pointer.x - pointerState.lastX) * (pointer.x - pointerState.lastX) +
-                    (pointer.y - pointerState.lastY) * (pointer.y - pointerState.lastY)) * 1000 / dt;
+                const v = Math.sqrt(Math.pow(pointer.x - pointerState.lastX, 2) + Math.pow(pointer.y - pointerState.lastY, 2))
+                     * 1000 / dt;
                 if (v < lowv) {
                     denom = 2*Math.PI*dt*lowCutOffFreq;
                 } else if (v > highv) {
                     denom = 2*Math.PI*dt*highCutOffFreq;
-                    alpha = denom / (denom + 1);
                 } else {
-                    const freq = (v - lowv) / (highv - lowv) * (highCutoffFreq - lowCutoffFreq);
+                    const freq = (v - lowv) / (highv - lowv) * (highCutOffFreq - lowCutOffFreq);
                     denom = 2*Math.PI*dt*freq;
                 }
                 const alpha = denom / (denom + 1);
+                console.log(v);
                 pointer.x = pointerState.lastX + alpha * (pointer.x - pointerState.lastX);
                 pointer.y = pointerState.lastY + alpha * (pointer.y - pointerState.lastY);
                 pointerState.lastX = pointer.x;
                 pointerState.lastY = pointer.y;
+                pointerState.lastTimeCaptured = pointer.details.time_captured;
             }
 
             pointerState.lastSeen = new Date();

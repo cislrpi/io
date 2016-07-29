@@ -8,14 +8,18 @@ module.exports = class CELIO {
         if (!mq.exchange) {
             mq.exchange = 'amq.topic';
         }
-        this.mq = mq;
+        const sepPos = mq.url.lastIndexOf('/');
+        if (sepPos > -1) {
+            mq.vhost = mq.url.substring(sepPos+1);
+            mq.url = mq.url.substring(0, sepPos);
+        }
         this.brokerURL = `ws://${mq.url}:15674/ws`;
         const client = Stomp.over(new WebSocket(this.brokerURL));
         client.debug = null;
         this.pconn = new Promise(function(resolve, reject) {
-            client.connect(mq.username, mq.password, ()=>resolve(client), err=>{console.error(err);reject(err);});
+            client.connect(mq.username, mq.password, ()=>resolve(client), err=>{console.error(err);reject(err);}, mq.vhost);
         });
-        this.config = mq;
+        this.config = {mq};
     }
 
     getTranscript() {
@@ -44,7 +48,7 @@ module.exports = class CELIO {
             return new Promise((resolve, reject) => {
                 const rpcClient = Stomp.over(new WebSocket(this.brokerURL));
                 rpcClient.debug = null;
-                rpcClient.connect(this.mq.username, this.mq.password, ()=>{
+                rpcClient.connect(this.config.mq.username, this.config.mq.password, ()=>{
                     headers['correlation-id'] = uuid();
                     headers['reply-to'] = '/temp-queue/result';
                     if (!headers.expiration) {
@@ -74,7 +78,7 @@ module.exports = class CELIO {
                         };
                     };
                     rpcClient.send(`/amq/queue/${queue}`, headers, content);
-                }, reject);
+                }, reject, mq.vhost);
             });
         }
         else
@@ -87,7 +91,7 @@ module.exports = class CELIO {
 
     onTopic(topic, handler) {
         if (this.pconn) {
-            this.pconn.then(client=>client.subscribe(`/exchange/${this.config.exchange}/${topic}`, msg=>{
+            this.pconn.then(client=>client.subscribe(`/exchange/${this.config.mq.exchange}/${topic}`, msg=>{
                 handler(msg.body, msg.headers);
             }));
         }
@@ -97,7 +101,7 @@ module.exports = class CELIO {
 
     publishTopic(topic, content, options) {
         if (this.pconn)
-            this.pconn.then(client=>client.send(`/exchange/${this.config.exchange}/${topic}`, options, content));
+            this.pconn.then(client=>client.send(`/exchange/${this.config.mq.exchange}/${topic}`, options, content));
         else
             throw new Error('Message exchange not configured.');
     }

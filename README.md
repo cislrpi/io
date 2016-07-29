@@ -164,6 +164,8 @@ You can also use SSML. Again, check [Watson TTS website](http://www.ibm.com/wats
 
 If you want to subscribe to speaking events, you can use `onBeginSpeak` and `onEndSpeak`. `onBeginSpeak` will give you the message that is spoken. 
 
+You can also interrupt the speaker by calling `stop`.
+
 ## Display
 The Display object enables you to manipulate content of the displays
 

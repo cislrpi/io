@@ -12,17 +12,8 @@ module.exports = class Speaker {
         return this.io.call('text.speaker.command', JSON.stringify(options), {expiration: this.expiration});
     }
 
-    doSpeak(handler, noAck) {
-        this.io.doCall('text.speaker.command',
-            (msg, _, ackFunc) => handler(JSON.parse(msg.toString()), ackFunc), noAck);
-    }
-
     stop() {
         this.io.call('stop.speaker.command', '');
-    }
-
-    doStop(handler) {
-        this.io.doCall('stop.speaker.command', ()=>handler());
     }
 
     beginSpeak(msg) {

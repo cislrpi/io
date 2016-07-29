@@ -7,8 +7,9 @@ const pa=speaker.speak('<speak><express-as type="Uncertainty">How can I help you
     voice: 'en-US_AllisonVoice'
 });
 
+speaker.speak('hello');
+
 pa.then(()=>console.log('Speech passed.')).catch(err=>console.error(err));
 setTimeout(()=>{
-    speaker.speak('hello');
-}, 1000);
-
+    speaker.stop();
+}, 2000);

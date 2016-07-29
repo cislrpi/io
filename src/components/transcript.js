@@ -27,7 +27,7 @@ module.exports = class Transcript {
     }
 
     tagChannel(workerID, channelIndex, name) {
-        this.io.call(workerID, JSON.stringify({command: 'tag-channel', channelIndex, name}));
+        this.io.call(`${workerID}-tag-channel`, JSON.stringify({channelIndex, name}));
     }
 
     addKeywords(words) {

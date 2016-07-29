@@ -16,6 +16,7 @@ t.onFinal((msg, headers) => {
     const regexSpeakerID = /this is (.+) speaking $/;
     const match = msg.result.alternatives[0].transcript.match(regexSpeakerID);
     if (match) {
+        console.log('tagging channel');
         t.tagChannel(msg.workerID, msg.channelIndex, match[1]);
     }
 });

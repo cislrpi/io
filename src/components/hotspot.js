@@ -3,8 +3,8 @@ const EventEmitter = require('events');
 
 const lowCutOffFreq = .25;
 const highCutOffFreq = 5;
-const lowv = 10;
-const highv = 200;
+const lowv = 200;
+const highv = 4000;
 const vanishTime = 1000;
 
 module.exports = class Hotspot extends EventEmitter {
@@ -84,16 +84,16 @@ module.exports = class Hotspot extends EventEmitter {
             // A pointer attached
             let pointerState = this.pointerStates.get(pointer.details.name);
             if (!pointerState) {
-                pointerState = {within: false, downButtons: new Set(), lastX: pointer.x, lastY: pointer.y, lastTimeCaptured: pointer.details.time_captured};
+                pointerState = {within: false, downButtons: new Set(), lastX: pointer.x, lastY: pointer.y, 
+                    lastTimeCaptured: pointer.details.time_captured};
                 this.pointerStates.set(pointer.details.name, pointerState);
                 this.emit('attach', pointer);
             } else {
                 // smooth pointer x,y
                 let denom;
-                const dt = pointer.details.time_captured - pointerState.lastTimeCaptured;
+                const dt = (pointer.details.time_captured - pointerState.lastTimeCaptured) / 1000;
                 // v is mm/s
-                const v = Math.sqrt(Math.pow(pointer.x - pointerState.lastX, 2) + Math.pow(pointer.y - pointerState.lastY, 2))
-                     * 1000 / dt;
+                const v = Math.sqrt(Math.pow(pointer.x - pointerState.lastX, 2) + Math.pow(pointer.y - pointerState.lastY, 2)) / dt;
                 if (v < lowv) {
                     denom = 2*Math.PI*dt*lowCutOffFreq;
                 } else if (v > highv) {
@@ -103,7 +103,6 @@ module.exports = class Hotspot extends EventEmitter {
                     denom = 2*Math.PI*dt*freq;
                 }
                 const alpha = denom / (denom + 1);
-                console.log(v);
                 pointer.x = pointerState.lastX + alpha * (pointer.x - pointerState.lastX);
                 pointer.y = pointerState.lastY + alpha * (pointer.y - pointerState.lastY);
                 pointerState.lastX = pointer.x;

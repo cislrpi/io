@@ -53,7 +53,7 @@ module.exports = class Display extends EventEmitter  {
     /*
         returns the active app context  as string
     */
-    getAppContext(){
+    getActiveAppContext(){
         let cmd = {
             command : "get-active-app-context"
         }

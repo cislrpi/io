@@ -33,8 +33,6 @@ module.exports = class DisplayWindow extends EventEmitter {
             throw new Error("DisplayWindow is already deleted.")        
     }
 
-    //todo
-
     addToGrid(label, bounds, backgroundStyle){
         this.checkStatus()
         let cmd = {

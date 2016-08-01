@@ -5,9 +5,9 @@
   "main": "lib/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "test_display": "mocha --timeout 15000 tests/testDisplayObj.js --display:host=localhost --display:port=8081",
-    "test_display_em": "mocha --timeout 15000 tests/testDisplayBounds.js --display:host=localhost --display:port=8081",
-    "test_display_promise" : "mocha --timeout 15000 tests/testRPCAsync.js"
+    "test_display": "mocha --timeout 15000 tests/testDisplayObj.js",
+    "test_display_em": "mocha --timeout 15000 tests/testDisplayBounds.js",
+    "test_display_promise": "mocha --timeout 15000 tests/testRPCAsync.js"
   },
   "author": "Yedendra Shrinivasan, Yunfeng Zhang",
   "private": true,

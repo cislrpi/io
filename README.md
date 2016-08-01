@@ -190,24 +190,11 @@ var display = io.getDisplay();
 
 
 ### DISPLAY API
-
+All functions return a promise unless specified.
 
 #### getScreens
-returns an array of screen details 
+returns an array of screen details. A screen corresponds to a display worker. A screen can be composed of multiple monitors. The screen's bound box is the maximum rectangular region that fits across its multiple monitors.
 
-```javascript
-var screens = display.getScreens();
-/*
-[ { id: 2077751741,
-    bounds: { x: 0, y: 0, width: 1920, height: 1200 },
-    workArea: { x: 0, y: 23, width: 1920, height: 1173 },
-    size: { width: 1920, height: 1200 },
-    workAreaSize: { width: 1920, height: 1173 },
-    scaleFactor: 2,
-    rotation: 0,
-    touchSupport: 'unknown' } ]
-*/
-```
 
 #### setAppContext
 opens or switches an application context
@@ -226,12 +213,26 @@ display.closeAppContext("context_name")
 ```
 Closing an application context will automatically close all display windows
 
+#### hideAppContext
+hides an application context
 
-#### getActiveContext
+ ```javascript
+display.hideAppContext("context_name")
+```
+
+#### getActiveAppContext
 returns active application context
 
  ```javascript
-display.getActiveContext()
+display.getActiveAppContext()
+
+```
+
+#### getAllContexts
+returns an array of app contexts
+
+ ```javascript
+display.getAllContexts()
 
 ```
 
@@ -240,7 +241,7 @@ display.getActiveContext()
 creates a display window
 
  ```javascript
-let win_obj = display.createWindow({
+display.createWindow({
           "screenName" : "front",
           "appContext" : "default",
           "x" : screens[0].workArea.x,
@@ -260,24 +261,42 @@ let win_obj = display.createWindow({
               "2|2" : "white",
               "2|3" : "grey"
           }
-      } )
+      } ).then( m => { win_obj = m })
 
 ```
 
-#### getWindowById
-retrieves window object using id. Id is an integer
+#### getWindowById 
+retrieves window object using id. Id is an integer. (Not a promise return)
 
 ```javascript
     display.getWindowById( 5 )
 ```
 
 
+#### getAllWindowIds
+returns an array of window ids. (Not a promise return)
+
+
+#### getAllWindowIdsByContext(context)
+returns an array of window ids beloging to a context. (Not a promise return)
+
+
 #### getViewObjectById
-retrieves view object using id. Id is an uuid string
+retrieves view object using id. Id is an uuid string. (Not a promise return)
 
 ```javascript
     display.getViewObjectById( "uuid-string" )
 ```
+
+#### getAllViewObjectIds
+return all view object ids. (Not a promise return)
+
+#### getAllViewObjectIdsByWindowId( window_id )
+returns an array of viewobject ids in a display window. (Not a promise return)
+
+#### closeAllWindows
+closes all windows of the display
+
 
 
 ### DisplayWindow API
@@ -301,46 +320,73 @@ var res = win_obj.close()
 #### getGrid
 return the grid details
 
+```javascript
+win_obj.getGrid()
 
-- You can open a url directly without opening a display window or even setting an application context. It opens on current display window under the active application context.
- ```javascript
-// context is optionally. if it is not specified the window is created under activeApplicationContext
-let view_obj = display.open({ 
-    "screenName" : "front",
-    "url" : "https://www.microsoft.com/en-us/",
-    "left" : "1100px",
-    "top" : "10px",
-    "width" : 1000,
-    "height" : 1000
-} )
-
-// view_obj = { "view_id" : "uuid...",   "window_id" : 1, "screenName": "front", "status" : "success"}  or { "error" : "error details" }
 ```
 
-- You can also specify exact display window and application context
-```javascript
-// context is optionally. if it is not specified the window is created under activeApplicationContext
-let view_obj = display.open({ 
-    "screenName" : "front",
-    "context" : "context_name",
-    "window_id" : win_obj.window_id,
-    "url" : "https://www.microsoft.com/en-us/",
-    "left" : "1100px",
-    "top" : "10px",
-    "width" : 1000,
-    "height" : 1000
-} )
+####  addToGrid(label, bounds, backgroundStyle)
 
-// view_obj = { "view_id" : "uuid...",   "window_id" : 1, "screenName": "front", "status" : "success"}  or { "error" : "error details" }
+add a custom area to the grid
+
+```javascript
+
+win_obj.addToGrid("left-pane", {
+        left : "200px",
+        top : "300px",
+        width : "500px",
+        height : "500px"
+    }, {
+        background : "black",
+        borderTop : "2px solid white"
+    })
+
 ```
 
-- You can move the view object
+#### setCellStyle(label, js_css_style, animation)
+
+sets the grid background cell style
+
+```javascript
+    win_obj.setCellStyle("left-pane", { "background" : "green", "borderTop" : "5px solid orangered"  })
+
+// for uniform grid
+    win_obj.setCellStyle("{gridtop:1,gridleft:2}", { "background" : "green", "borderTop" : "5px solid orangered"  })
+
+```
+
+
+#### setFontSize("pixels")
+sets the fontsize of the displayWindow
+
+```javascript
+ win_obj.setFontSize("380px")
+
+```
+
+#### createViewObject
+
+creates a new viewObject in the displayWindow
+
+```javascript
+   win_obj.createViewObject({
+            "url" : "http://nytimes.com",
+            "left" : "1.0em",
+            "top" : "0.0em",
+            "width" : "3.0em",
+            "height" : "3.0em",
+            "nodeintegration" : true,
+            "cssText":"body{border : 2px solid white; overflow:hidden;zoom:3.2;}"
+   }).then( m => { view_obj = m })
+```
+
+### ViewObject API
+
+- setBounds
 
 ```javascript
 // context is optionally. if it is not specified the window is created under activeApplicationContext
-display.setBounds({ 
-    "screenName" : "front",
-    "view_id" : view_obj.view_id,
+view_obj.setBounds({ 
     "top" : "10px",
     "left" : "10px",
     "width" : "850px",
@@ -354,25 +400,17 @@ display.setBounds({
 
 ```
 
-- You can reload the view object
+- reload
 
 ```javascript
-// context is optionally. if it is not specified the window is created under activeApplicationContext
-display.reload({ 
-    "screenName" : "front",
-    "view_id" : view_obj.view_id
-} )
+view_obj.reload()
 
 ```
 
-- You can close the view object
+- close
 
 ```javascript
-// context is optionally. if it is not specified the window is created under activeApplicationContext
-display.close({ 
-    "screenName" : "front",
-    "view_id" : view_obj.view_id
-} )
+view_obj.close()
 
 ```
 
@@ -383,11 +421,7 @@ display.close({
 Go back :
 
 ```javascript
-// context is optionally. if it is not specified the window is created under activeApplicationContext
-display.goBack({ 
-    "screenName" : "front",
-    "view_id" : view_obj.view_id
-} )
+view_obj.goBack()
 
 ```
 
@@ -395,15 +429,26 @@ Go Forward :
 
 ```javascript
 // context is optionally. if it is not specified the window is created under activeApplicationContext
-display.goForward({ 
-    "screenName" : "front",
-    "view_id" : view_obj.view_id
-} )
+view_obj.goForward()
 
 ```
 
+- openDevTools()
+
+
+- closeDevTools()
+
+- setUrl(<url string>)
+
+- setCSSStyle(<css_string>)
+
+```javascript
+    view_obj.setCSSStyle("body{ zoom : 2.0 }")
+
+```
+
+
 ### TODO
-- Introduce object notation for DisplayWindow and ViewObject
 - Emit events from DisplayWindow and ViewObject
 - Add Sketching layer - tied to DisplayWindow and ViewObject
 - Add background presence layer

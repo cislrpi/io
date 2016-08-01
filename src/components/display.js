@@ -1,30 +1,44 @@
 
-const EventEmitter = require('events')
 const uuid = require('uuid')
 const DisplayWindow = require('./displaywindow')
 
 
-module.exports = class Display extends EventEmitter  {
+module.exports = class Display  {
     constructor (io) {
-        super()
         this.io = io
         this.conf = io.display
         this.client_id = uuid.v1()
-        this.displayWorker = "http://" + this.conf.host + ":" + this.conf.port  + "/execute"
         this.displayWindows = new Map()
         this.viewObjects = new Map()
-        io.onTopic('display.*', (m) => this._processEvent(m));
+        this.eventHandlers = new Map()
+        // display route is display.window.viewobject
+        this.io.onTopic("display.*.*", (e)=>{
+            const m = JSON.parse(e.toString())
+            m.details.eventType = m.type
+            if(this.eventHandlers.has(m.type)){
+                for(let h of this.eventHandlers.get(m.type)){
+                    h(m.details)
+                }
+            }                    
+        })
     }
 
-    _processEvent(message){
-        console.log("process event" , message.toString());
-        try{
-            const m = JSON.parse(message.toString())
-            this.emit(m.type, m.details)
-        }catch(e){
-            console.log(e)
+    addEventListener(type, handler){
+        if(this.eventHandlers.has(type)){
+            this.eventHandlers.get(type).add(handler)
+        }else{
+            let ws = new Set()
+            ws.add(handler)
+            this.eventHandlers.set(type, ws)
         }
     }
+
+    removeEventListener(type, handler){
+        if(this.eventHandlers.has(type)){
+            this.eventHandlers.get(type).delete(handler)
+        }
+    }
+
 
     _postRequest( data ){
         data.client_id = this.client_id

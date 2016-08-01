@@ -30,12 +30,9 @@ module.exports = class CELIO {
         return new Speaker(this);
     }
 
-    // getDisplay(){
-    //     if (this.display)
-    //         return new Display(this);
-    //     else   
-    //         throw new Error('Display worker not configured.');
-    // }
+    getDisplay(){
+        return new Display(this);
+    }
 
     call(queue, content, headers={}) {
         return new Promise((resolve, reject) => {

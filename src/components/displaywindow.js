@@ -1,19 +1,42 @@
 
-const EventEmitter = require('events')
 const ViewObject = require('./viewobject')
-module.exports = class DisplayWindow extends EventEmitter {
+module.exports = class DisplayWindow {
      constructor(display, options){
-        super()
         this.display = display
         this.window_id = options.window_id
         this.screenName = options.screenName
         this.appContext = options.appContext
         this.template = options.template
         this.display.displayWindows.set(this.window_id, this)
-        this.display.on('window_event', (data, flags) => {
-
-        }) 
+        this.eventHandlers = new Map()
+        this.display.io.onTopic("display.window", (e)=>{
+            const m = JSON.parse(e.toString())
+            if(m.details.window_id == this.window_id && m.details.screenName == this.screenName){
+                m.details.eventType = m.type
+                for(let h of this.eventHandlers.get(m.type)){
+                    h(m.details)
+                }
+            }
+        })
+ 
     }
+
+    addEventListener(type, handler){
+        if(this.eventHandlers.has(type)){
+            this.eventHandlers.get(type).add(handler)
+        }else{
+            let ws = new Set()
+            ws.add(handler)
+            this.eventHandlers.set(type, ws)
+        }
+    }
+
+    removeEventListener(type, handler){
+        if(this.eventHandlers.has(type)){
+            this.eventHandlers.get(type).delete(handler)
+        }
+    }
+
 
     id(){
         return this.window_id

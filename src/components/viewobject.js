@@ -1,19 +1,38 @@
-const EventEmitter = require('events')
 
-module.exports = class ViewObject extends EventEmitter {
+module.exports = class ViewObject {
     constructor(display, options){
-        super()
         this.display = display
         this.view_id = options.view_id
         this.screenName = options.screenName
         this.window_id = options.window_id
-        // this.o_width = options.width
-        // this.o_height = options.height
-        // this.o_diagonal = Math.sqrt( Math.pow(this.o_width,2) + Math.pow(this.o_height,2) )
         this.display.viewObjects.set( this.view_id, this)
-        this.display.on("viewObjectPositionChanged", (e)=>{
-            console.log("viewObjectPositionChanged", e)
+        this.eventHandlers = new Map()
+        this.display.io.onTopic("display.window.viewobject", (e)=>{
+            const m = JSON.parse(e.toString())
+            if(m.details.view_id == this.view_id){
+                m.details.eventType = m.type
+                for(let h of this.eventHandlers.get(m.type)){
+                    h(m.details)
+                }
+                    
+            }
         })
+    }
+
+    addEventListener(type, handler){
+        if(this.eventHandlers.has(type)){
+            this.eventHandlers.get(type).add(handler)
+        }else{
+            let ws = new Set()
+            ws.add(handler)
+            this.eventHandlers.set(type, ws)
+        }
+    }
+
+    removeEventListener(type, handler){
+        if(this.eventHandlers.has(type)){
+            this.eventHandlers.get(type).delete(handler)
+        }
     }
 
     destroy(){

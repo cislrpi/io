@@ -45,6 +45,7 @@ display.createWindow({
             return win_obj.getUniformGridCellSize()
         }).then(m =>{
             console.log(m)
+            win_obj.openDevTools()
             setTimeout(()=>{
                 addAnotherViewObject()
             }, 2000)

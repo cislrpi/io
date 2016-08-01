@@ -15,7 +15,11 @@ describe('Display', function() {
   let display = io.getDisplay()
   let win_obj
   let view_obj
- 
+  beforeEach(function(done) {
+    this.timeout(3000); // A very long environment setup.
+    setTimeout(done, 2500);
+  });
+  
   it("should get screen details", ()=>{
       return display.getScreens().then(res => {
         let screens = res //JSON.parse(res.toString())

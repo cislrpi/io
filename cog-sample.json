@@ -2,6 +2,6 @@
     "mq": {
        "url": "localhost",
        "username": "guest",
-       "password": "guest",
+       "password": "guest"
     }
 }

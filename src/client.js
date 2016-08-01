@@ -1,7 +1,7 @@
 const Stomp = require('stompjs/lib/stomp').Stomp;
 const Transcript = require('./components/transcript');
 const Speaker = require('./components/speaker');
-function uuid(a){return a?(a^Math.random()*16>>a/4).toString(16):([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g,uuid);};
+const uuid = require('uuid');
 
 module.exports = class CELIO {
     constructor(mq) {
@@ -23,17 +23,11 @@ module.exports = class CELIO {
     }
 
     getTranscript() {
-        if (this.pconn)
-            return new Transcript(this);
-        else
-            throw new Error('Message exchange not configured.');
+        return new Transcript(this);
     }
 
     getSpeaker() {
-        if (this.pconn)
-            return new Speaker(this);
-        else
-            throw new Error('Message exchange not configured.');
+        return new Speaker(this);
     }
 
     // getDisplay(){
@@ -44,45 +38,41 @@ module.exports = class CELIO {
     // }
 
     call(queue, content, headers={}) {
-        if (this.pconn) {
-            return new Promise((resolve, reject) => {
-                const rpcClient = Stomp.over(new WebSocket(this.brokerURL));
-                rpcClient.debug = null;
-                rpcClient.connect(this.config.mq.username, this.config.mq.password, ()=>{
-                    headers['correlation-id'] = uuid();
-                    headers['reply-to'] = '/temp-queue/result';
-                    if (!headers.expiration) {
-                        headers.expiration = 3000; // default to 3 sec;
-                    }
-                    let timeoutID;
-                    // Time out the response when the caller has been waiting for too long
-                    if (typeof headers.expiration === 'number') {
-                        timeoutID = setTimeout(()=>{
-                            rpcClient.onreceive = null;
-                            reject(new Error(`Request timed out after ${headers.expiration} ms.`));
-                            rpcClient.disconnect();
-                        }, headers.expiration+500);
-                    }
+        return new Promise((resolve, reject) => {
+            const rpcClient = Stomp.over(new WebSocket(this.brokerURL));
+            rpcClient.debug = null;
+            rpcClient.connect(this.config.mq.username, this.config.mq.password, ()=>{
+                headers['correlation-id'] = uuid.v4();
+                headers['reply-to'] = '/temp-queue/result';
+                if (!headers.expiration) {
+                    headers.expiration = 3000; // default to 3 sec;
+                }
+                let timeoutID;
+                // Time out the response when the caller has been waiting for too long
+                if (typeof headers.expiration === 'number') {
+                    timeoutID = setTimeout(()=>{
+                        rpcClient.onreceive = null;
+                        reject(new Error(`Request timed out after ${headers.expiration} ms.`));
+                        rpcClient.disconnect();
+                    }, headers.expiration+500);
+                }
 
-                    rpcClient.onreceive = msg => {
-                        if (msg.headers['correlation-id'] === headers['correlation-id']) {
-                            console.error(msg.headers);
-                            if (msg.headers.error) {
-                                reject(new Error(msg.headers.error));
-                            } else {
-                                resolve(msg.body, msg.headers);
-                            }
-                            
-                            clearTimeout(timeoutID);
-                            rpcClient.disconnect();
-                        };
+                rpcClient.onreceive = msg => {
+                    if (msg.headers['correlation-id'] === headers['correlation-id']) {
+                        console.error(msg.headers);
+                        if (msg.headers.error) {
+                            reject(new Error(msg.headers.error));
+                        } else {
+                            resolve(msg.body, msg.headers);
+                        }
+                        
+                        clearTimeout(timeoutID);
+                        rpcClient.disconnect();
                     };
-                    rpcClient.send(`/amq/queue/${queue}`, headers, content);
-                }, reject, mq.vhost);
-            });
-        }
-        else
-            throw new Error('Message exchange not configured.');
+                };
+                rpcClient.send(`/amq/queue/${queue}`, headers, content);
+            }, reject, mq.vhost);
+        });
     }
 
     // Webclient should not handle RPC calls.
@@ -90,19 +80,12 @@ module.exports = class CELIO {
     // }
 
     onTopic(topic, handler) {
-        if (this.pconn) {
-            this.pconn.then(client=>client.subscribe(`/exchange/${this.config.mq.exchange}/${topic}`, msg=>{
-                handler(msg.body, msg.headers);
-            }));
-        }
-        else
-            throw new Error('Message exchange not configured.');
+        this.pconn.then(client=>client.subscribe(`/exchange/${this.config.mq.exchange}/${topic}`, msg=>{
+            handler(msg.body, msg.headers);
+        }));
     }
 
     publishTopic(topic, content, options) {
-        if (this.pconn)
-            this.pconn.then(client=>client.send(`/exchange/${this.config.mq.exchange}/${topic}`, options, content));
-        else
-            throw new Error('Message exchange not configured.');
+        this.pconn.then(client=>client.send(`/exchange/${this.config.mq.exchange}/${topic}`, options, content));
     }
 };

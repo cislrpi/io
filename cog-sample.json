@@ -3,9 +3,5 @@
        "url": "localhost",
        "username": "guest",
        "password": "guest",
-    },
-    "display" : {
-        "host" : "localhost",
-        "port" : 8081
     }
 }

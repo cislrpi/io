@@ -34,7 +34,7 @@ display.createWindow({
                 "width" : "3.0em",
                 "height" : "3.0em",
                 "nodeintegration" : true,
-                "cssText":"body{border : 5px solid red; overflow:hidden;zoom:300%;}",
+                "cssText":"body{border : 5px solid red; overflow:hidden;}",
                 "slide" : {
                     "direction" : "down",
                     "cascade" : true

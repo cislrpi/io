@@ -49,7 +49,6 @@ module.exports = class DisplayWindow extends EventEmitter {
     }
 
 
-    // setting DisplayWindow cssText
 
     /*
         returns the gridlayout
@@ -67,6 +66,22 @@ module.exports = class DisplayWindow extends EventEmitter {
             return JSON.parse(m.toString())
         })
     }
+
+    getUniformGridCellSize(){
+        this.checkStatus()
+        let cmd = {
+            command : 'uniform-grid-cell-size',
+            options : {
+                window_id : this.window_id
+            }
+        }
+        return this.display._postRequest(cmd).then(m=>{
+            return JSON.parse(m.toString())
+        })
+    }
+
+
+    // setting DisplayWindow cssText
 
     /*
         label is row|col or custom cell name

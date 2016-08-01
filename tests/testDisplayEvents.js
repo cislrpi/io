@@ -36,5 +36,9 @@ display.createWindow({
             })
         }).then( m =>{
             let view_obj = m
-            view_obj.should.be.a("object")
+            return win_obj.getUniformGridCellSize()
+        }).then(m =>{
+            console.log(m)
         })
+
+        

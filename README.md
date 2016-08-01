@@ -22,8 +22,19 @@
 		- [getScreens](#getscreens)
 		- [setAppContext](#setappcontext)
 		- [closeAppContext](#closeappcontext)
+		- [getActiveAppContext](#getactiveappcontext)
 		- [createWindow](#createwindow)
 		- [getGrid](#getgrid)
+		- [addToGrid(label, bounds, backgroundStyle)](#addtogridlabel-bounds-backgroundstyle)
+		- [setCellStyle(label, js_css_style, animation)](#setcellstylelabel-jscssstyle-animation)
+		- [setFontSize("pixels")](#setfontsizepixels)
+		- [createViewObject](#createviewobject)
+	- [ViewObject API](#viewobject-api)
+	- [TODO](#todo)
+- [RPC](#rpc)
+	- [io.call(queue, content, options)](#iocallqueue-content-options)
+	- [doCall(queue, handler, noAck=true, exclusive=true)](#docallqueue-handler-noacktrue-exclusivetrue)
+- [Setting up a rabbitmq server](#setting-up-a-rabbitmq-server)
 
 <!-- /TOC -->
 
@@ -42,7 +53,6 @@ var io = new CELIO();
 For now, you need to have a cog.json file in your package directory, with the following fields:
 ```json
 {
-  "display": { "host" : "localhost" , "port" : 8081},
   "mq": {
     "url": "rabbitmq host",
     "username": "username",

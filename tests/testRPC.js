@@ -4,8 +4,8 @@ const io = new CELIO();
 
 io.doCall('test-queue', msg=>{
     console.log(msg.toString());
-    return 'world';
-    // return new Error('wrong');
+    // return 'world';
+    return new Error('wrong');
 }, true, false);
 
 setTimeout(function() {

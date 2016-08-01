@@ -6,29 +6,26 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "test_display": "mocha --timeout 15000 tests/testDisplayObj.js --display:host=localhost --display:port=8081",
-    "test_display_em": "mocha --timeout 15000 tests/testDisplayBounds.js --display:host=localhost --display:port=8081"
-
+    "test_display_em": "mocha --timeout 15000 tests/testDisplayBounds.js --display:host=localhost --display:port=8081",
+    "test_display_promise" : "mocha --timeout 15000 tests/testRPCAsync.js"
   },
   "author": "Yedendra Shrinivasan, Yunfeng Zhang",
   "private": true,
   "dependencies": {
     "amqplib": "^0.4.2",
-    "hapi": "^13.5.0",
     "lodash": "^4.13.1",
     "nconf": "^0.8.4",
-    "nes": "^6.2.1",
     "stompjs": "^2.3.3",
-    "sync-request": "^3.0.1",
     "three": "^0.78.0",
     "uuid": "^2.0.2"
   },
   "devDependencies": {
-    "sinon": "^1.17.4",
-    "sinon-chai": "^2.8.0",
-    "mocha": "^2.5.3",
+    "babel-polyfill": "^6.9.1",
+    "babel-preset-es2015": "^6.9.0",
     "chai": "^3.5.0",
     "chai-eventemitter": "^1.1.1",
-    "babel-polyfill": "^6.9.1",
-    "babel-preset-es2015": "^6.9.0"
+    "mocha": "^2.5.3",
+    "sinon": "^1.17.4",
+    "sinon-chai": "^2.8.0"
   }
 }

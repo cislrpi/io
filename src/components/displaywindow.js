@@ -3,7 +3,7 @@ const EventEmitter = require('events')
 const ViewObject = require('./viewobject')
 module.exports = class DisplayWindow extends EventEmitter {
      constructor(display, options){
-         super()
+        super()
         this.display = display
         this.window_id = options.window_id
         this.screenName = options.screenName
@@ -35,8 +35,19 @@ module.exports = class DisplayWindow extends EventEmitter {
 
     //todo
 
-    addToGrid(label, bounds){
-
+    addToGrid(label, bounds, backgroundStyle){
+        this.checkStatus()
+        let cmd = {
+            command : "add-to-grid",
+            options : {
+                label : label,
+                bounds : bounds,
+                style : backgroundStyle
+            }
+        }
+        return this.display._postRequest(cmd).then(m=>{
+            return JSON.parse(m.toString())
+        })
     }
 
 
@@ -54,7 +65,9 @@ module.exports = class DisplayWindow extends EventEmitter {
                 window_id : this.window_id
             }
         }
-        return this.display._postRequest(cmd)
+        return this.display._postRequest(cmd).then(m=>{
+            return JSON.parse(m.toString())
+        })
     }
 
     /*
@@ -74,7 +87,9 @@ module.exports = class DisplayWindow extends EventEmitter {
         if(animation)
             cmd.options.animation_options = animation
 
-        return this.display._postRequest(cmd)
+        return this.display._postRequest(cmd).then(m=>{
+            return JSON.parse(m.toString())
+        })
     }
 
     setFontSize(px_string){
@@ -85,7 +100,9 @@ module.exports = class DisplayWindow extends EventEmitter {
                 fontSize : px_string
             }
         }
-        return this.display._postRequest(cmd)
+        return this.display._postRequest(cmd).then(m=>{
+            return JSON.parse(m.toString())
+        })
     }
 
     /*
@@ -99,7 +116,9 @@ module.exports = class DisplayWindow extends EventEmitter {
                 window_id : this.window_id
             }
         }
-        return this.display._postRequest(cmd)
+        return this.display._postRequest(cmd).then(m=>{
+            return JSON.parse(m.toString())
+        })
     }
 
     /*
@@ -113,7 +132,9 @@ module.exports = class DisplayWindow extends EventEmitter {
                 window_id : this.window_id
             }
         }
-        return this.display._postRequest(cmd)
+        return this.display._postRequest(cmd).then(m=>{
+            return JSON.parse(m.toString())
+        })
     }
 
     /*
@@ -146,7 +167,9 @@ module.exports = class DisplayWindow extends EventEmitter {
                 devTools : true
             }
         }
-        return this.display._postRequest(cmd)
+        return this.display._postRequest(cmd).then(m=>{
+            return JSON.parse(m.toString())
+        })
     }
 
     closeDevTools(){
@@ -158,7 +181,9 @@ module.exports = class DisplayWindow extends EventEmitter {
                 devTools : false
             }
         }
-        return this.display._postRequest(cmd)
+        return this.display._postRequest(cmd).then(m=>{
+            return JSON.parse(m.toString())
+        })
     }
 
      /*
@@ -179,10 +204,13 @@ module.exports = class DisplayWindow extends EventEmitter {
         let cmd = {
             command : 'create-viewobj',
             options : options
-        }
-        let s = this.display._postRequest(cmd)
-        s.width = parseFloat(options.width)
-        s.height = parseFloat(options.height)
-        return new ViewObject(this.display, s)
+        }        
+        
+        return this.display._postRequest(cmd).then(m =>{
+            let opt = JSON.parse(m.toString())
+            opt.width = parseFloat(options.width)
+            opt.height = parseFloat(options.height)
+            return new ViewObject(this.display, opt)      
+        })
     }
 }

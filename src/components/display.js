@@ -1,15 +1,13 @@
 
-const Request = require('sync-request')
 const EventEmitter = require('events')
-const Nes = require('nes')
 const uuid = require('uuid')
-
 const DisplayWindow = require('./displaywindow')
 
 
 module.exports = class Display extends EventEmitter  {
     constructor (io) {
         super()
+        this.io = io
         this.conf = io.display
         this.client_id = uuid.v1()
         this.displayWorker = "http://" + this.conf.host + ":" + this.conf.port  + "/execute"
@@ -30,14 +28,7 @@ module.exports = class Display extends EventEmitter  {
 
     _postRequest( data ){
         data.client_id = this.client_id
-        let resp =  Request('POST', this.displayWorker, {json : data})
-        try{
-             console.log(JSON.parse(resp.getBody('utf8')))
-            return JSON.parse(resp.getBody('utf8'))
-        }catch(e){
-            console.log(resp.getBody('utf8'))
-            return resp.getBody('utf8')
-        }
+        return this.io.call('display-rpc-queue', JSON.stringify(data))
     }
 
     /*
@@ -53,7 +44,9 @@ module.exports = class Display extends EventEmitter  {
         let cmd = {
             command : "get-screens"
         }
-        return this._postRequest(cmd)
+        return this._postRequest(cmd).then(m=>{
+            return JSON.parse(m.toString())
+        })
     }
 
 
@@ -64,7 +57,9 @@ module.exports = class Display extends EventEmitter  {
         let cmd = {
             command : "get-active-app-context"
         }
-        return this._postRequest(cmd)
+        return this._postRequest(cmd).then(m=>{
+            return m.toString()
+        })
     }
 
     /*
@@ -79,7 +74,9 @@ module.exports = class Display extends EventEmitter  {
             }
         }
         this.activeContext = context
-        return this._postRequest(cmd)
+        return this._postRequest(cmd).then(m=>{
+            return JSON.parse(m.toString())
+        })
     }
 
     /*
@@ -93,7 +90,25 @@ module.exports = class Display extends EventEmitter  {
                 context : context
             }
         }
-        return this._postRequest(cmd)
+        return this._postRequest(cmd).then(m=>{
+            return JSON.parse(m.toString())
+        })
+    }
+
+        /*
+        hides an app context  
+        args: context (string)
+    */
+    hideAppContext(context) {
+        let cmd = {
+            command : "hide-app-context",
+            options : {
+                context : context
+            }
+        }
+        return this._postRequest(cmd).then(m=>{
+            return JSON.parse(m.toString())
+        })
     }
 
     /*
@@ -136,15 +151,70 @@ module.exports = class Display extends EventEmitter  {
             command : 'create-window',
             options : options
         }
-        return new DisplayWindow(this, this._postRequest(cmd))      
+
+        return this._postRequest(cmd).then(m =>{
+            // console.log(m.toString())
+            let opt = JSON.parse(m.toString())
+            return new DisplayWindow(this, opt)      
+        })
     }
     
+    getAllContexts(){
+        let cmd = {
+            command : 'get-all-contexts'
+        }
+
+        return this._postRequest(cmd).then(m =>{
+            return JSON.parse(m.toString()) 
+        })
+    }
+
     getWindowById(id){
         return this.displayWindows.get(id)
     }
 
+    getAllWindowIds(){
+        return Object.keys(this.displayWindows)
+    }
+
+    getAllWindowIdsByContext(context){
+        let cmd = {
+            command : 'get-all-windows-by-context',
+            options : {
+                context : context
+            }
+        }
+
+        return this._postRequest(cmd).then(m =>{
+            return JSON.parse(m.toString()) 
+        })
+    }
+
     getViewObjectById(id){
         return this.viewObjects.get(id)
+    }
+
+    getAllViewObjectIds(){
+        return Object.keys(this.viewObjects)
+    }
+
+    getAllViewObjectIdsByWindowId( w_id ){
+        let ids = []
+        this.viewObjects.forEach( (v,k)=>{
+            if(v.window_id == w_id)
+                ids.push(k)
+        })
+        return ids
+    }
+
+    closeAllWindows(){
+        let cmd = {
+            command : 'close-all-windows'
+        }
+
+        return this._postRequest(cmd).then(m =>{
+            return JSON.parse(m.toString()) 
+        })
     }
     
 }

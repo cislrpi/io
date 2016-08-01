@@ -45,6 +45,30 @@ display.createWindow({
             return win_obj.getUniformGridCellSize()
         }).then(m =>{
             console.log(m)
+            setTimeout(()=>{
+                addAnotherViewObject()
+            }, 2000)
         })
+
+
+function addAnotherViewObject(){
+    return win_obj.createViewObject({
+                "url" : "http://nytimes.com",
+                "position" : {
+                    "grid-top" : 1,
+                    "grid-left" : 2
+                },
+                "width" : "3.0em",
+                "height" : "3.0em",
+                "nodeintegration" : true,
+                "cssText":"body{border : 5px solid red; overflow:hidden;}",
+                "slide" : {
+                    "direction" : "down",
+                    "cascade" : true
+                }
+            }).then( m => {
+                console.log("added another view")
+            })
+}
 
         

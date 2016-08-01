@@ -1,56 +1,18 @@
-const CELIO = require('../src/index.js');
-const async = require('asyncawait/async');
-const await = require('asyncawait/await');
-
-
-// const io = new CELIO()
-
-// let display = io.getDisplay();
-// display.getAppContext().then(m => {
-//     console.log(m.toString())
-//     return display.setAppContext("test")
-// }).then(m => {
-//     console.log(m.toString())
-    // return display.createWindow({
-    //       "screenName" : "front",
-    //       "appContext" : "default",
-    //       "x" : 10,
-    //       "y" : 10,
-    //       "width"  : 1000,
-    //       "height" : 500,
-    //       "contentGrid" : {
-    //           "row" : 2,
-    //           "col" : 3,
-    //           "padding" : 5
-    //       },
-    //       "gridBackground" : {
-    //           "1|1" : "white",
-    //           "1|2" : "grey",
-    //           "1|3" : "white",
-    //           "2|1" : "grey",
-    //           "2|2" : "white",
-    //           "2|3" : "grey"
-    //       }
-    //   })
-// }).then(m => {
-//     return m.getGrid()
-// }).then(m =>  console.log(m.toString()))
-
-
+const CELIO = require('../src/index.js')
 
 const chai = require('chai')
 chai.use(require('chai-eventemitter'))
-let sinon = require("sinon");
-let sinonChai = require("sinon-chai");
-chai.use(sinonChai);
+let sinon = require("sinon")
+let sinonChai = require("sinon-chai")
+chai.use(sinonChai)
 
 let should = chai.should()
 let expect = chai.expect
 
 describe('Display', function() {
-  const io = new CELIO();
+  const io = new CELIO()
 
-  let display = io.getDisplay();
+  let display = io.getDisplay()
   let win_obj
   let view_obj
  

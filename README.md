@@ -202,6 +202,14 @@ var display = io.getDisplay();
 ### DISPLAY API
 All functions return a promise unless specified.
 
+
+#### Events
+
+- display.addEventListener(type, handler)
+- display.removeEventListener(type,handler)
+
+At display level, all event types (appContextChanged, appContextClosed, displayWindowCreated, displayWindowClosed, viewobjectCreated, viewobjectHidden, viewobjectShown, viewobjectClosed, positionChanged, urlChanged, urlReloaded ) can be subscribed
+
 #### getScreens
 returns an array of screen details. A screen corresponds to a display worker. A screen can be composed of multiple monitors. The screen's bound box is the maximum rectangular region that fits across its multiple monitors.
 
@@ -360,6 +368,16 @@ closes all windows of the display
 
 ### DisplayWindow API
 
+#### Events
+
+- win_obj.addEventListener(type, handler)
+- win_obj.removeEventListener(type,handler)
+
+For a DisplayWindow level, the following events are  supported:  displayWindowClosed, viewobjectCreated 
+
+
+
+
 #### id
 return the DisplayWindow id
 
@@ -499,6 +517,13 @@ creates a new viewObject in the displayWindow
 ```
 
 ### ViewObject API
+
+#### Events
+
+- view_obj.addEventListener(type, handler)
+- view_obj.removeEventListener(type,handler)
+
+For view objects, the following events are supported: viewobjectHidden, viewobjectShown, viewobjectClosed, positionChanged, urlChanged, urlReloaded 
 
 - setBounds
 

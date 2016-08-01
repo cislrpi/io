@@ -19,6 +19,7 @@ describe('Display', function() {
   it("should get screen details", ()=>{
       return display.getScreens().then(res => {
         let screens = res //JSON.parse(res.toString())
+        console.log(JSON.stringify(screens, null, 2))
         let sc = screens.filter( c => c.screenName == "front")[0]
         sc.should.be.a("object")
       })
@@ -26,7 +27,7 @@ describe('Display', function() {
  
 
   it("should get app context", () => {
-      return display.getAppContext().then( res => {
+      return display.getActiveAppContext().then( res => {
           let context = res //.toString()
           context.should.be.a("string")
       })
@@ -91,26 +92,20 @@ describe('Display', function() {
         
   })
 
-  it("get all contexts and close all windows", ()=>{
-      console.log(win_obj)
-      return display.getAllContexts().then( m =>{
-            console.log(m)
-        }).then( () =>{
-            return display.hideAppContext("sunrise")
-        }).then ( m => {
-            console.log(m)
-            m.should.be.a("object")
-        })
-
-        
-  })
-
-//   it("get show app context", ()=>{
+//   it("get all contexts and close all windows", ()=>{
 //       console.log(win_obj)
-//       return display.setAppContext("sunrise").then( m =>{
+//       return display.getAllContexts().then( m =>{
+//             console.log(m)
+//         }).then( () =>{
+//             return display.hideAppContext("sunrise")
+//         }).then ( m => {
 //             console.log(m)
 //             m.should.be.a("object")
 //         })
+
+        
 //   })
+
+
 
 })

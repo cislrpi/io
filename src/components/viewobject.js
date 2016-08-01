@@ -11,6 +11,9 @@ module.exports = class ViewObject extends EventEmitter {
         // this.o_height = options.height
         // this.o_diagonal = Math.sqrt( Math.pow(this.o_width,2) + Math.pow(this.o_height,2) )
         this.display.viewObjects.set( this.view_id, this)
+        this.display.on("viewObjectPositionChanged", (e)=>{
+            console.log("viewObjectPositionChanged", e)
+        })
     }
 
     destroy(){

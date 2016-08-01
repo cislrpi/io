@@ -196,6 +196,55 @@ All functions return a promise unless specified.
 returns an array of screen details. A screen corresponds to a display worker. A screen can be composed of multiple monitors. The screen's bound box is the maximum rectangular region that fits across its multiple monitors.
 
 
+```javascript
+display.getScreens()
+
+/* // output
+[
+  {
+    "screenName": "front",
+    "bounds": {
+      "x": 0,
+      "y": 0,
+      "right": 1920,
+      "bottom": 1200,
+      "width": 1920,
+      "height": 1200
+    },
+    "details": [
+      {
+        "id": 2077751741,
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 1920,
+          "height": 1200
+        },
+        "workArea": {
+          "x": 0,
+          "y": 23,
+          "width": 1920,
+          "height": 1173
+        },
+        "size": {
+          "width": 1920,
+          "height": 1200
+        },
+        "workAreaSize": {
+          "width": 1920,
+          "height": 1173
+        },
+        "scaleFactor": 2,
+        "rotation": 0,
+        "touchSupport": "unknown"
+      }
+    ]
+  }
+]
+*/
+
+```
+
 #### setAppContext
 opens or switches an application context
 
@@ -323,6 +372,65 @@ return the grid details
 ```javascript
 win_obj.getGrid()
 
+/*
+{ '1|1': 
+   { height: 240,
+     rh: 250,
+     rw: 334,
+     rx: 0,
+     ry: 0,
+     width: 324,
+     x: 5,
+     y: 5 },
+  '1|2': 
+   { height: 240,
+     rh: 250,
+     rw: 334,
+     rx: 334,
+     ry: 0,
+     width: 324,
+     x: 339,
+     y: 5 },
+  '1|3': 
+   { height: 240,
+     rh: 250,
+     rw: 334,
+     rx: 668,
+     ry: 0,
+     width: 324,
+     x: 673,
+     y: 5 },
+  '2|1': 
+   { height: 240,
+     rh: 250,
+     rw: 334,
+     rx: 0,
+     ry: 250,
+     width: 324,
+     x: 5,
+     y: 255 },
+  '2|2': 
+   { height: 240,
+     rh: 250,
+     rw: 334,
+     rx: 334,
+     ry: 250,
+     width: 324,
+     x: 339,
+     y: 255 },
+  '2|3': 
+   { height: 240,
+     rh: 250,
+     rw: 334,
+     rx: 668,
+     ry: 250,
+     width: 324,
+     x: 673,
+     y: 255 },
+  center: { height: 250, width: 500, x: 250, y: 125 },
+  fullscreen: { height: 500, width: 1000, x: 0, y: 0 } }
+*/
+
 ```
 
 ####  addToGrid(label, bounds, backgroundStyle)
@@ -350,9 +458,9 @@ sets the grid background cell style
 ```javascript
     win_obj.setCellStyle("left-pane", { "background" : "green", "borderTop" : "5px solid orangered"  })
 
-// for uniform grid
-    win_obj.setCellStyle("{gridtop:1,gridleft:2}", { "background" : "green", "borderTop" : "5px solid orangered"  })
-
+    // for uniform grid
+    //win_obj.setCellStyle("<gridtop>|<gridleft>", { "background" : "green", "borderTop" : "5px solid orangered"  })
+    win_obj.setCellStyle("1|2", { "background" : "green", "borderTop" : "5px solid orangered"  })
 ```
 
 
@@ -385,7 +493,6 @@ creates a new viewObject in the displayWindow
 - setBounds
 
 ```javascript
-// context is optionally. if it is not specified the window is created under activeApplicationContext
 view_obj.setBounds({ 
     "top" : "10px",
     "left" : "10px",
@@ -428,7 +535,6 @@ view_obj.goBack()
 Go Forward :
 
 ```javascript
-// context is optionally. if it is not specified the window is created under activeApplicationContext
 view_obj.goForward()
 
 ```
@@ -438,7 +544,7 @@ view_obj.goForward()
 
 - closeDevTools()
 
-- setUrl(<url string>)
+- setUrl("<url string>")
 
 - setCSSStyle(<css_string>)
 

@@ -12,7 +12,7 @@ module.exports = class Display  {
         this.viewObjects = new Map()
         this.eventHandlers = new Map()
         // display route is display.window.viewobject
-        this.io.onTopic("display.*.*", (e)=>{
+        this.io.onTopic("display.#.#", (e)=>{
             const m = JSON.parse(e.toString())
             m.details.eventType = m.type
             if(this.eventHandlers.has(m.type)){

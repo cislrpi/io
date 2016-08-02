@@ -13,8 +13,10 @@ module.exports = class DisplayWindow {
             const m = JSON.parse(e.toString())
             if(m.details.window_id == this.window_id && m.details.screenName == this.screenName){
                 m.details.eventType = m.type
-                for(let h of this.eventHandlers.get(m.type)){
-                    h(m.details)
+                if(this.eventHandlers.has(m.type)){
+                    for(let h of this.eventHandlers.get(m.type)){
+                        h(m.details)
+                    }
                 }
             }
         })

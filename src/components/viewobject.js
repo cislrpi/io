@@ -11,10 +11,11 @@ module.exports = class ViewObject {
             const m = JSON.parse(e.toString())
             if(m.details.view_id == this.view_id){
                 m.details.eventType = m.type
-                for(let h of this.eventHandlers.get(m.type)){
-                    h(m.details)
+                if(this.eventHandlers.has(m.type)){
+                    for(let h of this.eventHandlers.get(m.type)){
+                        h(m.details)
+                    }
                 }
-                    
             }
         })
     }

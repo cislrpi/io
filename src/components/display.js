@@ -21,6 +21,20 @@ module.exports = class Display  {
                 }
             }                    
         })
+
+        this.addEventListener("appContextClosed", (m)=>{
+            if(m.closedWindows){
+                m.closedWindows.forEach( i => {
+                    this.displayWindows.delete(i)
+                })
+            }
+            if(m.closedViewObjects){
+                m.closedViewObjects.forEach( i=> {
+                    this.viewObjects.delete(i)
+                })
+            }
+            
+        })
     }
 
     addEventListener(type, handler){

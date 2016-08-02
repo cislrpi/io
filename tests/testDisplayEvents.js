@@ -57,25 +57,27 @@ describe('Display', function() {
     });
 
     it("should create window", ()=>{
-        return display.createWindow({
-            "screenName" : "front",
-            "x" : 10,
-            "y" : 10,
-            "width"  : 1000,
-            "height" : 500,
-            "contentGrid" : {
-                "row" : 2,
-                "col" : 3,
-                "padding" : 5
-            },
-            "gridBackground" : {
-                "1|1" : "white",
-                "1|2" : "grey",
-                "1|3" : "white",
-                "2|1" : "grey",
-                "2|2" : "white",
-                "2|3" : "grey"
-            }
+        return display.setAppContext("sunrise").then( m => {
+            return display.createWindow({
+                "screenName" : "front",
+                "x" : 10,
+                "y" : 10,
+                "width"  : 1000,
+                "height" : 500,
+                "contentGrid" : {
+                    "row" : 2,
+                    "col" : 3,
+                    "padding" : 5
+                },
+                "gridBackground" : {
+                    "1|1" : "white",
+                    "1|2" : "grey",
+                    "1|3" : "white",
+                    "2|1" : "grey",
+                    "2|2" : "white",
+                    "2|3" : "grey"
+                }
+            })
         }).then( m =>{
             win_obj = m
             win_obj.should.be.a("object")
@@ -125,13 +127,33 @@ describe('Display', function() {
 
 describe('Window', function() {
     beforeEach(function(done) {
-        this.timeout(10000); // A very long environment setup.
-        setTimeout(done, 9500);
+         this.timeout(3000); // A very long environment setup.
+        setTimeout(done, 2500);
     });
     it("should setfontsize", () => {
         return win_obj.setFontSize("300px").then( m =>  m.should.be.a("object") )
     })
+
+    it("close app context", () =>{
+        console.log(display)
+        return display.closeAppContext("sunrise").then( ()=>{
+            console.log(display)
+        })
+    })
 })
+
+describe('TestEnd', function() {
+    beforeEach(function(done) {
+        this.timeout(10000); // A very long environment setup.
+        setTimeout(done, 9500);
+    });
+
+    it("close app context", () =>{
+        console.log("end")
+    })
+
+})
+
 
 // display.createWindow({
 //             "screenName" : "front",

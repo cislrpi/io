@@ -63,6 +63,7 @@ module.exports = class DisplayWindow {
         let cmd = {
             command : "add-to-grid",
             options : {
+                window_id : this.window_id,
                 label : label,
                 bounds : bounds,
                 style : backgroundStyle

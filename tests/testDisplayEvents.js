@@ -108,6 +108,19 @@ describe('Display', function() {
             m.should.be.a("object")
         })
     })
+
+    it("add to grid", () => {
+         return win_obj.addToGrid("testcell", {
+                "left":  "0.2em",
+                "top": "0.2em",
+                "width": "2.0em",
+                "height": "2.0em"
+            }, {
+                background : "red"
+            }).then (res => {
+                console.log(res)
+            })
+    })
 })
 
 describe('Window', function() {

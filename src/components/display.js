@@ -202,7 +202,7 @@ module.exports = class Display  {
     }
 
     getAllWindowIds(){
-        return Object.keys(this.displayWindows)
+        return [...this.displayWindows.keys()]
     }
 
     getAllWindowIdsByContext(context){
@@ -223,7 +223,7 @@ module.exports = class Display  {
     }
 
     getAllViewObjectIds(){
-        return Object.keys(this.viewObjects)
+        return [ ... this.viewObjects.keys()]
     }
 
     getAllViewObjectIdsByWindowId( w_id ){

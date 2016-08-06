@@ -10,7 +10,7 @@ module.exports = class CELIO {
         }
         const sepPos = config.mq.url.lastIndexOf('/');
         if (sepPos > -1) {
-            config.mq.vhost = config.mq.url.substring(sepPos);
+            config.mq.vhost = config.mq.url.substring(sepPos+1);
             config.mq.url = config.mq.url.substring(0, sepPos);
         } else {
             config.mq.vhost = '/';

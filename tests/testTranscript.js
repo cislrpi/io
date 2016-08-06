@@ -6,7 +6,7 @@ const t = io.getTranscript();
 t.onFinal((msg, headers) => {
     // console.log(fields);
     // console.log(properties);
-    // console.log(JSON.stringify(msg));
+    console.log(msg);
     input = msg.result.alternatives[0].transcript;
     if (input.indexOf('stopped listen') > -1 ||
         input.indexOf('stop listen') > -1) {

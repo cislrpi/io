@@ -4,22 +4,25 @@ const Speaker = require('./components/speaker');
 const uuid = require('uuid');
 
 module.exports = class CELIO {
-    constructor(mq) {
-        if (!mq.exchange) {
-            mq.exchange = 'amq.topic';
+    constructor(config) {
+        if (!config.mq.exchange) {
+            config.mq.exchange = 'amq.topic';
         }
-        const sepPos = mq.url.lastIndexOf('/');
+        const sepPos = config.mq.url.lastIndexOf('/');
         if (sepPos > -1) {
-            mq.vhost = mq.url.substring(sepPos+1);
-            mq.url = mq.url.substring(0, sepPos);
+            config.mq.vhost = config.mq.url.substring(sepPos);
+            config.mq.url = config.mq.url.substring(0, sepPos);
+        } else {
+            config.mq.vhost = '/';
         }
-        this.brokerURL = `ws://${mq.url}:15674/ws`;
+        this.brokerURL = `ws://${config.mq.url}:15674/ws`;
         const client = Stomp.over(new WebSocket(this.brokerURL));
         client.debug = null;
         this.pconn = new Promise(function(resolve, reject) {
-            client.connect(mq.username, mq.password, ()=>resolve(client), err=>{console.error(err);reject(err);}, mq.vhost);
+            client.connect(config.mq.username, config.mq.password, ()=>resolve(client),
+                err=>{console.error(err);reject(err);}, config.mq.vhost);
         });
-        this.config = {mq};
+        this.config = config;
     }
 
     getTranscript() {

@@ -71,7 +71,7 @@ module.exports = class CELIO {
                     };
                 };
                 rpcClient.send(`/amq/queue/${queue}`, headers, content);
-            }, reject, mq.vhost);
+            }, reject, this.config.mq.vhost);
         });
     }
 

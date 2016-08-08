@@ -123,7 +123,7 @@ function addAnotherViewObject(){
 			setTimeout(()=>{
 
 			                addAnotherViewObject()
-            }, 3000)
+            }, 6000)
             })
 
 

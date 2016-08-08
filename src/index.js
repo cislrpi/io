@@ -35,6 +35,10 @@ module.exports = class CELIO {
         this.config = nconf;
     }
 
+    generateUUID(){
+        return uuid.v4()
+    }
+
     getTranscript() {
         return new Transcript(this);
     }

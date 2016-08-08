@@ -7,7 +7,7 @@ display.createWindow({
             "x" : 10,
             "y" : 10,
             "width"  : 1000,
-            "height" : 500,
+            "height" : 800,
             "contentGrid" : {
                 "row" : 2,
                 "col" : 3,
@@ -26,15 +26,13 @@ display.createWindow({
             return win_obj.setFontSize("300px")
         }).then( m => {
             return win_obj.createViewObject({
-                "url" : "http://nytimes.com",
+                "url" : "http://www.brainjar.com/java/host/test.html",
                 "position" : {
                     "grid-top" : 1,
                     "grid-left" : 2
                 },
-                "width" : "3.0em",
-                "height" : "3.0em",
                 "nodeintegration" : true,
-                "cssText":"body{border : 5px solid red; overflow:hidden;}",
+                "cssText":"body{border : 5px solid red; overflow:hidden;pointer-events:none;}",
                 "slide" : {
                     "direction" : "down",
                     "cascade" : true
@@ -46,28 +44,28 @@ display.createWindow({
         }).then(m =>{
             console.log(m)
             win_obj.openDevTools()
-            setTimeout(()=>{
-                addAnotherViewObject()
-            }, 2000)
+            m.openDevTools()
+            // setTimeout(()=>{
+            //     addAnotherViewObject()
+            // }, 2000)
         })
 
 
 function addAnotherViewObject(){
     return win_obj.createViewObject({
-                "url" : "http://nytimes.com",
+                "url" : "http://www.brainjar.com/java/host/test.html",
                 "position" : {
                     "grid-top" : 1,
                     "grid-left" : 2
                 },
-                "width" : "3.0em",
-                "height" : "3.0em",
                 "nodeintegration" : true,
-                "cssText":"body{border : 5px solid red; overflow:hidden;}",
+                "cssText":"body{border : 5px solid red; overflow:hidden;pointer-events:none;}",
                 "slide" : {
                     "direction" : "down",
                     "cascade" : true
                 }
             }).then( m => {
+                m.openDevTools()
                 console.log("added another view")
             })
 }

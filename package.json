@@ -9,7 +9,9 @@
     "test_display_events": "mocha --timeout 15000 tests/testDisplayEvents.js"
   },
   "author": "Yedendra Shrinivasan, Yunfeng Zhang",
-  "private": true,
+  "publishConfig": {
+    "registry": "https://cel-npm-registry.mybluemix.net/"
+  },
   "dependencies": {
     "amqplib": "^0.4.2",
     "lodash": "^4.13.1",

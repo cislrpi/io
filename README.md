@@ -19,6 +19,7 @@
 	- [CELIO API](#celio-api)
 		- [getDisplay](#getdisplay)
 	- [DISPLAY API](#display-api)
+		- [Events](#events)
 		- [getScreens](#getscreens)
 		- [setAppContext](#setappcontext)
 		- [closeAppContext](#closeappcontext)
@@ -30,6 +31,7 @@
 		- [setFontSize("pixels")](#setfontsizepixels)
 		- [createViewObject](#createviewobject)
 	- [ViewObject API](#viewobject-api)
+		- [Events](#events)
 	- [TODO](#todo)
 - [RPC](#rpc)
 	- [io.call(queue, content, options)](#iocallqueue-content-options)
@@ -39,9 +41,11 @@
 <!-- /TOC -->
 
 ## Setup
-To install this package:
+This package is hosted on our private npm registry. Ask us for user name and password. To install it, do the following:
 ```
-npm install git+ssh://github.ibm.com/celio/CELIO.git
+npm config set registry https://cel-npm-registry.mybluemix.net/
+npm login
+npm install celio
 ```
 
 To use it in nodejs:
@@ -69,9 +73,11 @@ To use it in the browser with webpack or other compilers:
 ```js
 var CELIO = require('celio/lib/client');
 var io = new CELIO({
+  "mq": {
     "url": "rabbitmq host",
     "username": "username",
     "password": "password"
+  }
 })
 ```
 

@@ -8,10 +8,11 @@ const highv = 4000;
 const vanishTime = 1000;
 
 module.exports = class Hotspot extends EventEmitter {
-    constructor(region, io) {
+    constructor(region, io, excludeEventsOutsideRegion=true) {
         super();
         // Construct a rectangle for hit test
         this.setRegion(region);
+        this.excludeEventsOutsideRegion = excludeEventsOutsideRegion;
         
         this.pointerStates = new Map();
 
@@ -126,9 +127,14 @@ module.exports = class Hotspot extends EventEmitter {
                 this.emit('leave', pointer);
             }
 
-            // Only emit button events when the pionter is within the region
+            // Only emit button events when the pionter is within the region or when we don't exclude events outside region
             // Expect buttons to be an array
-            if (pointer.hit && Array.isArray(pointer.details.buttons)) {
+            if ((pointer.hit || !this.excludeEventsOutsideRegion) && Array.isArray(pointer.details.buttons)) {
+                // Emit the move event first
+                if (pointer.hit || !this.excludeEventsOutsideRegion) {
+                    // For now, a pointer is always moving if it's inside
+                    this.emit('move', pointer);
+                }
                 // Emit pointer down and up events only when the pointerState has record of any buttons
                 // otherwise just set it to the buttons field
                 if (!pointerState.hardenedButtons) {
@@ -165,11 +171,6 @@ module.exports = class Hotspot extends EventEmitter {
                         }
                     }
                 }
-            }
-
-            if (pointer.hit) {
-                // For now, a pointer is always moving if it's inside
-                this.emit('move', pointer);
             }
         }
     }

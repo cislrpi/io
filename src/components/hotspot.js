@@ -8,7 +8,7 @@ const highv = 4000;
 const vanishTime = 1000;
 
 module.exports = class Hotspot extends EventEmitter {
-    constructor(region, io, excludeEventsOutsideRegion=true) {
+    constructor(io, region, excludeEventsOutsideRegion) {
         super();
         // Construct a rectangle for hit test
         this.setRegion(region);

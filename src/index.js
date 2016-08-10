@@ -51,8 +51,8 @@ module.exports = class CELIO {
         return new Display(this);
     }
 
-    createHotspot(region) {
-        return new Hotspot(region, this);
+    createHotspot(region, excludeEventsOutsideRegion=true) {
+        return new Hotspot(this, region, excludeEventsOutsideRegion);
     }
 
     call(queue, content, options={}) {

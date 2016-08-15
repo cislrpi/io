@@ -34,7 +34,7 @@ module.exports = class Hotspot extends EventEmitter {
             for (let [key, ps] of this.pointerStates) {
                 if (now - ps.lastSeen > vanishTime) {
                     this.pointerStates.delete(key);
-                    this.emit('detach', key);
+                    this.emit('detach', {name:key});
                 }
             }
         }, vanishTime);
@@ -140,18 +140,7 @@ module.exports = class Hotspot extends EventEmitter {
                 if (!pointerState.hardenedButtons) {
                     pointerState.hardenedButtons = new Set(pointer.details.buttons);
                 } else {
-                    // A button is down when it is not hardened already
                     const hardenedButtons = new Set(pointer.details.buttons);
-
-                    // If any of the currently hardenedButtons was not previously hardened, emit a down event
-                    for (let b of hardenedButtons) {
-                        if (!pointerState.hardenedButtons.has(b)) {
-                            pointerState.hardenedButtons.add(b);
-                            pointerState.downButtons.add(b);
-                            pointer.eventButton = b;
-                            this.emit('down', pointer);
-                        }
-                    }
 
                     // If any of the previously hardenedButtons is not currently hardened, emit a up event
                     for (let b of pointerState.hardenedButtons) {
@@ -168,6 +157,17 @@ module.exports = class Hotspot extends EventEmitter {
                                 pointerState.downButtons.delete(b);
                                 this.emit('click', pointer);
                             }
+                        }
+                    }
+
+                    // A button is down when it is not hardened already
+                    // If any of the currently hardenedButtons was not previously hardened, emit a down event
+                    for (let b of hardenedButtons) {
+                        if (!pointerState.hardenedButtons.has(b)) {
+                            pointerState.hardenedButtons.add(b);
+                            pointerState.downButtons.add(b);
+                            pointer.eventButton = b;
+                            this.emit('down', pointer);
                         }
                     }
                 }

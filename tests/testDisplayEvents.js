@@ -121,6 +121,18 @@ describe('Display', function() {
                 background : "red"
             }).then (res => {
                 console.log(res)
+                return win_obj.getGrid()
+            }).then (res => {
+                console.log(res)
+            })
+    })
+
+    it("remove from grid", () => {
+        return win_obj.removeFromGrid("testcell").then (res => {
+                console.log(res)
+                return win_obj.getGrid()
+            }).then (res => {
+                console.log(res)
             })
     })
 })
@@ -134,25 +146,57 @@ describe('Window', function() {
         return win_obj.setFontSize("300px").then( m =>  m.should.be.a("object") )
     })
 
-    it("close app context", () =>{
+    it("clear contents", () =>{
         console.log(display)
-        return display.closeAppContext("sunrise").then( ()=>{
-            console.log(display)
+        return win_obj.clearContents().then( m => console.log(m))
+    })
+
+    it("clear grid", () =>{
+        console.log(display)
+        return win_obj.clearGrid().then( m => console.log(m))
+    })
+
+    it("new createUniformGrid", () =>{
+        console.log(display)
+        return win_obj.createUniformGrid({
+            "contentGrid" : {
+                "row" : 2,
+                "col" : 2,
+                "padding" : 5
+            },
+            "gridBackground" : {
+                "1|1" : "white",
+                "1|2" : "grey",
+                "2|1" : "grey",
+                "2|2" : "white"
+            }
+        }).then( m => console.log(m))
+    })
+
+    it(" add new view object", () =>{
+        return win_obj.createViewObject({
+                "url" : "http://www.themill.com/millchannel/731/red-bull-music-academy-‘a-night-of-spiritual-jazz’-installation",
+                "left" : "1.0em",
+                "top" : "0.0em",
+                "width" : "3.0em",
+                "height" : "3.0em",
+                "nodeintegration" : true,
+                "cssText":"body{border : 5px solid red; overflow:hidden;zoom:300%;}"
         })
     })
 })
 
-describe('TestEnd', function() {
-    beforeEach(function(done) {
-        this.timeout(10000); // A very long environment setup.
-        setTimeout(done, 9500);
-    });
+// describe('TestEnd', function() {
+//     beforeEach(function(done) {
+//         this.timeout(10000); // A very long environment setup.
+//         setTimeout(done, 9500);
+//     });
 
-    it("close app context", () =>{
-        console.log("end")
-    })
+//     it("close app context", () =>{
+//         console.log("end")
+//     })
 
-})
+// })
 
 
 // display.createWindow({

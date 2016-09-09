@@ -1,13 +1,13 @@
 const CELIO = require('../src/index.js')
 const io = new CELIO()
 let display = io.getDisplay()
-let win_obj
+let win_obj, view_obj
 display.createWindow({
             "screenName" : "front",
             "x" : 10,
             "y" : 10,
-            "width"  : 1000,
-            "height" : 800,
+            "width"  : 1710,
+            "height" : 850,
             "contentGrid" : {
                 "row" : 2,
                 "col" : 3,
@@ -32,40 +32,43 @@ display.createWindow({
                     "grid-left" : 2
                 },
                 "nodeintegration" : true,
-                "cssText":"body{border : 5px solid red; overflow:hidden;pointer-events:none;}",
+                "cssText":"body{border : 5px solid red; overflow:hidden;-webkit-user-select:none;user-select:none;}",
                 "slide" : {
                     "direction" : "down",
                     "cascade" : true
                 }
             })
         }).then( m =>{
-            let view_obj = m
+            view_obj = m
             return win_obj.getUniformGridCellSize()
         }).then(m =>{
             console.log(m)
-            win_obj.openDevTools()
-            m.openDevTools()
-            // setTimeout(()=>{
-            //     addAnotherViewObject()
-            // }, 2000)
+            return win_obj.openDevTools()
+        }).then((m)=>{
+            setTimeout(()=>{
+                addAnotherViewObject()
+            }, 2000)
         })
 
 
 function addAnotherViewObject(){
     return win_obj.createViewObject({
-                "url" : "http://www.brainjar.com/java/host/test.html",
+                "url" : "https://mobiforge.com/design-development/touch-friendly-drag-and-drop",
                 "position" : {
                     "grid-top" : 1,
                     "grid-left" : 2
                 },
-                "nodeintegration" : true,
-                "cssText":"body{border : 5px solid red; overflow:hidden;pointer-events:none;}",
+                "nodeintegration" : false,
+                "cssText":"body{border : 5px solid red; overflow:hidden;-webkit-user-select:none;user-select:none;}",
                 "slide" : {
                     "direction" : "down",
                     "cascade" : true
                 }
             }).then( m => {
-                m.openDevTools()
+                // view_obj.setBounds({
+                //     bringToFront : true
+                // })
+                // m.openDevTools()
                 console.log("added another view")
             })
 }

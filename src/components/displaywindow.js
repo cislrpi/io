@@ -58,6 +58,68 @@ module.exports = class DisplayWindow {
             throw new Error("DisplayWindow is already deleted.")        
     }
 
+    clearGrid(){
+        this.checkStatus()
+        let cmd = {
+            command : "clear-grid",
+            options : {
+                window_id : this.window_id
+            }
+        }
+        return this.display._postRequest(cmd).then(m=>{
+            return JSON.parse(m.toString())
+        })
+    }
+
+    clearContents(){
+        this.checkStatus()
+        let cmd = {
+            command : "clear-contents",
+            options : {
+                window_id : this.window_id
+            }
+        }
+        return this.display._postRequest(cmd).then(m=>{
+            return JSON.parse(m.toString())
+        })
+    }
+
+    /*
+        args: options (json object)
+            - contentGrid (json Object)
+                (for uniform grid)
+                - row (integer, no of rows)
+                - col (integer, no of cols)
+                - rowHeight ( float array, height percent for each row - 0.0 to 1.0 )
+                - colWidth ( float array,  width percent for each col - 0.0 to 1.0 )
+                - padding (float) // in px or em
+                (for custom grid)
+                - custom ( array of json Object)
+                   [{ "label" : "cel-id-1",  left, top, width, height}, // in px or em or percent
+                    { "label" : "cel-id-2",  left, top, width, height},
+                    { "label" : "cel-id-3",  left, top, width, height},
+                    ...
+                    ]
+            - gridBackground (json Object)
+                {
+                    "row|col" : "backgroundColor",
+                    "cel-id-1" : "backgroundColor",
+                    "cel-id-2" : "backgroundColor",
+                }
+    */
+
+    createUniformGrid(options){
+        this.checkStatus()
+        options.window_id = this.window_id
+        let cmd = {
+            command : "create-grid",
+            options : options
+        }
+        return this.display._postRequest(cmd).then(m=>{
+            return JSON.parse(m.toString())
+        })
+    }
+
     addToGrid(label, bounds, backgroundStyle){
         this.checkStatus()
         let cmd = {
@@ -74,6 +136,19 @@ module.exports = class DisplayWindow {
         })
     }
 
+    removeFromGrid(label){
+        this.checkStatus()
+        let cmd = {
+            command : "remove-from-grid",
+            options : {
+                window_id : this.window_id,
+                label : label
+            }
+        }
+        return this.display._postRequest(cmd).then(m=>{
+            return JSON.parse(m.toString())
+        })
+    }
 
 
     /*
@@ -187,14 +262,16 @@ module.exports = class DisplayWindow {
                 window_id : this.window_id
             }
         }
-        let s = this.display._postRequest(cmd)
-        s.viewObjects.forEach( (v) => {
-            let view = this.display.getViewObjectById(v)
-            if(view)
-                view.destroy()
+        return this.display._postRequest(cmd).then( m => {
+            m = JSON.parse(m.toString())
+            m.viewObjects.forEach( (v) => {
+                let view = this.display.getViewObjectById(v)
+                if(view)
+                    view.destroy()
+            })
+            this.destroy()
+            return m  
         })
-        this.destroy()
-        return s
     }
 
     openDevTools(){
@@ -252,4 +329,6 @@ module.exports = class DisplayWindow {
             return new ViewObject(this.display, opt)      
         })
     }
+
+    
 }

@@ -121,17 +121,11 @@ describe('Display', function() {
                 background : "red"
             }).then (res => {
                 console.log(res)
-                return win_obj.getGrid()
-            }).then (res => {
-                console.log(res)
             })
     })
 
     it("remove from grid", () => {
         return win_obj.removeFromGrid("testcell").then (res => {
-                console.log(res)
-                return win_obj.getGrid()
-            }).then (res => {
                 console.log(res)
             })
     })

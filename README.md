@@ -399,6 +399,15 @@ var res = win_obj.close()
 // res = {"status" : "success"} or { "error" : "error details" }
 ```
 
+#### devTools
+- show and hide devTools for a displayWindow
+
+ ```javascript
+var res = win_obj.openDevTools()
+var res = win_obj.closeDevTools()
+
+// res = {"status" : "success"} or { "error" : "error details" }
+```
 
 #### getGrid
 return the grid details
@@ -407,6 +416,9 @@ return the grid details
 win_obj.getGrid()
 
 /*
+rx,ry, rw, rh are values without padding
+x,y,width, height are values with padding constraints
+
 { '1|1': 
    { height: 240,
      rh: 250,
@@ -467,6 +479,38 @@ win_obj.getGrid()
 
 ```
 
+### createUniformGrid (options)
+
+clears all grid definition (both uniform and custom) and defines a uniform grid pattern
+
+```javascript
+  /*
+        args: options (json object)
+            - contentGrid (json Object)
+                (for uniform grid)
+                - row (integer, no of rows)
+                - col (integer, no of cols)
+                - rowHeight ( float array, height percent for each row - 0.0 to 1.0 )
+                - colWidth ( float array,  width percent for each col - 0.0 to 1.0 )
+                - padding (float) // in px or em
+                (for custom grid)
+                - custom ( array of json Object)
+                   [{ "label" : "cel-id-1",  left, top, width, height}, // in px or em or percent
+                    { "label" : "cel-id-2",  left, top, width, height},
+                    { "label" : "cel-id-3",  left, top, width, height},
+                    ...
+                    ]
+            - gridBackground (json Object)
+                {
+                    "row|col" : "backgroundColor",
+                    "cel-id-1" : "backgroundColor",
+                    "cel-id-2" : "backgroundColor",
+                }
+    */
+    win_obj.createUniformGrid (options)
+
+```
+
 ####  addToGrid(label, bounds, backgroundStyle)
 
 add a custom area to the grid
@@ -482,6 +526,37 @@ win_obj.addToGrid("left-pane", {
         background : "black",
         borderTop : "2px solid white"
     })
+
+```
+
+####  removeFromGrid(label)
+
+remove a cell from the grid
+
+```javascript
+
+win_obj.removeFromGrid("left-pane")
+
+```
+
+####  clearGrid()
+
+clears all grid definition and reset background to black
+
+```javascript
+
+win_obj.clearGrid()
+
+```
+
+#### clearContents()
+removes all viewObjects from the displayWindow
+
+
+
+```javascript
+
+win_obj.clearContents()
 
 ```
 
@@ -531,7 +606,7 @@ creates a new viewObject in the displayWindow
 
 For view objects, the following events are supported: viewobjectHidden, viewobjectShown, viewobjectClosed, positionChanged, urlChanged, urlReloaded 
 
-- setBounds
+#### setBounds
 
 ```javascript
 view_obj.setBounds({ 
@@ -548,14 +623,14 @@ view_obj.setBounds({
 
 ```
 
-- reload
+#### reload
 
 ```javascript
 view_obj.reload()
 
 ```
 
-- close
+#### close
 
 ```javascript
 view_obj.close()
@@ -563,31 +638,45 @@ view_obj.close()
 ```
 
 
-- You can navigate the view object (webpage) history
+#### Navigation
+
+ You can navigate the view object (webpage) history
 
 
-Go back :
+- Go back :
 
 ```javascript
 view_obj.goBack()
 
 ```
 
-Go Forward :
+- Go Forward :
 
 ```javascript
 view_obj.goForward()
 
 ```
 
-- openDevTools()
+#### DevTools
+
+- show and hide devTools for a view_obj
+
+ ```javascript
+var res = view_obj.openDevTools()
+var res = view_obj.closeDevTools()
+
+// res = {"status" : "success"} or { "error" : "error details" }
+```
+
+#### setUrl("<url string>")
+changes url of the view objects
+```javascript
+  view_obj.setUrl("http://www.google.com")
+```
 
 
-- closeDevTools()
-
-- setUrl("<url string>")
-
-- setCSSStyle(<css_string>)
+#### setCSSStyle(<css_string>)
+inserts css changes into the guest page
 
 ```javascript
     view_obj.setCSSStyle("body{ zoom : 2.0 }")
@@ -595,11 +684,6 @@ view_obj.goForward()
 ```
 
 
-### TODO
-- Emit events from DisplayWindow and ViewObject
-- Add Sketching layer - tied to DisplayWindow and ViewObject
-- Add background presence layer
-- Distributed drawing using  d3.js and three.js
 
 ## RPC
 ### io.call(queue, content, options)

@@ -102,10 +102,10 @@ Our convention is to use the topic to declare the message type, and the type sho
 For command messages, we always have the 'command' as the last component of the topic tag. e.g., stop.speaker.command.
 For other events, we have something like closeMic.final.transcript or wand.absolute.pointing.
 
-To subscribe events, the topic can include wildcards `*` and `#`. `*` substitues one word, `#` substitues multiple words.
+To subscribe events, the topic can include wildcards `*` and `#`. `*` substitutes one word, `#` substitutes multiple words.
 For example, `*.absolute.pointing` subscribes to wand.absolute.pointing and lighthouse.absolute.pointing, whereas `#.pointing` also subscribes to them plus other pointing events like mouse.relative.pointing.
 
-In `publishTopic`, the message can be of type string, Buffer, ArrayBuffer, Array, or array-like objects. We recommand that you use JSON strings.
+In `publishTopic`, the message can be of type string, Buffer, ArrayBuffer, Array, or array-like objects. We recommend that you use JSON strings.
 
 ## Config
 The `cog.json` file is parsed and saved as a `io.config` object, so that you can query any configurations with the following function:
@@ -113,11 +113,11 @@ The `cog.json` file is parsed and saved as a `io.config` object, so that you can
 io.config.get('rootKey:nestedKey');
 ```
 The config object also reads in command line arguments and environment variables.
-For environment variables, replace ":" with "_". 
+For environment variables, replace `:` with `_`.
 You can use command line arguments to override settings in the cog.json file to temporarily switch exchanges for example.
 
 We use the [nconf](https://github.com/indexzero/nconf) to do this.
-For more information about the config object, you can read the nconf documentation. 
+For more information about the config object, you can read the nconf documentation.
 
 ## Transcript
 The transcript object has three functions for subscribing to transcripts: `onFinal`, `onInterim`, `onAll`.
@@ -131,7 +131,7 @@ transcript.onFinal(function(msg, headers) {
     var sentence = msg.result.alternatives[0].transcript;
     // For the most part, you don't need fields and properties
 });
-``` 
+```
 The `msg` object has at least the following fields:
 ```js
 {
@@ -178,7 +178,7 @@ Optionally, you can specify TTS voices in the second parameter to the function, 
 For a full list of voice you can use, check [Watson TTS website](http://www.ibm.com/watson/developercloud/doc/text-to-speech/http.shtml#voices).
 You can also use SSML. Again, check [Watson TTS website](http://www.ibm.com/watson/developercloud/doc/text-to-speech/http.shtml#input).
 
-If you want to subscribe to speaking events, you can use `onBeginSpeak` and `onEndSpeak`. `onBeginSpeak` will give you the message that is spoken. 
+If you want to subscribe to speaking events, you can use `onBeginSpeak` and `onEndSpeak`. `onBeginSpeak` will give you the message that is spoken.
 
 You can also interrupt the speaker by calling `stop`.
 
@@ -186,10 +186,10 @@ You can also interrupt the speaker by calling `stop`.
 The Display object enables you to manipulate content of the displays
 
 ### Application Context
-An application context is used to group brower windows related to the application. "default" is the default application context. So when you open url without setting application context, the window is added to the default application context. 
+An application context is used to group browser windows related to the application. "default" is the default application context. So when you open url without setting application context, the window is added to the default application context.
 
-### Display Window 
-Within an application context, you can open multiple display windows. The display window always occupies entire display screen and only one of the display window is shown and receives user interaction such as pointing. 
+### Display Window
+Within an application context, you can open multiple display windows. The display window always occupies entire display screen and only one of the display window is shown and receives user interaction such as pointing.
 
 ### View Object
 Within a display window, you can open webpages as view objects.
@@ -212,7 +212,7 @@ All functions return a promise unless specified.
 #### Events
 
 - display.addEventListener(type, handler)
-- display.removeEventListener(type,handler)
+- display.removeEventListener(type, handler)
 
 At display level, all event types (appContextChanged, appContextClosed, displayWindowCreated, displayWindowClosed, viewobjectCreated, viewobjectHidden, viewobjectShown, viewobjectClosed, positionChanged, urlChanged, urlReloaded ) can be subscribed
 
@@ -338,7 +338,7 @@ display.createWindow({
 
 ```
 
-#### getWindowById 
+#### getWindowById
 retrieves window object using id. Id is an integer. (Not a promise return)
 
 ```javascript
@@ -351,7 +351,7 @@ returns an array of window ids. (Not a promise return)
 
 
 #### getAllWindowIdsByContext(context)
-returns an array of window ids beloging to a context. (Not a promise return)
+returns an array of window ids belonging to a context. (Not a promise return)
 
 
 #### getViewObjectById
@@ -377,9 +377,9 @@ closes all windows of the display
 #### Events
 
 - win_obj.addEventListener(type, handler)
-- win_obj.removeEventListener(type,handler)
+- win_obj.removeEventListener(type, handler)
 
-For a DisplayWindow level, the following events are  supported:  displayWindowClosed, viewobjectCreated 
+For a DisplayWindow level, the following events are  supported:  displayWindowClosed, viewobjectCreated
 
 
 
@@ -407,7 +407,7 @@ return the grid details
 win_obj.getGrid()
 
 /*
-{ '1|1': 
+{ '1|1':
    { height: 240,
      rh: 250,
      rw: 334,
@@ -416,7 +416,7 @@ win_obj.getGrid()
      width: 324,
      x: 5,
      y: 5 },
-  '1|2': 
+  '1|2':
    { height: 240,
      rh: 250,
      rw: 334,
@@ -425,7 +425,7 @@ win_obj.getGrid()
      width: 324,
      x: 339,
      y: 5 },
-  '1|3': 
+  '1|3':
    { height: 240,
      rh: 250,
      rw: 334,
@@ -434,7 +434,7 @@ win_obj.getGrid()
      width: 324,
      x: 673,
      y: 5 },
-  '2|1': 
+  '2|1':
    { height: 240,
      rh: 250,
      rw: 334,
@@ -443,7 +443,7 @@ win_obj.getGrid()
      width: 324,
      x: 5,
      y: 255 },
-  '2|2': 
+  '2|2':
    { height: 240,
      rh: 250,
      rw: 334,
@@ -452,7 +452,7 @@ win_obj.getGrid()
      width: 324,
      x: 339,
      y: 255 },
-  '2|3': 
+  '2|3':
    { height: 240,
      rh: 250,
      rw: 334,
@@ -529,12 +529,12 @@ creates a new viewObject in the displayWindow
 - view_obj.addEventListener(type, handler)
 - view_obj.removeEventListener(type,handler)
 
-For view objects, the following events are supported: viewobjectHidden, viewobjectShown, viewobjectClosed, positionChanged, urlChanged, urlReloaded 
+For view objects, the following events are supported: viewobjectHidden, viewobjectShown, viewobjectClosed, positionChanged, urlChanged, urlReloaded
 
 - setBounds
 
 ```javascript
-view_obj.setBounds({ 
+view_obj.setBounds({
     "top" : "10px",
     "left" : "10px",
     "width" : "850px",
@@ -582,7 +582,6 @@ view_obj.goForward()
 
 - openDevTools()
 
-
 - closeDevTools()
 
 - setUrl("<url string>")
@@ -592,6 +591,12 @@ view_obj.goForward()
 ```javascript
     view_obj.setCSSStyle("body{ zoom : 2.0 }")
 
+```
+
+- executeJavaScript(<js_code>, <user_gesture>)
+
+```javascript
+	view_obj.executeJavaScript("alert('hello world!')", false);
 ```
 
 
@@ -604,10 +609,10 @@ view_obj.goForward()
 ## RPC
 ### io.call(queue, content, options)
 *queue* is the queue name, *content* is the RPC parameter.
-This funciton returns a promise that contains the result or error of the RPC.
+This function returns a promise that contains the result or error of the RPC.
 
 ### doCall(queue, handler, noAck=true, exclusive=true)
-*handler* has the following sigature:
+*handler* has the following signature:
 `handler(request, reply, ack)`.
 *request* is an object with three fields *content*, *field*, *properties*. Use content to get the message sent by the client.
 *reply* is a function. Use it to send a message back to the caller.
@@ -615,11 +620,11 @@ This funciton returns a promise that contains the result or error of the RPC.
 
 Again, *queue* is the queue name, handler is a callback function that handles the RPC call.
 The *reply* function accepts a string, a Buffer, an ArrayBuffer, an Array, an array-like object, or an Error object.
-We recommand that you use JSON strings.
+We recommend that you use JSON strings.
 If an Error object is used, it will trigger an exception in the caller site.
 
 The *reply* function should only be called once.
 
-## Setting up a rabbitmq server
+## Setting up a RabbitMQ server
 Please follow the installation guide here:
 https://www.rabbitmq.com/download.html

@@ -1,6 +1,7 @@
 const Stomp = require('stompjs/lib/stomp').Stomp;
 const Transcript = require('./components/transcript');
 const Speaker = require('./components/speaker');
+const Display = require('./components/display');
 const uuid = require('uuid');
 
 module.exports = class CELIO {
@@ -59,7 +60,6 @@ module.exports = class CELIO {
 
                 rpcClient.onreceive = msg => {
                     if (msg.headers['correlation-id'] === headers['correlation-id']) {
-                        console.error(msg.headers);
                         if (msg.headers.error) {
                             reject(new Error(msg.headers.error));
                         } else {

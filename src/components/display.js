@@ -171,6 +171,23 @@ module.exports = class Display  {
                 }
         
     */
+    getFocusedWindow(){
+        let cmd = {
+            command : 'get-focus-window'
+        }
+
+        return this._postRequest(cmd).then(m =>{
+            // console.log(m.toString())
+            let opt = JSON.parse(m.toString())
+            if(opt.window_id && this.displayWindows.has(opt.window_id)){
+                return this.displayWindows.get(opt.window_id)
+            }else{
+                return opt
+            }
+                  
+        })
+    }
+   
     createWindow(options){
         if(!options.template)
             options.template = "index.html"

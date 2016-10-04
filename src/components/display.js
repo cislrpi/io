@@ -182,7 +182,7 @@ module.exports = class Display  {
             if(opt.window_id && this.displayWindows.has(opt.window_id)){
                 return this.displayWindows.get(opt.window_id)
             }else{
-                return opt
+                return null
             }
                   
         })

@@ -1,42 +1,59 @@
 # CELIO - Cognitive Environment Library for I/O
-<!-- TOC depthFrom:2 depthTo:4 insertAnchor:false orderedList:false updateOnSave:true withLinks:true -->
+<!-- TOC depthFrom:1 depthTo:6 insertAnchor:false orderedList:false updateOnSave:true withLinks:true -->
 
-- [Setup](#setup)
-- [Publish and Subscribe](#publish-and-subscribe)
-	- [Publish](#publish)
-	- [Subscribe](#subscribe)
-- [Config](#config)
-- [Transcript](#transcript)
-	- [Switch model](#switch-model)
-	- [Stop publishing](#stop-publishing)
-	- [Add keywords](#add-keywords)
-	- [Tag channel with speaker name](#tag-channel-with-speaker-name)
-- [Speaker](#speaker)
-- [Display](#display)
-	- [Application Context](#application-context)
-	- [Display Window](#display-window)
-	- [View Object](#view-object)
-	- [CELIO API](#celio-api)
-		- [getDisplay](#getdisplay)
-	- [DISPLAY API](#display-api)
-		- [Events](#events)
-		- [getScreens](#getscreens)
-		- [setAppContext](#setappcontext)
-		- [closeAppContext](#closeappcontext)
-		- [getActiveAppContext](#getactiveappcontext)
-		- [createWindow](#createwindow)
-		- [getGrid](#getgrid)
-		- [addToGrid(label, bounds, backgroundStyle)](#addtogridlabel-bounds-backgroundstyle)
-		- [setCellStyle(label, js_css_style, animation)](#setcellstylelabel-jscssstyle-animation)
-		- [setFontSize("pixels")](#setfontsizepixels)
-		- [createViewObject](#createviewobject)
-	- [ViewObject API](#viewobject-api)
-		- [Events](#events)
-	- [TODO](#todo)
-- [RPC](#rpc)
-	- [io.call(queue, content, options)](#iocallqueue-content-options)
-	- [doCall(queue, handler, noAck=true, exclusive=true)](#docallqueue-handler-noacktrue-exclusivetrue)
-- [Setting up a rabbitmq server](#setting-up-a-rabbitmq-server)
+- [CELIO - Cognitive Environment Library for I/O](#celio-cognitive-environment-library-for-io)
+    - [Setup](#setup)
+    - [Publish and Subscribe](#publish-and-subscribe)
+        - [Publish](#publish)
+        - [Subscribe](#subscribe)
+    - [Config](#config)
+    - [Transcript](#transcript)
+        - [Switch model](#switch-model)
+        - [Stop publishing](#stop-publishing)
+        - [Add keywords](#add-keywords)
+        - [Tag channel with speaker name](#tag-channel-with-speaker-name)
+    - [Speaker](#speaker)
+    - [Display](#display)
+        - [Application Context](#application-context)
+        - [Display Window](#display-window)
+        - [View Object](#view-object)
+        - [CELIO API](#celio-api)
+            - [getDisplay](#getdisplay)
+        - [DISPLAY API](#display-api)
+            - [Events](#events)
+            - [getScreens](#getscreens)
+            - [setAppContext](#setappcontext)
+            - [closeAppContext](#closeappcontext)
+            - [hideAppContext](#hideappcontext)
+            - [getAllContexts](#getallcontexts)
+            - [getFocusedWindow](#getfocusedwindow)
+            - [getWindowById](#getwindowbyid)
+            - [getAllWindowIds](#getallwindowids)
+            - [getAllWindowIdsByContext(context)](#getallwindowidsbycontextcontext)
+            - [getViewObjectById](#getviewobjectbyid)
+            - [getAllViewObjectIds](#getallviewobjectids)
+            - [getAllViewObjectIdsByWindowId( window_id )](#getallviewobjectidsbywindowid-windowid-)
+            - [closeAllWindows](#closeallwindows)
+        - [DisplayWindow API](#displaywindow-api)
+            - [Events](#events)
+            - [id](#id)
+            - [show, hide and close](#show-hide-and-close)
+            - [getGrid](#getgrid)
+            - [createUniformGrid (options)](#createuniformgrid-options)
+            - [addToGrid(label, bounds, backgroundStyle)](#addtogridlabel-bounds-backgroundstyle)
+            - [removeFromGrid(label)](#removefromgridlabel)
+            - [clearGrid()](#cleargrid)
+            - [clearContents()](#clearcontents)
+            - [setCellStyle(label, js_css_style, animation)](#setcellstylelabel-jscssstyle-animation)
+            - [setFontSize("pixels")](#setfontsizepixels)
+            - [createViewObject](#createviewobject)
+        - [ViewObject API](#viewobject-api)
+            - [Events](#events)
+            - [setBounds](#setbounds)
+            - [reload](#reload)
+            - [close](#close)
+            - [Navigation](#navigation)
+            - [DevTools](#devtools)
 
 <!-- /TOC -->
 
@@ -281,7 +298,7 @@ Setting a application context will automatically hide the display windows of oth
 #### closeAppContext
 closes an application context
 
- ```javascript
+```javascript
 display.closeAppContext("context_name")
 ```
 Closing an application context will automatically close all display windows
@@ -337,6 +354,11 @@ display.createWindow({
       } ).then( m => { win_obj = m })
 
 ```
+
+
+#### getFocusedWindow
+
+Returns the currently focused window object. Returns null if none.
 
 #### getWindowById 
 retrieves window object using id. Id is an integer. (Not a promise return)
@@ -479,7 +501,7 @@ x,y,width, height are values with padding constraints
 
 ```
 
-### createUniformGrid (options)
+#### createUniformGrid (options)
 
 clears all grid definition (both uniform and custom) and defines a uniform grid pattern
 

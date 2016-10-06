@@ -16,7 +16,15 @@ module.exports = class CELIO {
         } else {
             config.mq.vhost = '/';
         }
-        this.brokerURL = `ws://${config.mq.url}:15674/ws`;
+
+        let protocol = 'ws';
+
+        if (config.mq.tls) {
+            console.log('Making a secure websocket connection.');
+            protocol = 'wss';
+        }
+
+        this.brokerURL = `${protocol}://${config.mq.url}:15674/ws`;
         const client = Stomp.over(new WebSocket(this.brokerURL));
         client.debug = null;
         this.pconn = new Promise(function(resolve, reject) {

@@ -235,6 +235,14 @@ module.exports = class Display  {
         })
     }
 
+    captureScreen() {
+        let cmd = {
+            command : 'capture-screen'
+        }
+
+        return this._postRequest(cmd)
+    }
+
     getViewObjectById(id){
         return this.viewObjects.get(id)
     }

@@ -106,7 +106,7 @@ module.exports = class CELIO {
                         ch.sendToQueue(request.properties.replyTo, new Buffer(''),
                             {correlationId: request.properties.correlationId, headers: {error: response.message}});
                     } else {
-                        ch.sendToQueue(request.properties.replyTo, Buffer.isBuffer(response) ? result : new Buffer(response),
+                        ch.sendToQueue(request.properties.replyTo, Buffer.isBuffer(response) ? response : new Buffer(response),
                             {correlationId: request.properties.correlationId});
                     }
                 }

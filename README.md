@@ -34,6 +34,7 @@
             - [getAllViewObjectIds](#getallviewobjectids)
             - [getAllViewObjectIdsByWindowId( window_id )](#getallviewobjectidsbywindowid-windowid-)
             - [closeAllWindows](#closeallwindows)
+            - [captureScreen](#capturescreen)
         - [DisplayWindow API](#displaywindow-api)
             - [Events](#events)
             - [id](#id)
@@ -392,6 +393,11 @@ returns an array of viewobject ids in a display window. (Not a promise return)
 #### closeAllWindows
 closes all windows of the display
 
+#### captureScreen
+Capture a screenshot.
+```js
+  display.captureScreen().then(img=>fs.writeFile('temp.jpg', img));
+```
 
 
 ### DisplayWindow API

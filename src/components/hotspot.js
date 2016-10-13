@@ -63,18 +63,24 @@ module.exports = class Hotspot extends EventEmitter {
     _intersect(pointer) {
         if (this.plane) {
             const loc = new Three.Vector3(pointer.loc[0], pointer.loc[1], pointer.loc[2]);
-            const aim = new Three.Vector3(pointer.aim[0], pointer.aim[1], pointer.aim[2]);
-            const ray = new Three.Ray(loc, aim);
-            const distanceAlongRay = ray.distanceToPlane(this.plane);
-            if (distanceAlongRay) {
-                const intersection = ray.at(distanceAlongRay);
-                const distVec = new Three.Vector3().subVectors(intersection, this.center);
-                const x = this.width / 2 + this.over.dot(distVec);
-                const y = this.height / 2 + this.up.dot(distVec);
-                const hit = x >= 0 && x <= this.width && y >=0 && y <= this.height;
-                const distanceAlongNormal = this.plane.distanceToPoint(loc);
-                return { x, y, hit, distanceAlongRay, distanceAlongNormal,
-                    details: pointer };
+            if (pointer.aim) {
+                const aim = new Three.Vector3(pointer.aim[0], pointer.aim[1], pointer.aim[2]);
+                const ray = new Three.Ray(loc, aim);
+                const distanceAlongRay = ray.distanceToPlane(this.plane);
+                if (distanceAlongRay) {
+                    const intersection = ray.at(distanceAlongRay);
+                    const distVec = new Three.Vector3().subVectors(intersection, this.center);
+                    const x = this.width / 2 + this.over.dot(distVec);
+                    const y = this.height / 2 + this.up.dot(distVec);
+                    const hit = x >= 0 && x <= this.width && y >=0 && y <= this.height;
+                    const distanceAlongNormal = this.plane.distanceToPoint(loc);
+                    return { x, y, hit, distanceAlongRay, distanceAlongNormal,
+                        details: pointer };
+                }
+
+            } else {
+                return {x: this.width/2 + loc.x - this.center.x, y: this.height/2 - (loc.y - this.center.y), 
+                    hit: true, distanceAlongRay: 0, distanceAlongNormal: 0, details: pointer};
             }
         }
         return null;

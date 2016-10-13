@@ -12,6 +12,14 @@ module.exports = class Speaker {
         return this.io.call('text.speaker.command', JSON.stringify(options), {expiration: this.expiration});
     }
 
+    increaseVolume(change=10) {
+        return this.io.call('volume.speaker.command', JSON.stringify({change}), {expiration: this.expiration});
+    }
+
+    reduceVolume(change=10) {
+        return this.io.call('volume.speaker.command', JSON.stringify({change: -change}), {expiration: this.expiration});
+    }
+
     stop() {
         this.io.call('stop.speaker.command', '');
     }

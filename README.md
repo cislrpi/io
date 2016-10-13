@@ -13,6 +13,9 @@
         - [Add keywords](#add-keywords)
         - [Tag channel with speaker name](#tag-channel-with-speaker-name)
     - [Speaker](#speaker)
+        - [volume control](#volume-control)
+            - [speaker.reduceVolume(change)](#speakerreducevolumechange)
+            - [speaker.increaseVolume(change)](#speakerincreasevolumechange)
     - [Display](#display)
         - [Application Context](#application-context)
         - [Display Window](#display-window)
@@ -199,6 +202,11 @@ You can also use SSML. Again, check [Watson TTS website](http://www.ibm.com/wats
 If you want to subscribe to speaking events, you can use `onBeginSpeak` and `onEndSpeak`. `onBeginSpeak` will give you the message that is spoken. 
 
 You can also interrupt the speaker by calling `stop`.
+
+### volume control
+#### speaker.reduceVolume(change)
+#### speaker.increaseVolume(change)
+Volume is from 0 to 100.
 
 ## Display
 The Display object enables you to manipulate content of the displays

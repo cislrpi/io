@@ -9,6 +9,8 @@ const pa=speaker.speak('<speak><express-as type="Uncertainty">How can I help you
 
 pa.then(()=>console.log('Speech passed.')).catch(err=>console.error(err));
 setTimeout(()=>{
-    speaker.stop();
-    speaker.speak('hello');
+    speaker.increaseVolume(20).then(()=>
+        speaker.speak('Testing testing')
+    ).then(()=>speaker.reduceVolume(40))
+    .then(()=>speaker.speak('Testing testing'));
 }, 2000);

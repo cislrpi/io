@@ -8,6 +8,10 @@ const Speaker = require('./components/speaker');
 const Display = require('./components/display');
 const uuid = require('uuid');
 const _ = require('lodash');
+const redis = require('redis');
+const bluebird = require("bluebird");
+bluebird.promisifyAll(redis.RedisClient.prototype);
+bluebird.promisifyAll(redis.Multi.prototype);
 
 module.exports = class CELIO {
     constructor() {
@@ -31,6 +35,10 @@ module.exports = class CELIO {
 
         // Make a shared channel for publishing and subscribe            
         this.pch = this.pconn.then(conn => conn.createChannel());
+
+        if(nconf.get("redis")){
+            this.persist = redis.createClient( nconf.get("redis"))
+        }
 
         this.config = nconf;
     }

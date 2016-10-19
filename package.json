@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "test_display_promise": "mocha --timeout 15000 tests/testRPCAsync.js",
-    "test_display_events": "mocha --timeout 15000 tests/testDisplayEvents.js"
+    "test_display_events": "mocha --timeout 40000 tests/testDisplayEvents.js"
   },
   "author": "Yedendra Shrinivasan, Yunfeng Zhang",
   "publishConfig": {
@@ -14,8 +14,10 @@
   },
   "dependencies": {
     "amqplib": "^0.4.2",
+    "bluebird": "^3.4.6",
     "lodash": "^4.13.1",
     "nconf": "^0.8.4",
+    "redis": "^2.6.2",
     "stompjs": "^2.3.3",
     "three": "^0.78.0",
     "uuid": "^2.0.2"

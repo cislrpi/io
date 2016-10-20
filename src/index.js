@@ -6,19 +6,16 @@ const Transcript = require('./components/transcript');
 const Hotspot = require('./components/hotspot');
 const Speaker = require('./components/speaker');
 const Display = require('./components/display');
+const StateMachine = require('./components/statemachine');
 const uuid = require('uuid');
 const _ = require('lodash');
-const redis = require('redis');
-const bluebird = require("bluebird");
-bluebird.promisifyAll(redis.RedisClient.prototype);
-bluebird.promisifyAll(redis.Multi.prototype);
 
 module.exports = class CELIO {
     constructor() {
         const configFile = path.join(process.cwd(), 'cog.json');
         nconf.argv().file({file: configFile}).env('_');
 
-        nconf.required(['mq:url', 'mq:username', 'mq:password']);
+        nconf.required([ 'mq:url', 'mq:username', 'mq:password', 'redis:url' ]);
         nconf.defaults({'mq':{'exchange': 'amq.topic'}});
         this.exchange = nconf.get('mq:exchange');
 
@@ -37,7 +34,7 @@ module.exports = class CELIO {
         this.pch = this.pconn.then(conn => conn.createChannel());
 
         if(nconf.get("redis")){
-            this.persist = redis.createClient( nconf.get("redis"))
+            this.stateMachine = new StateMachine ( nconf.get("redis") )
         }
 
         this.config = nconf;
@@ -57,6 +54,10 @@ module.exports = class CELIO {
 
     getDisplay(){
         return new Display(this);
+    }
+
+    getStateMachine(){
+        return this.stateMachine
     }
 
     createHotspot(region, excludeEventsOutsideRegion=true) {
@@ -136,4 +137,5 @@ module.exports = class CELIO {
         this.pch.then(ch => ch.publish(this.exchange, topic, 
                 Buffer.isBuffer(content) ? content : new Buffer(content), options));
     }
+    
 };

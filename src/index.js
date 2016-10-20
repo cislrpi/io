@@ -6,7 +6,7 @@ const Transcript = require('./components/transcript');
 const Hotspot = require('./components/hotspot');
 const Speaker = require('./components/speaker');
 const Display = require('./components/display');
-const StateMachine = require('./components/statemachine');
+const Store = require('./components/store');
 const uuid = require('uuid');
 const _ = require('lodash');
 
@@ -32,11 +32,7 @@ module.exports = class CELIO {
 
         // Make a shared channel for publishing and subscribe            
         this.pch = this.pconn.then(conn => conn.createChannel());
-
-        if(nconf.get("redis")){
-            this.stateMachine = new StateMachine ( nconf.get("redis") )
-        }
-
+        this.store = new Store ( nconf.get("redis") )
         this.config = nconf;
     }
 
@@ -56,8 +52,8 @@ module.exports = class CELIO {
         return new Display(this);
     }
 
-    getStateMachine(){
-        return this.stateMachine
+    getStore(){
+        return this.store
     }
 
     createHotspot(region, excludeEventsOutsideRegion=true) {

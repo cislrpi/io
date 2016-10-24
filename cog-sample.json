@@ -5,6 +5,7 @@
        "password": "guest"
     },
     "redis" : {
-        "url" : "//localhost:6379/1"
+        "url" : "//localhost:6379/1",
+        "passw0rd" : "guest"
     }
 }

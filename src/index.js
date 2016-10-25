@@ -15,7 +15,7 @@ module.exports = class CELIO {
         const configFile = path.join(process.cwd(), 'cog.json');
         nconf.argv().file({file: configFile}).env('_');
 
-        nconf.required([ 'mq:url', 'mq:username', 'mq:password', 'redis:url' ]);
+        nconf.required([ 'mq:url', 'mq:username', 'mq:password', 'store:url' ]);
         nconf.defaults({'mq':{'exchange': 'amq.topic'}});
         this.exchange = nconf.get('mq:exchange');
 
@@ -32,7 +32,7 @@ module.exports = class CELIO {
 
         // Make a shared channel for publishing and subscribe            
         this.pch = this.pconn.then(conn => conn.createChannel());
-        this.store = new Store ( nconf.get("redis") )
+        this.store = new Store ( nconf.get("store") )
         this.config = nconf;
     }
 

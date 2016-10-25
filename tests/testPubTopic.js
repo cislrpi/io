@@ -2,9 +2,9 @@ const CELIO = require('../lib/index.js');
 
 const io = new CELIO();
 
-io.onTopic('display.*', msg=>{
-    console.log(msg.content.toString())
-    console.log(msg.fields.routingKey)
+io.onTopic('vis.*', msg=>{
+    console.log(msg.toString())
+    //console.log(msg.fields.routingKey)
 });
 
 // setInterval(()=>{

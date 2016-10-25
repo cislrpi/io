@@ -4,8 +4,9 @@ const DisplayWindow = require('./displaywindow')
 
 
 module.exports = class Display  {
-    constructor (io) {
+    constructor (io, screenName) {
         this.io = io
+        this.screenName = screenName
         this.conf = io.display
         this.client_id = uuid.v1()
         this.displayWindows = new Map()
@@ -56,7 +57,7 @@ module.exports = class Display  {
 
     _postRequest( data ){
         data.client_id = this.client_id
-        return this.io.call('display-rpc-queue', JSON.stringify(data))
+        return this.io.call('display-rpc-queue-' + this.screenName, JSON.stringify(data))
     }
 
     /*
@@ -68,9 +69,9 @@ module.exports = class Display  {
             - height
             - touchSupport
     */
-    getScreens(){
+    getBounds(){
         let cmd = {
-            command : "get-screens"
+            command : "get-bounds"
         }
         return this._postRequest(cmd).then(m=>{
             return JSON.parse(m.toString())

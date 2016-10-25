@@ -4,7 +4,7 @@
        "username": "guest",
        "password": "guest"
     },
-    "redis" : {
+    "store" : {
         "url" : "//localhost:6379/1"
     }
 }

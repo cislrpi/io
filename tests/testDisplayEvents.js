@@ -3,6 +3,7 @@ const io = new CELIO()
 let display = io.getDisplay()
 let win_obj
 let view_obj 
+let sc
 const chai = require('chai')
 chai.use(require('chai-eventemitter'))
 let sinon = require("sinon")
@@ -34,8 +35,8 @@ displayWindowCreated
 
 */
 
-display.addEventListener("viewobjectCreated", (e)=>{
-    console.log("viewobjectCreated Event", e)
+display.addEventListener("viewobjectClosed", (e)=>{
+    console.log("viewobjectClosed Event", e)
 })
 
 display.addEventListener("displayWindowCreated", (e)=>{
@@ -50,6 +51,8 @@ display.addEventListener("appContextChanged", (e)=>{
     console.log("appContextChanged Event", e)
 })
 
+
+
 describe('Display', function() {
     beforeEach(function(done) {
         this.timeout(3000); // A very long environment setup.
@@ -58,12 +61,16 @@ describe('Display', function() {
 
     it("should create window", ()=>{
         return display.setAppContext("sunrise").then( m => {
+            return display.getScreens()
+        }).then( m=> {
+            console.log(m)
+            sc = m[0]
             return display.createWindow({
                 "screenName" : "front",
-                "x" : 10,
-                "y" : 10,
-                "width"  : 1000,
-                "height" : 500,
+                "x" : sc.bounds.x,
+                "y" :  sc.bounds.y,
+                "width"  :  sc.bounds.width,
+                "height" :  sc.bounds.height,
                 "contentGrid" : {
                     "row" : 2,
                     "col" : 3,
@@ -90,95 +97,103 @@ describe('Display', function() {
 
     it("should create a new viewobject", () => {
         return win_obj.createViewObject({
-                "url" : "http://nytimes.com",
-                "left" : "1.0em",
-                "top" : "0.0em",
-                "width" : "3.0em",
-                "height" : "3.0em",
+                "url" : "file:///Users/yshrini/Developer/celio_workspace/test/testVideo/electron-quick-start/eli_jek_audioclean_newtitlesQT_converted.mp4",
+                "left" : sc.bounds.x,
+                "top" : sc.bounds.y,
+                "width" : sc.bounds.width,
+                "height" : sc.bounds.height,
                 "nodeintegration" : true,
-                "cssText":"body{border : 5px solid red; overflow:hidden;zoom:300%;}"
+                "cssText":"body{overflow:hidden;}"
         }).then( m =>{
-            view_obj = m
-            view_obj.addEventListener("positionChanged", (e)=>{print(e)})
-            view_obj.addEventListener("urlChanged", (e)=>{print(e)})
-            return win_obj.getUniformGridCellSize()
-        }).then(m =>{
-            console.log(m)
+            return win_obj.openDevTools()
+        //     view_obj = m
+        //     view_obj.addEventListener("positionChanged", (e)=>{print(e)})
+        //     view_obj.addEventListener("urlChanged", (e)=>{print(e)})
+        //     return win_obj.getUniformGridCellSize()
+        // }).then(m =>{
+        //     console.log(m)
+        //     setTimeout(()=>{
+        //         view_obj.setUrl("https://google.com")
+        //     }, 2000)
+        //     m.should.be.a("object")
+        }).then( () => {
             setTimeout(()=>{
-                view_obj.setUrl("https://google.com")
-            }, 2000)
-            m.should.be.a("object")
+                print("done waiting")
+            }, 40000)
         })
     })
 
-    it("add to grid", () => {
-         return win_obj.addToGrid("testcell", {
-                "left":  "0.2em",
-                "top": "0.2em",
-                "width": "2.0em",
-                "height": "2.0em"
-            }, {
-                background : "red"
-            }).then (res => {
-                console.log(res)
-            })
-    })
+    // it("add to grid", () => {
+    //      return win_obj.addToGrid("testcell", {
+    //             "left":  "0.2em",
+    //             "top": "0.2em",
+    //             "width": "2.0em",
+    //             "height": "2.0em"
+    //         }, {
+    //             background : "red"
+    //         }).then (res => {
+    //             console.log(res)
+    //         })
+    // })
 
-    it("remove from grid", () => {
-        return win_obj.removeFromGrid("testcell").then (res => {
-                console.log(res)
-            })
-    })
+    // it("remove from grid", () => {
+    //     return win_obj.removeFromGrid("testcell").then (res => {
+    //             console.log(res)
+    //         })
+    // })
 })
 
-describe('Window', function() {
-    beforeEach(function(done) {
-         this.timeout(3000); // A very long environment setup.
-        setTimeout(done, 2500);
-    });
-    it("should setfontsize", () => {
-        return win_obj.setFontSize("300px").then( m =>  m.should.be.a("object") )
-    })
+// describe('Window', function() {
+//     beforeEach(function(done) {
+//          this.timeout(3000); // A very long environment setup.
+//         setTimeout(done, 2500);
+//     });
+//     it("should setfontsize", () => {
+//         return win_obj.setFontSize("300px").then( m =>  m.should.be.a("object") )
+//     })
 
-    it("clear contents", () =>{
-        console.log(display)
-        return win_obj.clearContents().then( m => console.log(m))
-    })
+//     it("clear contents", () =>{
+//         console.log(display)
+//         return win_obj.clearContents().then( m => console.log(m))
+//     })
 
-    it("clear grid", () =>{
-        console.log(display)
-        return win_obj.clearGrid().then( m => console.log(m))
-    })
+//     it("clear grid", () =>{
+//         console.log(display)
+//         return win_obj.clearGrid().then( m => console.log(m))
+//     })
 
-    it("new createUniformGrid", () =>{
-        console.log(display)
-        return win_obj.createUniformGrid({
-            "contentGrid" : {
-                "row" : 2,
-                "col" : 2,
-                "padding" : 5
-            },
-            "gridBackground" : {
-                "1|1" : "white",
-                "1|2" : "grey",
-                "2|1" : "grey",
-                "2|2" : "white"
-            }
-        }).then( m => console.log(m))
-    })
+//     it("new createUniformGrid", () =>{
+//         console.log(display)
+//         return win_obj.createUniformGrid({
+//             "contentGrid" : {
+//                 "row" : 2,
+//                 "col" : 2,
+//                 "padding" : 5
+//             },
+//             "gridBackground" : {
+//                 "1|1" : "white",
+//                 "1|2" : "grey",
+//                 "2|1" : "grey",
+//                 "2|2" : "white"
+//             }
+//         }).then( m => console.log(m))
+//     })
 
-    it(" add new view object", () =>{
-        return win_obj.createViewObject({
-                "url" : "http://www.themill.com/millchannel/731/red-bull-music-academy-‘a-night-of-spiritual-jazz’-installation",
-                "left" : "1.0em",
-                "top" : "0.0em",
-                "width" : "3.0em",
-                "height" : "3.0em",
-                "nodeintegration" : true,
-                "cssText":"body{border : 5px solid red; overflow:hidden;zoom:300%;}"
-        })
-    })
-})
+//     it(" add new view object", () =>{
+//         return win_obj.createViewObject({
+//                 "url" : "http://www.nytimes.com/",
+//                 "left" : "1.0em",
+//                 "top" : "0.0em",
+//                 "width" : "3.0em",
+//                 "height" : "3.0em",
+//                 "nodeintegration" : true,
+//                 "cssText":"body{border : 5px solid red; overflow:hidden;zoom:300%;}"
+//         }).then( m => {
+// 		console.log("opening dev tools");
+// 		return win_obj.openDevTools()
+// 	})
+//     })
+// })
 
 // describe('TestEnd', function() {
 //     beforeEach(function(done) {

@@ -6,6 +6,7 @@ const Transcript = require('./components/transcript');
 const Hotspot = require('./components/hotspot');
 const Speaker = require('./components/speaker');
 const Display = require('./components/display');
+const DisplayContext = require('./components/displaycontext');
 const Store = require('./components/store');
 const uuid = require('uuid');
 const _ = require('lodash');
@@ -48,8 +49,12 @@ module.exports = class CELIO {
         return new Speaker(this);
     }
 
-    getDisplay(){
-        return new Display(this);
+    getDisplay(screenName){
+        return new Display(this, screenName);
+    }
+
+    getDisplayContext(){
+        return new DisplayContext(this)
     }
 
     getStore(){
@@ -58,6 +63,27 @@ module.exports = class CELIO {
 
     createHotspot(region, excludeEventsOutsideRegion=true) {
         return new Hotspot(this, region, excludeEventsOutsideRegion);
+    }
+
+    createAppContext(name){
+        let cmd = {
+            command : "create-context",
+            options : {
+                name : name
+            }
+        }
+        return this.call("global-context", JSON.stringify(cmd)).then(m=>{
+            return JSON.parse(m.toString())
+        })
+
+    }
+
+    getAppContext(name){
+
+    }
+
+    getAllAppContexts(){
+
     }
 
     call(queue, content, options={}) {

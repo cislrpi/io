@@ -61,12 +61,16 @@ module.exports = class CELIO {
         }
         return this.getStore().getHash("display.screens").then( m => {
             let promises = []
-            for( let k of m){
-                promises.push( this.call( "display-rpc-queue-" + k[0] , JSON.stringify(cmd) )  )
+            for (let k of Object.keys(m)) {
+                promises.push( this.call( "display-rpc-queue-" + k , JSON.stringify(cmd) )  )
             }
             return Promise.all(promises)
         }).then( m => {
-            return JSON.parse(m.toString())
+            let res = []
+            Array.from(m).forEach( e => {
+                res.push( e.toString())
+            })
+            return res
         })
     }
 

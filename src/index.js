@@ -52,6 +52,24 @@ module.exports = class CELIO {
         return new Display(this);
     }
 
+    setActiveAppContext(name){
+        let cmd = {
+            command : "set-app-context",
+            options : {
+                context : name
+            }
+        }
+        return this.getStore().getHash("display.screens").then( m => {
+            let promises = []
+            for( let k of m){
+                promises.push( this.call( "display-rpc-queue-" + k[0] , JSON.stringify(cmd) )  )
+            }
+            return Promise.all(promises)
+        }).then( m => {
+            return JSON.parse(m.toString())
+        })
+    }
+
     getStore(){
         return this.store
     }

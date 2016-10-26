@@ -6,12 +6,34 @@ module.exports = class DisplayContext {
         this.io = io
         this.name = name
         this.io.getStore().addToSet("appcontexts", name)
-        this.displays = new Map()
         this.io.getStore().getHash("display.screens").then( m => {
             Array.from(m).forEach(x => {
-                this.displays.set(x , new Display(io, x) )
+                let d = new Display(io, x)
+                d.setAppContext(name).then( res => {
+
+                })
+                this.displays.set(x , d )
             })
         })
+    }
+
+    getDisplays(){
+        return this.displays 
+    }
+
+    /*
+
+        {
+            displayName : {
+               template : template (string - relative path to the template file)
+            }
+
+        }
+
+    */
+
+    initialize ( template , screenName ){
+
     }
 
     show(){

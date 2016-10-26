@@ -5,7 +5,6 @@ const amqp = require('amqplib');
 const Transcript = require('./components/transcript');
 const Hotspot = require('./components/hotspot');
 const Speaker = require('./components/speaker');
-const Display = require('./components/display');
 const DisplayContext = require('./components/displaycontext');
 const Store = require('./components/store');
 const uuid = require('uuid');

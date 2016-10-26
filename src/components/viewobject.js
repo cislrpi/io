@@ -1,44 +1,46 @@
 
 module.exports = class ViewObject {
-    constructor(display, options){
-        this.display = display
+    constructor(io, options){
+        this.io = io
         this.view_id = options.view_id
         this.screenName = options.screenName
         this.window_id = options.window_id
-        this.display.viewObjects.set( this.view_id, this)
-        this.eventHandlers = new Map()
-        this.display.io.onTopic("display.window.viewobject", (e)=>{
-            const m = JSON.parse(e.toString())
-            if(m.details.view_id == this.view_id){
-                m.details.eventType = m.type
-                if(this.eventHandlers.has(m.type)){
-                    for(let h of this.eventHandlers.get(m.type)){
-                        h(m.details)
-                    }
-                }
-            }
-        })
+        
+        // this.eventHandlers = new Map()
+        // this.io.onTopic("display.viewobject", (e)=>{
+        //     const m = JSON.parse(e.toString())
+        //     if(m.details.view_id == this.view_id){
+        //         m.details.eventType = m.type
+        //         if(this.eventHandlers.has(m.type)){
+        //             for(let h of this.eventHandlers.get(m.type)){
+        //                 h(m.details)
+        //             }
+        //         }
+        //     }
+        // })
     }
 
-    addEventListener(type, handler){
-        if(this.eventHandlers.has(type)){
-            this.eventHandlers.get(type).add(handler)
-        }else{
-            let ws = new Set()
-            ws.add(handler)
-            this.eventHandlers.set(type, ws)
-        }
+    _postRequest( data ){
+        return this.io.call('display-rpc-queue-' + this.screenName, JSON.stringify(data))
     }
 
-    removeEventListener(type, handler){
-        if(this.eventHandlers.has(type)){
-            this.eventHandlers.get(type).delete(handler)
-        }
-    }
+    // addEventListener(type, handler){
+    //     if(this.eventHandlers.has(type)){
+    //         this.eventHandlers.get(type).add(handler)
+    //     }else{
+    //         let ws = new Set()
+    //         ws.add(handler)
+    //         this.eventHandlers.set(type, ws)
+    //     }
+    // }
+
+    // removeEventListener(type, handler){
+    //     if(this.eventHandlers.has(type)){
+    //         this.eventHandlers.get(type).delete(handler)
+    //     }
+    // }
 
     destroy(){
-        this.display.viewObjects.delete(this.view_id)
-        this.display = null
         this.view_id = null
         this.screenName = null
         this.window_id = null
@@ -57,7 +59,7 @@ module.exports = class ViewObject {
                 url : url
             }
         }
-        return this.display._postRequest(cmd)
+        return this._postRequest(cmd)
     }
 
     setCSSStyle(css_string){
@@ -68,7 +70,7 @@ module.exports = class ViewObject {
                 cssText : css_string
             }
         }
-        return this.display._postRequest(cmd)
+        return this._postRequest(cmd)
     }
 
     reload(){
@@ -79,7 +81,7 @@ module.exports = class ViewObject {
                 view_id : this.view_id
             }
         }
-        return this.display._postRequest(cmd)
+        return this._postRequest(cmd)
     }
 
     hide(){
@@ -90,7 +92,7 @@ module.exports = class ViewObject {
                 view_id : this.view_id
             }
         }
-        return this.display._postRequest(cmd)
+        return this._postRequest(cmd)
     }
 
     show(){
@@ -101,7 +103,7 @@ module.exports = class ViewObject {
                 view_id : this.view_id
             }
         }
-        return this.display._postRequest(cmd)
+        return this._postRequest(cmd)
     }
 
     close(){
@@ -112,7 +114,7 @@ module.exports = class ViewObject {
                 view_id : this.view_id
             }
         }
-        let s = this.display._postRequest(cmd)
+        let s = this._postRequest(cmd)
         if(s.status == "success"){
            this.destroy()
         }
@@ -132,7 +134,7 @@ module.exports = class ViewObject {
             command : 'set-bounds',
             options : options
         }
-        return this.display._postRequest(cmd)
+        return this._postRequest(cmd)
     }
 
     goBack(options){
@@ -143,7 +145,7 @@ module.exports = class ViewObject {
                 view_id : this.view_id
             }
         }
-        return this.display._postRequest(cmd)
+        return this._postRequest(cmd)
     }
 
     goForward(){
@@ -154,7 +156,7 @@ module.exports = class ViewObject {
                 view_id : this.view_id,
             }
         }
-        return this.display._postRequest(cmd)
+        return this._postRequest(cmd)
     }
 
     openDevTools(){
@@ -166,7 +168,7 @@ module.exports = class ViewObject {
                 devTools : true
             }
         }
-        return this.display._postRequest(cmd)
+        return this._postRequest(cmd)
     }
 
     closeDevTools(){
@@ -178,7 +180,7 @@ module.exports = class ViewObject {
                 devTools : false
             }
         }
-        return this.display._postRequest(cmd)
+        return this._postRequest(cmd)
     }
 
    

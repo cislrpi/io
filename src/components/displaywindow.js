@@ -1,61 +1,50 @@
 
 const ViewObject = require('./viewobject')
 module.exports = class DisplayWindow {
-     constructor(display, options){
-        this.display = display
+     constructor(io, options){
+        this.io = io
         this.window_id = options.window_id
         this.screenName = options.screenName
         this.appContext = options.appContext
-        this.template = options.template
-        this.display.displayWindows.set(this.window_id, this)
-        this.eventHandlers = new Map()
-        this.display.io.onTopic("display.window", (e)=>{
-            const m = JSON.parse(e.toString())
-            if(m.details.window_id == this.window_id && m.details.screenName == this.screenName){
-                m.details.eventType = m.type
-                if(this.eventHandlers.has(m.type)){
-                    for(let h of this.eventHandlers.get(m.type)){
-                        h(m.details)
-                    }
-                }
-            }
-        })
+        this.template = "index.html"
+        // this.eventHandlers = new Map()
+        // this.io.onTopic("display.window", (e)=>{
+        //     const m = JSON.parse(e.toString())
+        //     if(m.details.window_id == this.window_id && m.details.screenName == this.screenName){
+        //         m.details.eventType = m.type
+        //         if(this.eventHandlers.has(m.type)){
+        //             for(let h of this.eventHandlers.get(m.type)){
+        //                 h(m.details)
+        //             }
+        //         }
+        //     }
+        // })
  
     }
 
-    addEventListener(type, handler){
-        if(this.eventHandlers.has(type)){
-            this.eventHandlers.get(type).add(handler)
-        }else{
-            let ws = new Set()
-            ws.add(handler)
-            this.eventHandlers.set(type, ws)
-        }
+    _postRequest( data ){
+        return this.io.call('display-rpc-queue-' + this.screenName, JSON.stringify(data))
     }
 
-    removeEventListener(type, handler){
-        if(this.eventHandlers.has(type)){
-            this.eventHandlers.get(type).delete(handler)
-        }
-    }
+    // addEventListener(type, handler){
+    //     if(this.eventHandlers.has(type)){
+    //         this.eventHandlers.get(type).add(handler)
+    //     }else{
+    //         let ws = new Set()
+    //         ws.add(handler)
+    //         this.eventHandlers.set(type, ws)
+    //     }
+    // }
+
+    // removeEventListener(type, handler){
+    //     if(this.eventHandlers.has(type)){
+    //         this.eventHandlers.get(type).delete(handler)
+    //     }
+    // }
 
 
     id(){
         return this.window_id
-    }
-
-    destroy(){
-        this.display.displayWindows.delete(this.window_id)
-        this.display = null
-        this.window_id = null
-        this.screenName = null
-        this.appContext = null
-        this.template = null
-    }
-
-    checkStatus(){
-        if(!this.window_id)
-            throw new Error("DisplayWindow is already deleted.")        
     }
 
     clearGrid(){
@@ -66,7 +55,7 @@ module.exports = class DisplayWindow {
                 window_id : this.window_id
             }
         }
-        return this.display._postRequest(cmd).then(m=>{
+        return this._postRequest(cmd).then(m=>{
             return JSON.parse(m.toString())
         })
     }
@@ -79,7 +68,7 @@ module.exports = class DisplayWindow {
                 window_id : this.window_id
             }
         }
-        return this.display._postRequest(cmd).then(m=>{
+        return this._postRequest(cmd).then(m=>{
             return JSON.parse(m.toString())
         })
     }
@@ -115,7 +104,7 @@ module.exports = class DisplayWindow {
             command : "create-grid",
             options : options
         }
-        return this.display._postRequest(cmd).then(m=>{
+        return this._postRequest(cmd).then(m=>{
             return JSON.parse(m.toString())
         })
     }
@@ -131,7 +120,7 @@ module.exports = class DisplayWindow {
                 style : backgroundStyle
             }
         }
-        return this.display._postRequest(cmd).then(m=>{
+        return this._postRequest(cmd).then(m=>{
             return JSON.parse(m.toString())
         })
     }
@@ -145,7 +134,7 @@ module.exports = class DisplayWindow {
                 label : label
             }
         }
-        return this.display._postRequest(cmd).then(m=>{
+        return this._postRequest(cmd).then(m=>{
             return JSON.parse(m.toString())
         })
     }
@@ -163,7 +152,7 @@ module.exports = class DisplayWindow {
                 window_id : this.window_id
             }
         }
-        return this.display._postRequest(cmd).then(m=>{
+        return this._postRequest(cmd).then(m=>{
             return JSON.parse(m.toString())
         })
     }
@@ -176,7 +165,7 @@ module.exports = class DisplayWindow {
                 window_id : this.window_id
             }
         }
-        return this.display._postRequest(cmd).then(m=>{
+        return this._postRequest(cmd).then(m=>{
             return JSON.parse(m.toString())
         })
     }
@@ -201,7 +190,7 @@ module.exports = class DisplayWindow {
         if(animation)
             cmd.options.animation_options = animation
 
-        return this.display._postRequest(cmd).then(m=>{
+        return this._postRequest(cmd).then(m=>{
             return JSON.parse(m.toString())
         })
     }
@@ -214,7 +203,7 @@ module.exports = class DisplayWindow {
                 fontSize : px_string
             }
         }
-        return this.display._postRequest(cmd).then(m=>{
+        return this._postRequest(cmd).then(m=>{
             return JSON.parse(m.toString())
         })
     }
@@ -230,7 +219,7 @@ module.exports = class DisplayWindow {
                 window_id : this.window_id
             }
         }
-        return this.display._postRequest(cmd).then(m=>{
+        return this._postRequest(cmd).then(m=>{
             return JSON.parse(m.toString())
         })
     }
@@ -246,7 +235,7 @@ module.exports = class DisplayWindow {
                 window_id : this.window_id
             }
         }
-        return this.display._postRequest(cmd).then(m=>{
+        return this._postRequest(cmd).then(m=>{
             return JSON.parse(m.toString())
         })
     }
@@ -262,10 +251,10 @@ module.exports = class DisplayWindow {
                 window_id : this.window_id
             }
         }
-        return this.display._postRequest(cmd).then( m => {
+        return this._postRequest(cmd).then( m => {
             m = JSON.parse(m.toString())
             m.viewObjects.forEach( (v) => {
-                let view = this.display.getViewObjectById(v)
+                let view = this.getViewObjectById(v)
                 if(view)
                     view.destroy()
             })
@@ -283,7 +272,7 @@ module.exports = class DisplayWindow {
                 devTools : true
             }
         }
-        return this.display._postRequest(cmd).then(m=>{
+        return this._postRequest(cmd).then(m=>{
             return JSON.parse(m.toString())
         })
     }
@@ -297,7 +286,7 @@ module.exports = class DisplayWindow {
                 devTools : false
             }
         }
-        return this.display._postRequest(cmd).then(m=>{
+        return this._postRequest(cmd).then(m=>{
             return JSON.parse(m.toString())
         })
     }
@@ -322,7 +311,7 @@ module.exports = class DisplayWindow {
             options : options
         }        
         
-        return this.display._postRequest(cmd).then(m =>{
+        return this._postRequest(cmd).then(m =>{
             let opt = JSON.parse(m.toString())
             opt.width = parseFloat(options.width)
             opt.height = parseFloat(options.height)

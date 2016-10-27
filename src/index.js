@@ -74,7 +74,7 @@ module.exports = class CELIO {
         }
         this.getActiveDisplays().then( m => {
             let _ps = []
-            for( let k of Object.keys(bounds)){
+            for( let k of Object.keys(m)){
                 _ps.push( this.call('display-rpc-queue-' + k, JSON.stringify(cmd) ) )
             }
             return Promise.all(_ps)

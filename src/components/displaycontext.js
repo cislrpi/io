@@ -140,14 +140,18 @@ module.exports = class DisplayContext {
                     }
                 }
 
-                if(options['reset'] || options['reset'] == 1){
-                    console.log("making it active")
+                if(options['reset']){
+                    console.log("making it active and reloading")
                     this.show().then( m => {
                         return this.reloadAll()
                     }).then( m=>{
                         console.log(m)
                     })
-                    
+                }else{
+                    console.log("making it active ")
+                    this.show().then( m => {
+                        return m
+                    })
                 }
             }
         })

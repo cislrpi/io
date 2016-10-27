@@ -45,7 +45,7 @@ module.exports = class DisplayContext {
             // }
 
             //clear up the store
-            io.getStore().getHash("dc." + this.name).then( m=>{
+            this.io.getStore().getHash("dc." + this.name).then( m=>{
                  if( m != null) {
                     let mobj = JSON.parse(m.displayWinObjMap)
                     delete mobj[closedScreen]
@@ -55,8 +55,8 @@ module.exports = class DisplayContext {
                         delete vobj[toRemove[k]]
                     }
 
-                    io.getStore().addToHash("dc." + this.name, "displayWinObjMap", mobj)
-                    io.getStore().addToHash("dc." + this.name, "viewObjDisplayMap", vobj)
+                    this.io.getStore().addToHash("dc." + this.name, "displayWinObjMap", mobj)
+                    this.io.getStore().addToHash("dc." + this.name, "viewObjDisplayMap", vobj)
 
                 }
             })
@@ -159,7 +159,7 @@ module.exports = class DisplayContext {
 
     // returns a map of displayName with bounds
     getDisplayBounds(){
-        return io.getStore().getHash("display.screens")
+        return this.io.getStore().getHash("display.screens")
     }
 
     // returns the window_object corresponding to the displayName

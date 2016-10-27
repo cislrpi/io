@@ -67,6 +67,22 @@ module.exports = class CELIO {
         return new DisplayContext(appname, {reset : reset}, this)
     }
 
+    hideAllDisplayContext(){
+        let screens = {}
+        let cmd = {
+            command : 'hide-all-windows'
+        }
+        this.getActiveDisplays().then( m => {
+            let _ps = []
+            for( let k of Object.keys(bounds)){
+                _ps.push( this.call('display-rpc-queue-' + k, JSON.stringify(cmd) ) )
+            }
+            return Promise.all(_ps)
+        }).then( m =>{
+            return m
+        })
+    }
+
     getActiveDisplays(){
         return io.getStore().getHash("display.screens")
     }

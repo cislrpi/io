@@ -53,17 +53,17 @@ module.exports = class CELIO {
     }
 
     getDisplayContextList(){
-        return this.io.getStore().getSet("displayContexts")
+        return this.getStore().getSet("displayContexts")
     }
 
     getActiveDisplayContext(){
-        return this.io.getStore().getState("activeDisplayContext").then( m => {
+        return this.getStore().getState("activeDisplayContext").then( m => {
             return new DisplayContext(m, {}, this)
         })
     }
 
     setActiveDisplayContext( appname , reset){
-        this.io.getStore().setState("activeDisplayContext", appname)
+        this.getStore().setState("activeDisplayContext", appname)
         return new DisplayContext(appname, {reset : reset}, this)
     }
 
@@ -84,7 +84,7 @@ module.exports = class CELIO {
     }
 
     getActiveDisplays(){
-        return io.getStore().getHash("display.screens")
+        return this.getStore().getHash("display.screens")
     }
 
     getStore(){

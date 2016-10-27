@@ -8,7 +8,7 @@ module.exports = class DisplayContext {
         this.name = name
         this.displayWindows = new Map()
         this.viewObjects = new Map()
-        this.io.getStore().addSet("displayContexts", name)
+        this.io.getStore().addToSet("displayContexts", name)
         this.restoreFromStore(options)
         
         this.eventHandlers = new Map()
@@ -29,20 +29,20 @@ module.exports = class DisplayContext {
             }
 
 
-            // call event handlers
-            let eventType = "displayRemoved"
-            let details = {
-                type  :  eventType,
-                screenName : closedScreen,
-                closedViewObjects : toRemove,
-                closedWindowObjId : closedWindowObjId
-            }
+            // // call event handlers
+            // let eventType = "displayRemoved"
+            // let details = {
+            //     type  :  eventType,
+            //     screenName : closedScreen,
+            //     closedViewObjects : toRemove,
+            //     closedWindowObjId : closedWindowObjId
+            // }
 
-            if(this.eventHandlers.has( eventType )){
-                for(let h of this.eventHandlers.get( eventType )){
-                    h(details)
-                }
-            }
+            // if(this.eventHandlers.has( eventType )){
+            //     for(let h of this.eventHandlers.get( eventType )){
+            //         h(details)
+            //     }
+            // }
 
             //clear up the store
             io.getStore().getHash("dc." + this.name).then( m=>{
@@ -64,18 +64,18 @@ module.exports = class DisplayContext {
         })
 
         this.io.onTopic("display.added", m => {
-            let openedScreen = m.toString()
-            let eventType = "displayAdded"
-            let details = {
-                type  :  eventType,
-                screenName : openedScreen
-            }
+            // let openedScreen = m.toString()
+            // let eventType = "displayAdded"
+            // let details = {
+            //     type  :  eventType,
+            //     screenName : openedScreen
+            // }
 
-            if(this.eventHandlers.has( eventType )){
-                for(let h of this.eventHandlers.get( eventType )){
-                    h(details)
-                }
-            }
+            // if(this.eventHandlers.has( eventType )){
+            //     for(let h of this.eventHandlers.get( eventType )){
+            //         h(details)
+            //     }
+            // }
         })
         
     }
@@ -160,14 +160,12 @@ module.exports = class DisplayContext {
             }
         }
 
-        let _ps = []
-        for( let [k,v] of this.displayWindows){
-            _ps.add( this._postRequest(k, cmd) )
-        }
-            
-        
-        return Promise.all(_ps).then( m => {
-            return m
+        return this.getDisplayBounds().then( m => {
+            let _ps = []
+            for( let k of Object.keys(m)){
+                _ps.push( this._postRequest(k, cmd) )
+            }
+            return Promise.all(_ps)
         })
     }
 
@@ -178,13 +176,14 @@ module.exports = class DisplayContext {
                 context : this.name
             }
         }
-        let _ps = []
-        for( let [k,v] of this.displayWindows){
-            _ps.add( this._postRequest(k, cmd) )
-        }            
-        
-        return Promise.all(_ps).then( m => {
-           return m
+        return this.getDisplayBounds().then( m => {
+            let _ps = []
+            for( let k of Object.keys(m)){
+                _ps.push( this._postRequest(k, cmd) )
+            }
+            return Promise.all(_ps)
+        }).then( m => {
+            return m
         })
     }
 
@@ -195,12 +194,13 @@ module.exports = class DisplayContext {
                 context : this.name
             }
         }
-        let _ps = []
-        for( let [k,v] of this.displayWindows){
-            _ps.add( this._postRequest(k, cmd) )
-        }            
-        
-        return Promise.all(_ps).then( m => {
+        return this.getDisplayBounds().then( m => {
+            let _ps = []
+            for( let k of Object.keys(m)){
+                _ps.push( this._postRequest(k, cmd) )
+            }
+            return Promise.all(_ps)
+        }).then( m => {
             console.log(m)
             let map = []
             for( var i = 0;i< m.length; i++){
@@ -211,14 +211,16 @@ module.exports = class DisplayContext {
             this.displayWindows.clear()
             this.viewObjects.clear()
             this.io.getStore().delState('dc.' + this.name)
+            this.io.getStore().removeFromSet("displayContexts", this.name)
+
             return map
-        })
+        })          
     }
 
     reloadAll(){
         let _ps = []
         for( let [k,v] of this.viewObjects)
-            _ps.add( v.reload() )
+            _ps.push( v.reload() )
         
         return Promise.all(_ps).then( m => {
             console.log(m)
@@ -271,19 +273,22 @@ module.exports = class DisplayContext {
         
     */
     initialize(bounds , options){
-        let _ps = []
-        for( let k of Object.keys(bounds)){
-            let opts = options[k] ? options[k] : {}
-            Object.assign( opts, JSON.parse(bounds[k]))
-            opts.template = "index.html"
-            let cmd = {
-                command : 'create-window',
-                options : opts
-            }
-            _ps.push( this._postRequest( k, cmd))
-        }
         
-        return Promise.all(_ps).then( m =>{
+        
+        return this.show().then( () => {
+            let _ps = []
+            for( let k of Object.keys(bounds)){
+                let opts = options[k] ? options[k] : {}
+                Object.assign( opts, JSON.parse(bounds[k]))
+                opts.template = "index.html"
+                let cmd = {
+                    command : 'create-window',
+                    options : opts
+                }
+                _ps.push( this._postRequest( k, cmd))
+            }
+            return Promise.all(_ps)
+        }).then( m =>{
             console.log(m)
             let map = {}
             for( var i = 0;i< m.length; i++){

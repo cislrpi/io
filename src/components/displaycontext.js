@@ -110,33 +110,44 @@ module.exports = class DisplayContext {
                 })
             }else{
                 console.log("restoring from store")
-                let mobj = JSON.parse(m.displayWinObjMap)
-                // create WindowObjects based on  screenname , window_id
                 this.displayWindows.clear()
-                for( let k of Object.keys(mobj)){
-                    let opts = {
-                        "window_id" : mobj[k],
-                        "screenName" : k,
-                        "appContext" : this.name
-                    }    
-                    this.displayWindows.set( k,  new DisplayWindow(this.io, opts))
-                }
-                
-                // create viewObjects based on view_id, screenname
                 this.viewObjects.clear()
-                let vobj = JSON.parse(m.viewObjDisplayMap)
-                for( let k of Object.keys(vobj)){
-                    let opts = {
-                        "view_id" : k,
-                        "window_id" : mobj[ vobj[k] ],
-                        "screenName" : vobj[k]
-                    }    
-                    this.viewObjects.set( k,  new ViewObject(this.io, opts))
+
+                if(m.displayWinObjMap){
+                    let mobj = JSON.parse(m.displayWinObjMap)
+                    // create WindowObjects based on  screenname , window_id
+                    
+                    for( let k of Object.keys(mobj)){
+                        let opts = {
+                            "window_id" : mobj[k],
+                            "screenName" : k,
+                            "appContext" : this.name
+                        }    
+                        this.displayWindows.set( k,  new DisplayWindow(this.io, opts))
+                    }
+                    
+                    // create viewObjects based on view_id, screenname
+                    if(m.viewObjDisplayMap){
+                        let vobj = JSON.parse(m.viewObjDisplayMap)
+                        for( let k of Object.keys(vobj)){
+                            let opts = {
+                                "view_id" : k,
+                                "window_id" : mobj[ vobj[k] ],
+                                "screenName" : vobj[k]
+                            }    
+                            this.viewObjects.set( k,  new ViewObject(this.io, opts))
+                        }
+                    }
                 }
 
                 if(options['reset'] || options['reset'] == 1){
-                    this.show()
-                    this.reloadAll()
+                    console.log("making it active")
+                    this.show().then( m => {
+                        return this.reloadAll()
+                    }).then( m=>{
+                        console.log(m)
+                    })
+                    
                 }
             }
         })

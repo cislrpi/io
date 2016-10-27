@@ -63,8 +63,15 @@ module.exports = class CELIO {
     }
 
     setActiveDisplayContext( appname , reset){
-        this.getStore().setState("activeDisplayContext", appname)
-        return new DisplayContext(appname, {reset : reset}, this)
+        this.getStore().getState("activeDisplayContext").then( name => {
+            if(name != appname){
+                this.getStore().setState("activeDisplayContext", appname)
+                new DisplayContext(appname, {reset : reset}, this)
+            }else{
+                console.log("app name : ",  appname, "is already active")
+            }
+        })
+        
     }
 
     hideAllDisplayContext(){

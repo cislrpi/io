@@ -5,51 +5,11 @@ module.exports = class ViewObject {
         this.view_id = options.view_id
         this.screenName = options.screenName
         this.window_id = options.window_id
-        
-        // this.eventHandlers = new Map()
-        // this.io.onTopic("display.viewobject", (e)=>{
-        //     const m = JSON.parse(e.toString())
-        //     if(m.details.view_id == this.view_id){
-        //         m.details.eventType = m.type
-        //         if(this.eventHandlers.has(m.type)){
-        //             for(let h of this.eventHandlers.get(m.type)){
-        //                 h(m.details)
-        //             }
-        //         }
-        //     }
-        // })
     }
 
     _postRequest( data ){
         return this.io.call('display-rpc-queue-' + this.screenName, JSON.stringify(data))
-    }
-
-    // addEventListener(type, handler){
-    //     if(this.eventHandlers.has(type)){
-    //         this.eventHandlers.get(type).add(handler)
-    //     }else{
-    //         let ws = new Set()
-    //         ws.add(handler)
-    //         this.eventHandlers.set(type, ws)
-    //     }
-    // }
-
-    // removeEventListener(type, handler){
-    //     if(this.eventHandlers.has(type)){
-    //         this.eventHandlers.get(type).delete(handler)
-    //     }
-    // }
-
-    destroy(){
-        this.view_id = null
-        this.screenName = null
-        this.window_id = null
-    }   
-
-    checkStatus(){
-        if(!this.view_id)
-            throw new Error("ViewObject is already deleted.")        
-    }
+    } 
 
     setUrl(url){
         let cmd = {
@@ -74,7 +34,6 @@ module.exports = class ViewObject {
     }
 
     reload(){
-        this.checkStatus()
         let cmd = {
             command : 'reload',
             options : {
@@ -85,7 +44,6 @@ module.exports = class ViewObject {
     }
 
     hide(){
-        this.checkStatus()
          let cmd = {
             command : 'hide',
             options : {
@@ -96,7 +54,6 @@ module.exports = class ViewObject {
     }
 
     show(){
-        this.checkStatus()
          let cmd = {
             command : 'show',
             options : {
@@ -107,22 +64,16 @@ module.exports = class ViewObject {
     }
 
     close(){
-        this.checkStatus()
         let cmd = {
             command : 'close',
             options : {
                 view_id : this.view_id
             }
         }
-        let s = this._postRequest(cmd)
-        if(s.status == "success"){
-           this.destroy()
-        }
-        return s
+        return this._postRequest(cmd)
     }
 
     setBounds(options){
-        this.checkStatus()
         // if(options.scaleContent){
         //     let w = parseFloat(options.width)
         //     let h = parseFloat(options.height)
@@ -138,7 +89,6 @@ module.exports = class ViewObject {
     }
 
     goBack(options){
-        this.checkStatus()
         let cmd = {
             command : 'back',
             options : {
@@ -149,7 +99,6 @@ module.exports = class ViewObject {
     }
 
     goForward(){
-        this.checkStatus()
         let cmd = {
             command : 'forward',
             options : {
@@ -160,7 +109,6 @@ module.exports = class ViewObject {
     }
 
     openDevTools(){
-        this.checkStatus()
         let cmd = {
             command : 'view-object-dev-tools',
             options : {
@@ -172,7 +120,6 @@ module.exports = class ViewObject {
     }
 
     closeDevTools(){
-        this.checkStatus()
         let cmd = {
             command : 'view-object-dev-tools',
             options : {

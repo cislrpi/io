@@ -7,48 +7,17 @@ module.exports = class DisplayWindow {
         this.screenName = options.screenName
         this.appContext = options.appContext
         this.template = "index.html"
-        // this.eventHandlers = new Map()
-        // this.io.onTopic("display.window", (e)=>{
-        //     const m = JSON.parse(e.toString())
-        //     if(m.details.window_id == this.window_id && m.details.screenName == this.screenName){
-        //         m.details.eventType = m.type
-        //         if(this.eventHandlers.has(m.type)){
-        //             for(let h of this.eventHandlers.get(m.type)){
-        //                 h(m.details)
-        //             }
-        //         }
-        //     }
-        // })
- 
     }
 
     _postRequest( data ){
         return this.io.call('display-rpc-queue-' + this.screenName, JSON.stringify(data))
     }
 
-    // addEventListener(type, handler){
-    //     if(this.eventHandlers.has(type)){
-    //         this.eventHandlers.get(type).add(handler)
-    //     }else{
-    //         let ws = new Set()
-    //         ws.add(handler)
-    //         this.eventHandlers.set(type, ws)
-    //     }
-    // }
-
-    // removeEventListener(type, handler){
-    //     if(this.eventHandlers.has(type)){
-    //         this.eventHandlers.get(type).delete(handler)
-    //     }
-    // }
-
-
     id(){
         return this.window_id
     }
 
     clearGrid(){
-        this.checkStatus()
         let cmd = {
             command : "clear-grid",
             options : {
@@ -61,7 +30,6 @@ module.exports = class DisplayWindow {
     }
 
     clearContents(){
-        this.checkStatus()
         let cmd = {
             command : "clear-contents",
             options : {
@@ -98,7 +66,6 @@ module.exports = class DisplayWindow {
     */
 
     createUniformGrid(options){
-        this.checkStatus()
         options.window_id = this.window_id
         let cmd = {
             command : "create-grid",
@@ -110,7 +77,6 @@ module.exports = class DisplayWindow {
     }
 
     addToGrid(label, bounds, backgroundStyle){
-        this.checkStatus()
         let cmd = {
             command : "add-to-grid",
             options : {
@@ -126,7 +92,6 @@ module.exports = class DisplayWindow {
     }
 
     removeFromGrid(label){
-        this.checkStatus()
         let cmd = {
             command : "remove-from-grid",
             options : {
@@ -145,7 +110,6 @@ module.exports = class DisplayWindow {
 
     */
     getGrid(){
-        this.checkStatus()
         let cmd = {
             command : 'get-grid',
             options : {
@@ -158,7 +122,6 @@ module.exports = class DisplayWindow {
     }
 
     getUniformGridCellSize(){
-        this.checkStatus()
         let cmd = {
             command : 'uniform-grid-cell-size',
             options : {
@@ -178,7 +141,6 @@ module.exports = class DisplayWindow {
         js_css_style : http://www.w3schools.com/jsref/dom_obj_style.asp
     */
     setCellStyle(label, js_css_style, animation){
-        this.checkStatus()
         let cmd = {
             command : 'cell-style',
             options : {
@@ -212,7 +174,6 @@ module.exports = class DisplayWindow {
         hides the displayWindow
     */
     hide(){
-        this.checkStatus()
         let cmd = {
             command : 'hide-window',
             options : {
@@ -228,7 +189,6 @@ module.exports = class DisplayWindow {
         shows the displayWindow
     */
     show(){
-        this.checkStatus()
         let cmd = {
             command : 'show-window',
             options : {
@@ -244,7 +204,6 @@ module.exports = class DisplayWindow {
         permanently closes the displayWindow and destroys the viewobjects
     */
     close(){
-        this.checkStatus()
         let cmd = {
             command : 'close-window',
             options : {
@@ -264,7 +223,6 @@ module.exports = class DisplayWindow {
     }
 
     openDevTools(){
-        this.checkStatus()
         let cmd = {
             command : 'window-dev-tools',
             options : {
@@ -278,7 +236,6 @@ module.exports = class DisplayWindow {
     }
 
     closeDevTools(){
-        this.checkStatus()
         let cmd = {
             command : 'window-dev-tools',
             options : {
@@ -302,7 +259,6 @@ module.exports = class DisplayWindow {
             - nodeintegration (boolean)
     */
     createViewObject(options){
-        this.checkStatus()
         options.window_id = this.window_id
         options.appContext = this.appContext
         options.screenName = this.screenName
@@ -313,11 +269,9 @@ module.exports = class DisplayWindow {
         
         return this._postRequest(cmd).then(m =>{
             let opt = JSON.parse(m.toString())
-            opt.width = parseFloat(options.width)
-            opt.height = parseFloat(options.height)
-            return new ViewObject(this.display, opt)      
+            // opt.width = parseFloat(options.width)
+            // opt.height = parseFloat(options.height)
+            return new ViewObject(this.io, opt)      
         })
     }
-
-    
 }

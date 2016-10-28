@@ -326,6 +326,14 @@ module.exports = class DisplayContext {
     }
 
     createViewObject( screenName, options){
-        return this.displayWindows.get(screenName).createViewObject(options)
+        return this.displayWindows.get(screenName).createViewObject(options).then( vo => {
+            this.viewObjects.set( vo.view_id, vo)
+            let map = {}
+            for( let [ k,v] of this.viewObjects ){
+                map[k] = v.screenName
+            }
+            this.io.getStore().addToHash("dc." + this.name , "viewObjDisplayMap", JSON.stringify(map) )
+            return vo
+        })
     }
 }

@@ -3,12 +3,14 @@ module.exports = class ViewObject {
     constructor(io, options){
         this.io = io
         this.view_id = options.view_id
-        this.screenName = options.screenName
+        this.displayName = options.displayName
         this.window_id = options.window_id
+        this.windowName = options.windowName
+        this.displayContext = options.displayContext
     }
 
     _postRequest( data ){
-        return this.io.call('display-rpc-queue-' + this.screenName, JSON.stringify(data))
+        return this.io.call('display-rpc-queue-' + this.displayName, JSON.stringify(data))
     } 
 
     setUrl(url){
@@ -22,12 +24,43 @@ module.exports = class ViewObject {
         return this._postRequest(cmd)
     }
 
+    getUrl(){
+        let cmd = {
+            command : 'get-url',
+            options : {
+                view_id : this.view_id
+            }
+        }
+        return this._postRequest(cmd)
+    }
+
     setCSSStyle(css_string){
-         let cmd = {
+        let cmd = {
             command : 'set-webview-css-style',
             options : {
                 view_id : this.view_id,
                 cssText : css_string
+            }
+        }
+        return this._postRequest(cmd)
+    }
+
+    enableDeviceEmulation(options){
+        let cmd = {
+            command : 'enable-device-emulation',
+            options : {
+                view_id : this.view_id,
+                parameters : options
+            }
+        }
+        return this._postRequest(cmd)
+    }
+
+    disableDeviceEmulation(){
+        let cmd = {
+            command : 'disable-device-emulation',
+            options : {
+                view_id : this.view_id
             }
         }
         return this._postRequest(cmd)
@@ -88,6 +121,16 @@ module.exports = class ViewObject {
         return this._postRequest(cmd)
     }
 
+    getBounds(){
+        let cmd = {
+            command : 'get-bounds',
+            options : {
+                view_id : this.view_id
+            }
+        }
+        return this._postRequest(cmd)
+    }
+
     goBack(options){
         let cmd = {
             command : 'back',
@@ -129,6 +172,6 @@ module.exports = class ViewObject {
         }
         return this._postRequest(cmd)
     }
-
    
+
 }

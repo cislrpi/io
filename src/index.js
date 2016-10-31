@@ -77,7 +77,6 @@ module.exports = class CELIO {
     }
 
     hideAllDisplayContext(){
-        let screens = {}
         let cmd = {
             command : 'hide-all-windows'
         }
@@ -93,7 +92,32 @@ module.exports = class CELIO {
     }
 
     getActiveDisplays(){
-        return this.getStore().getHash("display.screens")
+        return this.getStore().getHash("display.displays")
+    }
+
+    getFocusedDisplayWindow( displayName ){
+        let cmd = {
+            command : 'get-focus-window'
+        }
+        return this.call('display-rpc-queue-' + k, JSON.stringify(cmd) ).then( m => { return JSON.parse(m.toString()) } )
+    }
+
+    getFocusedDisplayWindows(){
+        let cmd = {
+            command : 'get-focus-window'
+        }
+        return this.getActiveDisplays().then( m => {
+            let _ps = []
+            for( let k of Object.keys(m)){
+                _ps.push( this.call('display-rpc-queue-' + k, JSON.stringify(cmd) ) )
+            }
+            return Promise.all(_ps)
+        }).then( m =>{
+            for(var i = 0; i < m.length; i++)
+                m[i] = JSON.parse(m.toString())
+
+            return m
+        })
     }
 
     getStore(){

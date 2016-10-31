@@ -4,13 +4,18 @@ module.exports = class DisplayWindow {
      constructor(io, options){
         this.io = io
         this.window_id = options.window_id
-        this.screenName = options.screenName
-        this.appContext = options.appContext
+        this.windowName = options.windowName
+        this.displayName = options.displayName
+        this.displayContext = options.displayContext
         this.template = "index.html"
+        this.x = options.x
+        this.y = options.y
+        this.width = options.width
+        this.height = options.height
     }
 
     _postRequest( data ){
-        return this.io.call('display-rpc-queue-' + this.screenName, JSON.stringify(data))
+        return this.io.call('display-rpc-queue-' + this.displayName, JSON.stringify(data))
     }
 
     id(){
@@ -248,6 +253,16 @@ module.exports = class DisplayWindow {
         })
     }
 
+    capture(){
+        let cmd = {
+            command : 'capture-window',
+            options : {
+                window_id : this.window_id
+            }
+        }
+        return this._postRequest(cmd)
+    }
+
      /*
         creates a new viewobject (webpage)
         options:
@@ -260,8 +275,9 @@ module.exports = class DisplayWindow {
     */
     createViewObject(options){
         options.window_id = this.window_id
-        options.appContext = this.appContext
-        options.screenName = this.screenName
+        options.displayContext = this.displayContext
+        options.displayName = this.displayName
+        options.windowName = this.windowName
         let cmd = {
             command : 'create-viewobj',
             options : options

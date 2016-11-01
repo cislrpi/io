@@ -22,40 +22,42 @@ module.exports = class Store {
         this.client = redis
     }
 
-    addToHash(key , field, value) {
-        return new this.client.Hash(key).setnx(field, value)
+    addToHash(key, field, value) {
+        const obj = {}
+        obj[field] = value
+        return this.client.hash(key).update(obj)
     }
 
     getHash(key) {
-        return new this.client.Hash(key).getAll()
+        return this.client.hash(key).getAll()
     }
 
     removeFromHash(key,field) {
-        return new this.client.Hash(key).del(field)
+        return this.client.hash(key).del(field)
     }
 
     addToSet(key , value) {
-        return new this.client.Rset(key).add(value)
+        return this.client.rset(key).add(value)
     }
 
     getSet(key) {
-        return new this.client.Rset(key).getAll()
+        return this.client.rset(key).getAll()
     }
 
     removeFromSet(key, val) {
-        return new this.client.Rset(key).remove(val)
+        return this.client.rset(key).remove(val)
     }
 
     setState(key , value) {
-        return new this.client.Key(key).set(value)
+        return this.client.key(key).set(value)
     }
 
     getState(key) {
-        return new this.client.Key(key).get()
+        return this.client.key(key).get()
     }
 
     delState(key) {
-        return new this.client.Key(key).del()
+        return this.client.key(key).del()
     }
 
     getRedisClient() {

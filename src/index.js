@@ -49,7 +49,8 @@ module.exports = class CELIO {
     }
 
     createDisplayContext(ur_app_name, options){
-        return new DisplayContext(ur_app_name, options, this)
+        let _dc = new DisplayContext(ur_app_name, this)
+        return _dc.restoreFromStore(options).then( m=> { return _dc })
     }
 
     getDisplayContextList(){
@@ -58,7 +59,11 @@ module.exports = class CELIO {
 
     getActiveDisplayContext(){
         return this.getStore().getState("activeDisplayContext").then( m => {
-            return new DisplayContext(m, {}, this)
+            if(m){
+                let _dc = new DisplayContext(m, this)
+                return _dc.restoreFromStore({}).then( m=> { return _dc })
+            }else 
+                return new Error("No active display context available")
         })
     }
 
@@ -68,7 +73,7 @@ module.exports = class CELIO {
             console.log("app name in store : ", name)
             if(name != appname){
                 this.getStore().setState("activeDisplayContext", appname)
-                new DisplayContext(appname, {reset : reset}, this)
+                (new DisplayContext(appname, this)).restoreFromStore({reset : reset})
             }else{
                 console.log("app name : ",  appname, "is already active")
             }
@@ -114,7 +119,7 @@ module.exports = class CELIO {
             return Promise.all(_ps)
         }).then( m =>{
             for(var i = 0; i < m.length; i++)
-                m[i] = JSON.parse(m.toString())
+                m[i] = JSON.parse(m[i].toString())
 
             return m
         })

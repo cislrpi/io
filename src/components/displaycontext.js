@@ -3,13 +3,12 @@ const ViewObject = require('./viewobject')
 
 module.exports = class DisplayContext {
     
-    constructor(name,  options, io){
+    constructor(name, io){
         this.io = io
         this.name = name
         this.displayWindows = new Map()
         this.viewObjects = new Map()
-        this.io.getStore().addToSet("displayContexts", name)
-        this.restoreFromStore(options)
+        this.io.getStore().addToSet("displayContexts", name)    
         
         this.eventHandlers = new Map()
         this.io.onTopic("display.removed", m => {
@@ -46,38 +45,35 @@ module.exports = class DisplayContext {
             //clear up the store
             this.io.getStore().getHash("dc." + this.name).then( m=>{
                  if( m != null) {
-                    let mobj = JSON.parse(m.displayWinObjMap)
-                    delete mobj[closedDisplay]
-                    
-                    let vobj = JSON.parse(m.viewObjDisplayMap)
-                    for(let k = 0;k < toRemove.length; k++){
-                        delete vobj[toRemove[k]]
+                    let mobj = m.displayWinObjMap ? JSON.parse(m.displayWinObjMap) : null
+                    if(mobj){
+                        delete mobj[closedDisplay]
+                        mobj = Object.keys(mobj).length > 0 ? mobj : null
                     }
+                    if(mobj){
+                        this.io.getStore().addToHash("dc." + this.name, "displayWinObjMap", JSON.stringify(mobj))
+                    }else{
+                        this.io.getStore().removeFromHash( "dc." + this.name, "displayWinObjMap" )
+                    }
+                    
+                    let vobj = m.viewObjDisplayMap ? JSON.parse(m.viewObjDisplayMap) : null
 
-                    this.io.getStore().addToHash("dc." + this.name, "displayWinObjMap", mobj)
-                    this.io.getStore().addToHash("dc." + this.name, "viewObjDisplayMap", vobj)
-
+                    if(vobj){
+                        for(let k = 0;k < toRemove.length; k++){
+                            delete vobj[toRemove[k]]
+                        }
+                        this.io.getStore().addToHash("dc." + this.name, "viewObjDisplayMap", JSON.stringify(vobj))
+                    }else{
+                        this.io.getStore().removeFromHash( "dc." + this.name, "viewObjDisplayMap" )
+                    }
                 }
             })
 
         })
 
-        this.io.onTopic("display.*", m => {
-            console.log( m.toString() )
-            // let openedDisplay = m.toString()
-            // let eventType = "displayAdded"
-            // let details = {
-            //     type  :  eventType,
-            //     displayName : openedDisplay
-            // }
-
-            // if(this.eventHandlers.has( eventType )){
-            //     for(let h of this.eventHandlers.get( eventType )){
-            //         h(details)
-            //     }
-            // }
-        })
-        
+        // this.io.onTopic("display.*", m => {
+        //     console.log( m.toString() )
+        // })        
     }
 
     addEventListener(type, handler){
@@ -101,7 +97,7 @@ module.exports = class DisplayContext {
     }
 
     restoreFromStore(options){
-        this.io.getStore().getHash("dc." + this.name ).then( m => {
+        return this.io.getStore().getHash("dc." + this.name ).then( m => {
             console.log(m)
             if( m == null) {
                 console.log("initialize from options")
@@ -189,6 +185,10 @@ module.exports = class DisplayContext {
         return new Error( `Window id ${window_id} is not present`)
     }
 
+    getDisplayWindowName(){
+        return this.displayWindows.keys()
+    }
+
     show(){
         let cmd = {
             command : "set-display-context",
@@ -203,6 +203,8 @@ module.exports = class DisplayContext {
                 _ps.push( this._postRequest(k, cmd) )
             }
             return Promise.all(_ps)
+        }).then( m=> {
+            this.io.getStore().setState("activeDisplayContext", this.name)
         })
     }
 
@@ -231,12 +233,16 @@ module.exports = class DisplayContext {
                 context : this.name
             }
         }
-        return this.getDisplayBounds().then( m => {
-            let _ps = []
-            for( let k of Object.keys(m)){
-                _ps.push( this._postRequest(k, cmd) )
+        return this.getDisplayBounds().then( m => {            
+            if(m){
+                let _ps = []
+                for( let k of Object.keys(m)){
+                    _ps.push( this._postRequest(k, cmd) )
+                }
+                return Promise.all(_ps)
+            }else{
+                return []
             }
-            return Promise.all(_ps)
         }).then( m => {
             console.log(m)
             let map = []
@@ -249,6 +255,10 @@ module.exports = class DisplayContext {
             this.viewObjects.clear()
             this.io.getStore().delState('dc.' + this.name)
             this.io.getStore().removeFromSet("displayContexts", this.name)
+            this.io.getStore().getState('activeDisplayContext').then( x => {
+                if( x == this.name)
+                    this.io.getStore().delState('activeDisplayContext')
+            })
 
             return map
         })          
@@ -350,8 +360,13 @@ module.exports = class DisplayContext {
         return Promise.all(_ps)
     }
 
-    createViewObject( windowName, options){
-        return this.displayWindows.get(windowName).createViewObject(options).then( vo => {
+    createViewObject(options, windowName ){
+        let wname = "main"
+        if(windowName  && this.displayWindows.has(windowName)){
+            wname = windowName
+        }
+        console.log("wname : ", wname)
+        return this.displayWindows.get(wname).createViewObject(options).then( vo => {
             this.viewObjects.set( vo.view_id, vo)
             let map = {}
             for( let [ k,v] of this.viewObjects ){

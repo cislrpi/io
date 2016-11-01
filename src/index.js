@@ -80,8 +80,8 @@ module.exports = class CELIO {
         this.getStore().getState("activeDisplayContext").then( name => {
             console.log("app name in store : ", name)
             if(name != appname){
-                this.getStore().setState("activeDisplayContext", appname)
-                (new DisplayContext(appname, this)).restoreFromStore({reset : reset})
+                this.getStore().setState("activeDisplayContext", appname);
+                (new DisplayContext(appname, this)).restoreFromStore({reset : reset});
             }else{
                 console.log("app name : ",  appname, "is already active")
             }

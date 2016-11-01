@@ -50,7 +50,9 @@ module.exports = class CELIO {
 
     createDisplayContext(ur_app_name, options){
         let _dc = new DisplayContext(ur_app_name, this)
-        return _dc.restoreFromStore(options).then( m=> { return _dc })
+        return _dc.restoreFromStore(options).then( m=> {
+            return _dc 
+        })
     }
 
     getDisplayContextList(){

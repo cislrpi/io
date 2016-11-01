@@ -98,11 +98,10 @@ module.exports = class DisplayContext {
 
     restoreFromStore(options){
         return this.io.getStore().getHash("dc." + this.name ).then( m => {
-            console.log(m)
             if( m == null) {
                 console.log("initialize from options")
                 if(options == undefined || Object.keys( options ).length === 0   ){
-                    this.getDisplayBounds().then(  bounds => {
+                    return this.getDisplayBounds().then(  bounds => {
                         for( let k of Object.keys(bounds)){
                             bounds[k] = JSON.parse(bounds[k])
                             bounds[k].displayName = k
@@ -110,14 +109,14 @@ module.exports = class DisplayContext {
                             bounds[k].template = "index.html"
                             bounds[k].displayContext = this.name 
                         }
-                        this.initialize(bounds) 
+                        return this.initialize(bounds) 
                     })
                 }else{
                     for( let k of Object.keys(options)){
                         options[k].windowName = k
                         options[k].displayContext = this.name
                     }
-                    this.initialize(options)
+                    return this.initialize(options)
                 }
             }else{
                 console.log("restoring from store")
@@ -205,6 +204,7 @@ module.exports = class DisplayContext {
             return Promise.all(_ps)
         }).then( m=> {
             this.io.getStore().setState("activeDisplayContext", this.name)
+            return m
         })
     }
 
@@ -331,7 +331,6 @@ module.exports = class DisplayContext {
             }
             return Promise.all(_ps)
         }).then( m =>{
-            console.log(m)
             let map = {}
             for( var i = 0;i< m.length; i++){
                 let res = JSON.parse(m[i].toString())
@@ -339,8 +338,8 @@ module.exports = class DisplayContext {
                 map[res.windowName] = res
                 this.displayWindows.set(res.windowName , new DisplayWindow(this.io, res))
             }
-            console.log(map)
-            this.io.getStore().addToHash("dc." + this.name , "displayWinObjMap", JSON.stringify(map) )     
+            this.io.getStore().addToHash("dc." + this.name , "displayWinObjMap", JSON.stringify(map) ) 
+            return map    
         })
     }
 

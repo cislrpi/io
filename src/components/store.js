@@ -6,11 +6,14 @@ bluebird.promisifyAll(redis.Multi.prototype);
 module.exports = class Store {
 
     constructor ( options ){
+        if (options.url) {
+            options.url = 'redis://'+options.url
+        } 
         this.client = redis.createClient( options )
     }
 
-    addToHash( key , field, value){ 
-        this.client.hset(key, field, value)
+    addToHash( key , field, value){
+        return this.client.hsetAsync(key, field, value)
     }
 
     getHash ( key ) {
@@ -18,11 +21,11 @@ module.exports = class Store {
     }
 
     removeFromHash( key, field ){
-        return this.client.hdel( key, field )
+        return this.client.hdelAsync( key, field )
     }
 
     addToSet( key , value){
-        this.client.sadd( key, value )
+        return this.client.saddAsync( key, value )
     }
 
     getSet (key ) {
@@ -30,11 +33,11 @@ module.exports = class Store {
     }
 
     removeFromSet ( key, val ){
-        this.client.srem( key, val )
+        return this.client.sremAsync( key, val )
     }
 
     setState( key , value) {
-        this.client.set(key, value)
+        return this.client.setAsync(key, value)
     }
 
     getState( key ){
@@ -42,11 +45,10 @@ module.exports = class Store {
     }
 
     delState( key ) {
-        this.client.del(key)
+        return this.client.delAsync(key)
     }
 
     getRedisClient() {
         return this.client
     }
-
 }

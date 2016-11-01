@@ -1,7 +1,8 @@
 const Stomp = require('stompjs/lib/stomp').Stomp;
 const Transcript = require('./components/transcript');
 const Speaker = require('./components/speaker');
-const Display = require('./components/display');
+const DisplayContext = require('./components/displaycontext');
+const Store = require('./components/clientstore');
 const uuid = require('uuid');
 
 module.exports = class CELIO {
@@ -34,10 +35,20 @@ module.exports = class CELIO {
                 err=>{console.error(err);reject(err);}, config.mq.vhost);
         });
         this.config = config;
+
+        // Make the store connection
+        this.store = new Store (config.store);
+
+        // Make singleton objects
+        this.transcript = new Transcript(this);
+    }
+
+    generateUUID() {
+        return uuid.v4();
     }
 
     getTranscript() {
-        return new Transcript(this);
+        return this.transcript;
     }
 
     getSpeaker() {
@@ -48,12 +59,95 @@ module.exports = class CELIO {
         return new Display(this);
     }
 
+    createDisplayContext(ur_app_name, options){
+        let _dc = new DisplayContext(ur_app_name, this)
+        return _dc.restoreFromStore(options).then( m=> {
+            return _dc 
+        })
+    }
+
+    getDisplayContextList(){
+        return this.store.getSet("displayContexts")
+    }
+
+    getActiveDisplayContext(){
+        return this.store.getState("activeDisplayContext").then( m => {
+            if(m){
+                let _dc = new DisplayContext(m, this)
+                return _dc.restoreFromStore({}).then( m=> { return _dc })
+            }else 
+                return new Error("No active display context available")
+        })
+    }
+
+    setActiveDisplayContext( appname , reset){
+        console.log("requested app name : ", appname)
+        this.store.getState("activeDisplayContext").then( name => {
+            console.log("app name in store : ", name)
+            if(name != appname){
+                this.store.setState("activeDisplayContext", appname)
+                (new DisplayContext(appname, this)).restoreFromStore({reset : reset})
+            }else{
+                console.log("app name : ",  appname, "is already active")
+            }
+        })
+        
+    }
+
+    hideAllDisplayContext(){
+        let cmd = {
+            command : 'hide-all-windows'
+        }
+        this.getActiveDisplays().then( m => {
+            let _ps = []
+            for( let k of Object.keys(m)){
+                _ps.push( this.call('display-rpc-queue-' + k, JSON.stringify(cmd) ) )
+            }
+            return Promise.all(_ps)
+        }).then( m =>{
+            return m
+        })
+    }
+
+    getActiveDisplays(){
+        return this.store.getHash("display.displays")
+    }
+
+    getFocusedDisplayWindow(displayName="main"){
+        let cmd = {
+            command : 'get-focus-window'
+        }
+        return this.call('display-rpc-queue-' + k, JSON.stringify(cmd) ).then( m => { return JSON.parse(m.toString()) } )
+    }
+
+    getFocusedDisplayWindows(){
+        let cmd = {
+            command : 'get-focus-window'
+        }
+        return this.getActiveDisplays().then( m => {
+            let _ps = []
+            for( let k of Object.keys(m)){
+                _ps.push( this.call('display-rpc-queue-' + k, JSON.stringify(cmd) ) )
+            }
+            return Promise.all(_ps)
+        }).then( m =>{
+            for(var i = 0; i < m.length; i++)
+                m[i] = JSON.parse(m[i].toString())
+
+            return m
+        })
+    }
+
+    getStore() {
+        return this.store
+    }
+
     call(queue, content, headers={}) {
         return new Promise((resolve, reject) => {
             const rpcClient = Stomp.over(new WebSocket(this.brokerURL));
             rpcClient.debug = null;
             rpcClient.connect(this.config.mq.username, this.config.mq.password, ()=>{
-                headers['correlation-id'] = uuid.v4();
+                headers['correlation-id'] = generateUUID();
                 headers['reply-to'] = '/temp-queue/result';
                 if (!headers.expiration) {
                     headers.expiration = 3000; // default to 3 sec;

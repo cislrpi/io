@@ -32,8 +32,14 @@ module.exports = class CELIO {
 
         // Make a shared channel for publishing and subscribe            
         this.pch = this.pconn.then(conn => conn.createChannel());
-        this.store = new Store ( nconf.get("store") )
+
         this.config = nconf;
+
+        // Make the store connection
+        this.store = new Store (nconf.get("store"));
+
+        // Make singleton objects
+        this.transcript = new Transcript(this);
     }
 
     generateUUID() {
@@ -41,7 +47,7 @@ module.exports = class CELIO {
     }
 
     getTranscript() {
-        return new Transcript(this);
+        return this.transcript;
     }
 
     getSpeaker() {
@@ -102,7 +108,7 @@ module.exports = class CELIO {
         return this.getStore().getHash("display.displays")
     }
 
-    getFocusedDisplayWindow( displayName ){
+    getFocusedDisplayWindow( displayName="main" ){
         let cmd = {
             command : 'get-focus-window'
         }

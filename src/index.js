@@ -70,8 +70,11 @@ module.exports = class CELIO {
             if(m){
                 let _dc = new DisplayContext(m, this)
                 return _dc.restoreFromStore({}).then( m=> { return _dc })
-            }else 
-                return new Error("No active display context available")
+            }else{ 
+                let _dc = new DisplayContext("default", this)
+                return _dc.restoreFromStore({}).then( m=> { return _dc })
+                // return new Error("No active display context available")
+            }
         })
     }
 

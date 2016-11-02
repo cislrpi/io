@@ -44,7 +44,7 @@ module.exports = class CELIO extends CELIOAbstract {
             const rpcClient = Stomp.over(new WebSocket(this.brokerURL));
             rpcClient.debug = null;
             rpcClient.connect(this.config.mq.username, this.config.mq.password, ()=>{
-                headers['correlation-id'] = generateUUID();
+                headers['correlation-id'] = this.generateUUID();
                 headers['reply-to'] = '/temp-queue/result';
                 if (!headers.expiration) {
                     headers.expiration = 3000; // default to 3 sec;

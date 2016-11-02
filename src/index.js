@@ -46,7 +46,7 @@ module.exports = class CELIO extends CELIOAbstract {
             this.pconn.then(conn => conn.createChannel()
                 .then(ch => ch.assertQueue('', {exclusive: true})
                     .then(q => {
-                        options.correlationId = uuid.v4();
+                        options.correlationId = this.generateUUID();
                         options.replyTo = q.queue;
                         if (!options.expiration) {
                             options.expiration = 3000; // default to 3 sec;

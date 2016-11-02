@@ -43,7 +43,7 @@ module.exports = class CELIOAbstract {
             if(m){
                 let _dc = new DisplayContext(m, this)
                 return _dc.restoreFromStore({}).then( m=> { return _dc })
-            }else{ 
+            }else{
                 let _dc = new DisplayContext("default", this)
                 return _dc.restoreFromStore({}).then( m=> { return _dc })
             }

@@ -1,5 +1,6 @@
 const DisplayWindow = require('./displaywindow')
 const ViewObject = require('./viewobject')
+const _ = require('lodash');
 
 module.exports = class DisplayContext {
     
@@ -29,7 +30,7 @@ module.exports = class DisplayContext {
 
             //clear up the store
             this.io.getStore().getHash("dc." + this.name).then( m=>{
-                 if( m != null) {
+                 if(!_.isEmpty(m)) {
                     let mobj = m.displayWinObjMap ? JSON.parse(m.displayWinObjMap) : null
                     if(mobj){
                         delete mobj[closedDisplay]
@@ -73,9 +74,9 @@ module.exports = class DisplayContext {
 
     restoreFromStore(options){
         return this.io.getStore().getHash("dc." + this.name ).then( m => {
-            if( m == null) {
+            if(_.isEmpty(m)) {
                 console.log("initialize from options")
-                if(options == undefined || Object.keys( options ).length === 0   ){
+                if(options == undefined || _.isEmpty(options)){
                     return this.getDisplayBounds().then(  bounds => {
                         for( let k of Object.keys(bounds)){
                             bounds[k] = JSON.parse(bounds[k])

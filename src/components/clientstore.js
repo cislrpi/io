@@ -4,7 +4,8 @@ const redis = require('webdismay');
 module.exports = class Store {
     constructor(options) {
         let params = {
-            endPoint: 'http://'+options.url+':7379/'
+            endPoint: 'http://'+options.url+':7379/',
+            postProcess: null
         }
         if (options.username && options.password) {
             params.headers = {

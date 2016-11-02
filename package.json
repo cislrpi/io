@@ -8,7 +8,18 @@
     "test_display_promise": "mocha --timeout 15000 tests/testRPCAsync.js",
     "test_display_events": "mocha --timeout 40000 tests/testDisplayEvents.js"
   },
-  "author": "Yedendra Shrinivasan, Yunfeng Zhang",
+
+  "contributors": [
+    {
+      "name": "Yedendra Shrinivasan",
+      "email": "yshrini@us.ibm.com"
+    },
+    {
+      "name": "Yunfeng Zhang",
+      "email": "zhangyun@us.ibm.com"
+    }
+  ],
+  "repository": "https://github.ibm.com/celio/CELIO",
   "publishConfig": {
     "registry": "https://cel-npm-registry.mybluemix.net/"
   },

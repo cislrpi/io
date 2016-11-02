@@ -17,7 +17,7 @@ module.exports = class Store {
     }
 
     getHash ( key ) {
-        return this.client.hgetallAsync( key )
+        return this.client.hgetallAsync( key ).then(r=>{if (r==null) return {}})
     }
 
     removeFromHash( key, field ){

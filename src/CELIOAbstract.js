@@ -46,7 +46,6 @@ module.exports = class CELIOAbstract {
             }else{ 
                 let _dc = new DisplayContext("default", this)
                 return _dc.restoreFromStore({}).then( m=> { return _dc })
-                // return new Error("No active display context available")
             }
         })
     }

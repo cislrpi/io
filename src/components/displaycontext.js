@@ -147,11 +147,11 @@ module.exports = class DisplayContext {
     }
 
     // returns the window_object corresponding to the displayName
-    getDisplayWindow(displayName){
+    getDisplayWindowSync(displayName){
         return this.displayWindows.get(displayName) 
     }
 
-    getDisplayWindowById(window_id){
+    getDisplayWindowByIdSync(window_id){
         for( let [k,v] of this.displayWindows){
             if(v.window_id === window_id)
                 return v
@@ -159,7 +159,7 @@ module.exports = class DisplayContext {
         return new Error( `Window id ${window_id} is not present`)
     }
 
-    getDisplayWindowName(){
+    getDisplayWindowNameSync(){
         return this.displayWindows.keys()
     }
 
@@ -318,11 +318,11 @@ module.exports = class DisplayContext {
         })
     }
 
-    getViewObjectById(id){
+    getViewObjectByIdSync(id){
         return this.viewObjects.get(id)
     }
 
-    getViewObjects(){
+    getViewObjectsSync(){
         return this.viewObjects
     }
 
@@ -375,8 +375,20 @@ module.exports = class DisplayContext {
         this._on( `display.${this.name}.viewObjectUrlChanged`, handler )
     }
 
+    onViewObjectUrlReloaded (handler){
+        this._on( `display.${this.name}.viewObjectUrlChanged`, handler )
+    }
+
     onViewObjectCrashed( handler ){
         this._on( `display.${this.name}.viewObjectCrashed`, handler )
+    }
+
+    onViewObjectGPUCrashed( handler ){
+        this._on( `display.${this.name}.viewObjectGPUCrashed`, handler )
+    }
+
+    onViewObjectPluginCrashed( handler ){
+        this._on( `display.${this.name}.viewObjectPluginCrashed`, handler )
     }
 
     onDisplayContextCreated( handler ){

@@ -5,7 +5,6 @@ const amqp = require('amqplib');
 const _ = require('lodash');
 
 const CELIOAbstract = require('./CELIOAbstract');
-const Transcript = require('./components/transcript');
 const Hotspot = require('./components/hotspot');
 const Store = require('./components/store');
 

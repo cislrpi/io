@@ -1,7 +1,7 @@
 const Stomp = require('stompjs/lib/stomp').Stomp;
-const Store = require('./components/clientstore');
 
 const CELIOAbstract = require('./CELIOAbstract');
+const Store = require('./components/clientstore');
 
 module.exports = class CELIO extends CELIOAbstract {
     constructor(config) {

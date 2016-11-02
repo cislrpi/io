@@ -2,16 +2,16 @@ const path = require('path');
 const fs = require('fs');
 const nconf = require('nconf');
 const amqp = require('amqplib');
-const Transcript = require('./components/transcript');
-const Hotspot = require('./components/hotspot');
-const Speaker = require('./components/speaker');
-const DisplayContext = require('./components/displaycontext');
-const Store = require('./components/store');
-const uuid = require('uuid');
 const _ = require('lodash');
 
-module.exports = class CELIO {
+const CELIOAbstract = require('./CELIOAbstract');
+const Transcript = require('./components/transcript');
+const Hotspot = require('./components/hotspot');
+const Store = require('./components/store');
+
+module.exports = class CELIO extends CELIOAbstract {
     constructor() {
+        super();
         const configFile = path.join(process.cwd(), 'cog.json');
         nconf.argv().file({file: configFile}).env('_');
 
@@ -34,110 +34,8 @@ module.exports = class CELIO {
         this.pch = this.pconn.then(conn => conn.createChannel());
 
         this.config = nconf;
-
         // Make the store connection
-        this.store = new Store (nconf.get("store"));
-
-        // Make singleton objects
-        this.transcript = new Transcript(this);
-    }
-
-    generateUUID() {
-        return uuid.v4();
-    }
-
-    getTranscript() {
-        return this.transcript;
-    }
-
-    getSpeaker() {
-        return new Speaker(this);
-    }
-
-    createDisplayContext(ur_app_name, options){
-        let _dc = new DisplayContext(ur_app_name, this)
-        return _dc.restoreFromStore(options).then( m=> {
-            return _dc 
-        })
-    }
-
-    getDisplayContextList(){
-        return this.getStore().getSet("displayContexts")
-    }
-
-    getActiveDisplayContext(){
-        return this.getStore().getState("activeDisplayContext").then( m => {
-            if(m){
-                let _dc = new DisplayContext(m, this)
-                return _dc.restoreFromStore({}).then( m=> { return _dc })
-            }else{ 
-                let _dc = new DisplayContext("default", this)
-                return _dc.restoreFromStore({}).then( m=> { return _dc })
-                // return new Error("No active display context available")
-            }
-        })
-    }
-
-    setActiveDisplayContext( appname , reset){
-        console.log("requested app name : ", appname)
-        this.getStore().getState("activeDisplayContext").then( name => {
-            console.log("app name in store : ", name)
-            if(name != appname){
-                this.getStore().setState("activeDisplayContext", appname);
-                (new DisplayContext(appname, this)).restoreFromStore({reset : reset});
-            }else{
-                console.log("app name : ",  appname, "is already active")
-            }
-        })
-        
-    }
-
-    hideAllDisplayContext(){
-        let cmd = {
-            command : 'hide-all-windows'
-        }
-        this.getActiveDisplays().then( m => {
-            let _ps = []
-            for( let k of Object.keys(m)){
-                _ps.push( this.call('display-rpc-queue-' + k, JSON.stringify(cmd) ) )
-            }
-            return Promise.all(_ps)
-        }).then( m =>{
-            return m
-        })
-    }
-
-    getActiveDisplays(){
-        return this.getStore().getHash("display.displays")
-    }
-
-    getFocusedDisplayWindow( displayName="main" ){
-        let cmd = {
-            command : 'get-focus-window'
-        }
-        return this.call('display-rpc-queue-' + k, JSON.stringify(cmd) ).then( m => { return JSON.parse(m.toString()) } )
-    }
-
-    getFocusedDisplayWindows(){
-        let cmd = {
-            command : 'get-focus-window'
-        }
-        return this.getActiveDisplays().then( m => {
-            let _ps = []
-            for( let k of Object.keys(m)){
-                _ps.push( this.call('display-rpc-queue-' + k, JSON.stringify(cmd) ) )
-            }
-            return Promise.all(_ps)
-        }).then( m =>{
-            for(var i = 0; i < m.length; i++)
-                m[i] = JSON.parse(m[i].toString())
-
-            return m
-        })
-    }
-
-    getStore(){
-        return this.store
+        this.store = new Store(nconf.get("store"));
     }
 
     createHotspot(region, excludeEventsOutsideRegion=true) {

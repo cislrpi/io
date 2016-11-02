@@ -27,21 +27,6 @@ module.exports = class DisplayContext {
                 this.viewObjects.delete(toRemove[k])
             }
 
-            // call event handlers
-            // let eventType = "displayRemoved"
-            // let details = {
-            //     type  :  eventType,
-            //     displayName : closedDisplay,
-            //     closedViewObjects : toRemove,
-            //     closedWindowObjId : closedWindowObjId
-            // }
-
-            // if(this.eventHandlers.has( eventType )){
-            //     for(let h of this.eventHandlers.get( eventType )){
-            //         h(details)
-            //     }
-            // }
-
             //clear up the store
             this.io.getStore().getHash("dc." + this.name).then( m=>{
                  if( m != null) {
@@ -62,6 +47,9 @@ module.exports = class DisplayContext {
                         for(let k = 0;k < toRemove.length; k++){
                             delete vobj[toRemove[k]]
                         }
+                        vobj = Object.keys(vobj).length > 0 ? vobj : null
+                    }
+                    if(vobj){
                         this.io.getStore().addToHash("dc." + this.name, "viewObjDisplayMap", JSON.stringify(vobj))
                     }else{
                         this.io.getStore().removeFromHash( "dc." + this.name, "viewObjDisplayMap" )
@@ -69,27 +57,14 @@ module.exports = class DisplayContext {
                 }
             })
 
+        })      
+    }
+
+    _on(topic, handler) {
+        this.io.onTopic(topic, (msg, headers)=> {
+            if(handler != null)
+                handler(JSON.parse(msg.toString()), headers)
         })
-
-        // this.io.onTopic("display.*", m => {
-        //     console.log( m.toString() )
-        // })        
-    }
-
-    addEventListener(type, handler){
-        if(this.eventHandlers.has(type)){
-            this.eventHandlers.get(type).add(handler)
-        }else{
-            let ws = new Set()
-            ws.add(handler)
-            this.eventHandlers.set(type, ws)
-        }
-    }
-
-    removeEventListener(type, handler){
-        if(this.eventHandlers.has(type)){
-            this.eventHandlers.get(type).delete(handler)
-        }
     }
 
     _postRequest( displayName, data ){
@@ -374,5 +349,53 @@ module.exports = class DisplayContext {
             this.io.getStore().addToHash("dc." + this.name , "viewObjDisplayMap", JSON.stringify(map) )
             return vo
         })
+    }
+
+    onViewObjectCreated( handler ){
+        this._on( `display.${this.name}.viewObjectCreated`, handler )
+    }
+
+    OnViewObjectHidden( handler ){
+        this._on( `display.${this.name}.viewObjectHidden`, handler )
+    }
+
+    onViewObjectShown( handler ){
+        this._on( `display.${this.name}.viewObjectShown`, handler )
+    }
+
+    onViewObjectClosed( handler ){
+        this._on( `display.${this.name}.viewObjectClosed`, handler )
+    }
+
+    onViewObjectBoundsChanged ( handler ){
+        this._on( `display.${this.name}.viewObjectBoundsChanged`, handler )
+    }
+
+    onViewObjectUrlChanged (handler){
+        this._on( `display.${this.name}.viewObjectUrlChanged`, handler )
+    }
+
+    onViewObjectCrashed( handler ){
+        this._on( `display.${this.name}.viewObjectCrashed`, handler )
+    }
+
+    onDisplayContextCreated( handler ){
+        this._on( `display.displayContext.created`, handler )
+    }
+
+    onActiveDisplayContextChanged( handler ){
+        this._on( `display.displayContext.activeChanged`, handler )
+    }
+
+    onDisplayContextClosed( handler ){
+        this._on( `display.displayContext.closed`, handler )
+    }
+
+    onDisplayWorkerRemoved( handler ){
+        this._on( `display.removed`, handler )
+    }
+
+    onDisplayWorkerAdded( handler ){
+        this._on( `display.added`, handler )
     }
 }

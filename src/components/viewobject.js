@@ -172,6 +172,27 @@ module.exports = class ViewObject {
         }
         return this._postRequest(cmd)
     }
+
+    setAudioMuted(val ){
+        let cmd = {
+            command : 'set-audio-muted',
+            options : {
+                view_id : this.view_id,
+                audio : val
+            }
+        }
+        return this._postRequest(cmd)
+    }
+    
+    isAudioMuted(){
+        let cmd = {
+            command : 'get-audio-muted',
+            options : {
+                view_id : this.view_id
+            }
+        }
+        return this._postRequest(cmd)
+    }
    
 
 }

@@ -241,6 +241,7 @@ module.exports = class DisplayContext {
                     disps.add( m[k].displayName )
                 }
                 let _ps = []
+                console.log( "close at ", disps)
                 for( let k of disps){
                     _ps.push( this._postRequest(k, cmd) )
                 }

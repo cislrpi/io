@@ -86,10 +86,8 @@ class PoleApp {
         this.io.createDisplayContext("pole", options).then( m => {
             this.displayContext = m
             this.displayContext.onDisplayContextClosed( (msg, header) =>{
-                console.log(msg, header)
-                let m = JSON.parse(msg.toString())
-                if( m.details.closedDisplayContext == "pole")
-                    this.close()
+                if( msg.details.closedDisplayContext == "pole")
+                    process.exit()
             })
             console.log("created : ", this.displayContext.name)
             return Promise.map(this.contents, content =>{
@@ -115,9 +113,10 @@ app.setup()
 
 
 function exitHandler(options, err) {
+    console.log("closing app")
     return app.close()
 }
 //closing display context of exit
 process.on('SIGINT', exitHandler.bind(null, {exit:true}));
-process.on('exit', exitHandler.bind(null,{cleanup:true}));
-process.on('uncaughtException', exitHandler.bind(null, {exit:true}));
+// process.on('exit', exitHandler.bind(null,{cleanup:true}));
+// process.on('uncaughtException', exitHandler.bind(null, {exit:true}));

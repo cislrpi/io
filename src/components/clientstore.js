@@ -33,6 +33,10 @@ module.exports = class Store {
         return this.client.hash(key).getAll()
     }
 
+    getHashField( key, field ){
+        return this.client.hash(key).get(field)
+    }
+
     removeFromHash(key,field) {
         return this.client.hash(key).del(field)
     }

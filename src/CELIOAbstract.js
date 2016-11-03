@@ -27,9 +27,9 @@ module.exports = class CELIOAbstract {
         return new Speaker(this);
     }
 
-    createDisplayContext(ur_app_name, options){
-        let _dc = new DisplayContext(ur_app_name, this)
-        return _dc.restoreFromStore(options).then( m=> {
+    createDisplayContext(ur_app_name, window_settings){
+        let _dc = new DisplayContext(ur_app_name, window_settings, this)
+        return _dc.restoreFromStore().then( m=> {
             return _dc 
         })
     }
@@ -41,11 +41,11 @@ module.exports = class CELIOAbstract {
     getActiveDisplayContext(){
         return this.getStore().getState("activeDisplayContext").then( m => {
             if(m){
-                let _dc = new DisplayContext(m, this)
-                return _dc.restoreFromStore({}).then( m=> { return _dc })
-            }else{
-                let _dc = new DisplayContext("default", this)
-                return _dc.restoreFromStore({}).then( m=> { return _dc })
+                let _dc = new DisplayContext(m, {}, this)
+                return _dc.restoreFromStore().then( m=> { return _dc })
+            }else{ 
+                let _dc = new DisplayContext("default", {}, this)
+                return _dc.restoreFromStore().then( m=> { return _dc })
             }
         })
     }
@@ -56,7 +56,7 @@ module.exports = class CELIOAbstract {
             console.log("app name in store : ", name)
             if(name != appname){
                 this.getStore().setState("activeDisplayContext", appname);
-                (new DisplayContext(appname, this)).restoreFromStore({reset : reset});
+                (new DisplayContext(appname, {}, this)).restoreFromStore(reset);
             }else{
                 console.log("app name : ",  appname, "is already active")
             }

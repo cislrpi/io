@@ -20,6 +20,10 @@ module.exports = class Store {
         return this.client.hgetallAsync( key ).then(r=>{if (r==null) return {}})
     }
 
+    getHashField( key, field ){
+        return this.client.hgetAsync(key, field)
+    }
+
     removeFromHash( key, field ){
         return this.client.hdelAsync( key, field )
     }

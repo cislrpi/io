@@ -17,7 +17,10 @@ module.exports = class Store {
     }
 
     getHash ( key ) {
-        return this.client.hgetallAsync( key ).then(r=>{if (r==null) return {}})
+        return this.client.hgetallAsync( key ).then(r=>{
+            if (r==null) return {}
+            else return r
+        })
     }
 
     getHashField( key, field ){

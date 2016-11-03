@@ -40,6 +40,7 @@ module.exports = class CELIOAbstract {
 
     getActiveDisplayContext(){
         return this.getStore().getState("activeDisplayContext").then( m => {
+            console.log("active display context is ", m)
             if(m){
                 let _dc = new DisplayContext(m, {}, this)
                 return _dc.restoreFromStore().then( m=> { return _dc })

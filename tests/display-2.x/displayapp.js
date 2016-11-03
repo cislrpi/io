@@ -50,7 +50,7 @@ let options = {
 class PoleApp {
     constructor(){
         this.io = new CELIO()
-        this.name = "pole"
+        this.name = "poleapp"
         this.displayContext = null
         this.contents = [
             {
@@ -83,12 +83,10 @@ class PoleApp {
     }
 
     setup(){
-        this.io.createDisplayContext("pole", options).then( m => {
+        this.io.createDisplayContext(this.name, options).then( m => {
             this.displayContext = m
-            this.displayContext.onDisplayContextClosed( (msg, header) =>{
-                if( msg.details.closedDisplayContext == "pole")
-                    process.exit()
-            })
+            this.createEvents()
+            
             console.log("created : ", this.displayContext.name)
             return Promise.map(this.contents, content =>{
                 return this.displayContext.createViewObject( content, content.window )
@@ -104,6 +102,27 @@ class PoleApp {
         return this.displayContext.close().then( m => {
             process.exit()
         })
+    }
+
+    createEvents(){
+        
+        // context closed event through this app or through external action
+        this.displayContext.onDisplayContextClosed( (msg, header) =>{
+            if( msg.details.closedDisplayContext == this.name)
+                process.exit()
+        })
+
+        // this.displayContext.onDisplayContextChanged ( (msg, header) => {
+        //     console.log( msg.details.displayContext , msg.details.lastDisplayContext )
+
+        //     if( msg.details.lastDisplayContext == this.name ){
+
+        //     }else if( msg.details.displayContext == this.name ){
+
+        //     }
+        // })
+
+
     }
 }
 

@@ -11,8 +11,10 @@ module.exports = class DisplayContext {
         this.displayWindows = new Map()
         this.viewObjects = new Map()
 
-        if(!_.isEmpty(window_settings))
+        if(!_.isEmpty(window_settings)){
+            console.log("storing window setting")
             this.io.getStore().addToHash("display.windowBounds", name , JSON.stringify( window_settings ) )
+        }
 
         this.io.getStore().addToSet("displayContexts", name)    
         
@@ -79,7 +81,9 @@ module.exports = class DisplayContext {
     }
 
     restoreFromStore( reset = false ){
+        console.log("getting state dc."+ this.name)
         return this.io.getStore().getHash("dc." + this.name ).then( m => {
+            console.log("from store" , m)
             if(_.isEmpty(m)) {
                 console.log("initialize from options")
                 return this.getWindowBounds().then(  bounds => {

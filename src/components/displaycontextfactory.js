@@ -28,7 +28,7 @@ module.exports = class DisplayContextFactory {
         })
     }
 
-    setActive(name, reset) {
+    setActive(appname, reset) {
         console.log('requested app name : ', appname)
         this.io.store.getState('display:activeDisplayContext').then(name => {
             console.log('app name in store : ', name)

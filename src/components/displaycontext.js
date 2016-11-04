@@ -83,7 +83,7 @@ module.exports = class DisplayContext {
     restoreFromStore( reset = false ){
         console.log("getting state dc."+ this.name)
         return this.io.getStore().getHash("dc." + this.name ).then( m => {
-            console.log("from store" , m)
+            console.log("from store" , m, _.isEmpty(m))
             if(_.isEmpty(m)) {
                 console.log("initialize from options")
                 return this.getWindowBounds().then(  bounds => {
@@ -140,8 +140,9 @@ module.exports = class DisplayContext {
     // returns a map of displayName with bounds
     getWindowBounds(){
         return this.io.getStore().getHashField("display.windowBounds", this.name).then(m=>{
-            console.log( m )
+            console.log("windowBounds" ,  m )
             if( m == null){
+                console.log("using display.displays for windowBounds")
                 return this.io.getStore().getHash("display.displays").then( x =>{
                     for( let k of Object.keys(x)){
                         x[k] = JSON.parse(x[k])
@@ -153,6 +154,7 @@ module.exports = class DisplayContext {
                     return x
                 })
             }else{
+                console.log("using  windowBounds from store")
                 let x = JSON.parse(m)
                 for( let k of Object.keys(x)){
                         if(x[k].displayName == undefined)
@@ -447,7 +449,7 @@ module.exports = class DisplayContext {
         this._on( 'display.displayContext.created', handler )
     }
 
-    onActiveDisplayContextChanged( handler ){
+    onDisplayContextChanged( handler ){
         this._on( 'display.displayContext.changed', handler )
     }
 

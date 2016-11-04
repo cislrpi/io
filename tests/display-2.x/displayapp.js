@@ -101,6 +101,9 @@ class PoleApp {
     close(){
         return this.displayContext.close().then( m => {
             process.exit()
+        }).catch(e =>{
+            console.log(e)
+            process.exit()
         })
     }
 
@@ -112,15 +115,15 @@ class PoleApp {
                 process.exit()
         })
 
-        // this.displayContext.onDisplayContextChanged ( (msg, header) => {
-        //     console.log( msg.details.displayContext , msg.details.lastDisplayContext )
+        this.displayContext.onDisplayContextChanged ( (msg, header) => {
+            console.log( msg.details.displayContext , msg.details.lastDisplayContext )
 
-        //     if( msg.details.lastDisplayContext == this.name ){
+            if( msg.details.lastDisplayContext == this.name ){
 
-        //     }else if( msg.details.displayContext == this.name ){
+            }else if( msg.details.displayContext == this.name ){
 
-        //     }
-        // })
+            }
+        })
 
 
     }

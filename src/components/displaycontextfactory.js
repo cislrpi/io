@@ -1,87 +1,87 @@
 
 const DisplayContext = require('./displaycontext')
 
-module.exports = class DisplayContextFactory{
+module.exports = class DisplayContextFactory {
 
-    constructor(io){
+    constructor(io) {
         this.io = io
     }
 
-    getDisplays(){
+    getDisplays() {
         return this.io.store.getHash("display:displays")
     }
 
-    getList(){
+    getList() {
         return this.io.store.getSet("display:displayContexts")
     }
 
-    getActive(){
-        return this.io.store.getState("display:activeDisplayContext").then( m => {
+    getActive() {
+        return this.io.store.getState("display:activeDisplayContext").then(m => {
             console.log("active display context is ", m)
-            if(m){
+            if (m) {
                 let _dc = new DisplayContext(m, {}, this.io)
-                return _dc.restoreFromStore().then( m=> { return _dc })
-            }else{ 
+                return _dc.restoreFromStore().then(m => { return _dc })
+            } else {
                 let _dc = new DisplayContext("default", {}, this.io)
-                return _dc.restoreFromStore().then( m=> { return _dc })
+                return _dc.restoreFromStore().then(m => { return _dc })
             }
         })
     }
 
-    setActive( name , reset ){
+    setActive(name, reset) {
         console.log("requested app name : ", appname)
-        this.io.store.getState("display:activeDisplayContext").then( name => {
+        this.io.store.getState("display:activeDisplayContext").then(name => {
             console.log("app name in store : ", name)
-            if(name != appname){
+            if (name != appname) {
                 this.io.store.setState("display:activeDisplayContext", appname);
                 (new DisplayContext(appname, {}, this.io)).restoreFromStore(reset);
-            }else{
-                console.log("app name : ",  appname, "is already active")
+            } else {
+                console.log("app name : ", appname, "is already active")
             }
         })
     }
 
-    create(ur_app_name, window_settings){
+    create(ur_app_name, window_settings) {
         let _dc = new DisplayContext(ur_app_name, window_settings, this.io)
-        return _dc.restoreFromStore().then( m=> {
-            return _dc 
+        return _dc.restoreFromStore().then(m => {
+            return _dc
         })
     }
 
-    hideAll(){
+    hideAll() {
         let cmd = {
-            command : 'hide-all-windows'
+            command: 'hide-all-windows'
         }
-        this.getActiveDisplays().then( m => {
+        this.getActiveDisplays().then(m => {
             let _ps = []
-            for( let k of Object.keys(m)){
-                _ps.push( this.io.call('rpc-display-' + k, JSON.stringify(cmd) ) )
+            for (let k of Object.keys(m)) {
+                _ps.push(this.io.call('rpc-display-' + k, JSON.stringify(cmd)))
             }
             return Promise.all(_ps)
-        }).then( m =>{
+        }).then(m => {
             return m
         })
     }
 
-    getFocusedDisplayWindow( displayName = "main" ){
+    getFocusedDisplayWindow(displayName = "main") {
         let cmd = {
-            command : 'get-focus-window'
+            command: 'get-focus-window'
         }
-        return this.io.call('rpc-display-' + k, JSON.stringify(cmd) ).then( m => { return JSON.parse(m.toString()) } )
+        return this.io.call('rpc-display-' + k, JSON.stringify(cmd)).then(m => { return JSON.parse(m.toString()) })
     }
 
-    getFocusedDisplayWindows(){
+    getFocusedDisplayWindows() {
         let cmd = {
-            command : 'get-focus-window'
+            command: 'get-focus-window'
         }
-        return this.getActiveDisplays().then( m => {
+        return this.getActiveDisplays().then(m => {
             let _ps = []
-            for( let k of Object.keys(m)){
-                _ps.push( this.io.call('rpc-display-' + k, JSON.stringify(cmd) ) )
+            for (let k of Object.keys(m)) {
+                _ps.push(this.io.call('rpc-display-' + k, JSON.stringify(cmd)))
             }
             return Promise.all(_ps)
-        }).then( m =>{
-            for(var i = 0; i < m.length; i++)
+        }).then(m => {
+            for (var i = 0; i < m.length; i++)
                 m[i] = JSON.parse(m[i].toString())
 
             return m
@@ -89,70 +89,70 @@ module.exports = class DisplayContextFactory{
     }
 
     _on(topic, handler) {
-        this.io.onTopic(topic, (msg, headers)=> {
-            if(handler != null)
+        this.io.onTopic(topic, (msg, headers) => {
+            if (handler != null)
                 handler(JSON.parse(msg.toString()), headers)
         })
     }
 
-    onViewObjectCreated( handler ){
-        this._on( `display.*.viewObjectCreated.*`, handler )
+    onViewObjectCreated(handler) {
+        this._on(`display.*.viewObjectCreated.*`, handler)
     }
 
-    OnViewObjectHidden( handler ){
-        this._on( `display.*.viewObjectHidden.*`, handler )
+    OnViewObjectHidden(handler) {
+        this._on(`display.*.viewObjectHidden.*`, handler)
     }
 
-    onViewObjectShown( handler ){
-        this._on( `display.*.viewObjectShown.*`, handler )
+    onViewObjectShown(handler) {
+        this._on(`display.*.viewObjectShown.*`, handler)
     }
 
-    onViewObjectClosed( handler ){
-        this._on( `display.*.viewObjectClosed.*`, handler )
+    onViewObjectClosed(handler) {
+        this._on(`display.*.viewObjectClosed.*`, handler)
     }
 
-    onViewObjectBoundsChanged ( handler ){
-        this._on( `display.*.viewObjectBoundsChanged.*`, handler )
+    onViewObjectBoundsChanged(handler) {
+        this._on(`display.*.viewObjectBoundsChanged.*`, handler)
     }
 
-    onViewObjectUrlChanged (handler){
-        this._on( `display.*.viewObjectUrlChanged.*`, handler )
+    onViewObjectUrlChanged(handler) {
+        this._on(`display.*.viewObjectUrlChanged.*`, handler)
     }
 
-    onViewObjectUrlReloaded (handler){
-        this._on( `display.*.viewObjectUrlChanged.*`, handler )
+    onViewObjectUrlReloaded(handler) {
+        this._on(`display.*.viewObjectUrlChanged.*`, handler)
     }
 
-    onViewObjectCrashed( handler ){
-        this._on( `display.*.viewObjectCrashed.*`, handler )
+    onViewObjectCrashed(handler) {
+        this._on(`display.*.viewObjectCrashed.*`, handler)
     }
 
-    onViewObjectGPUCrashed( handler ){
-        this._on( `display.*.viewObjectGPUCrashed.*`, handler )
+    onViewObjectGPUCrashed(handler) {
+        this._on(`display.*.viewObjectGPUCrashed.*`, handler)
     }
 
-    onViewObjectPluginCrashed( handler ){
-        this._on( `display.*.viewObjectPluginCrashed.*`, handler )
+    onViewObjectPluginCrashed(handler) {
+        this._on(`display.*.viewObjectPluginCrashed.*`, handler)
     }
 
-    onDisplayContextCreated( handler ){
-        this._on( 'display.displayContext.created', handler )
+    onDisplayContextCreated(handler) {
+        this._on('display.displayContext.created', handler)
     }
 
-    onDisplayContextChanged( handler ){
-        this._on( 'display.displayContext.changed', handler )
+    onDisplayContextChanged(handler) {
+        this._on('display.displayContext.changed', handler)
     }
 
-    onDisplayContextClosed( handler ){
-        this._on( 'display.displayContext.closed', handler )
+    onDisplayContextClosed(handler) {
+        this._on('display.displayContext.closed', handler)
     }
 
-    onDisplayWorkerRemoved( handler ){
-        this._on( 'display.removed', handler )
+    onDisplayWorkerRemoved(handler) {
+        this._on('display.removed', handler)
     }
 
-    onDisplayWorkerAdded( handler ){
-        this._on( 'display.added', handler )
+    onDisplayWorkerAdded(handler) {
+        this._on('display.added', handler)
     }
 
 }

@@ -1,7 +1,7 @@
 
 const ViewObject = require('./viewobject')
 module.exports = class DisplayWindow {
-     constructor(io, options){
+    constructor(io, options) {
         this.io = io
         this.window_id = options.window_id
         this.windowName = options.windowName
@@ -14,34 +14,34 @@ module.exports = class DisplayWindow {
         this.height = options.height
     }
 
-    _postRequest( data ){
+    _postRequest(data) {
         return this.io.call('rpc-display-' + this.displayName, JSON.stringify(data))
     }
 
-    id(){
+    id() {
         return this.window_id
     }
 
-    clearGrid(){
+    clearGrid() {
         let cmd = {
-            command : "clear-grid",
-            options : {
-                window_id : this.window_id
+            command: "clear-grid",
+            options: {
+                window_id: this.window_id
             }
         }
-        return this._postRequest(cmd).then(m=>{
+        return this._postRequest(cmd).then(m => {
             return JSON.parse(m.toString())
         })
     }
 
-    clearContents(){
+    clearContents() {
         let cmd = {
-            command : "clear-contents",
-            options : {
-                window_id : this.window_id
+            command: "clear-contents",
+            options: {
+                window_id: this.window_id
             }
         }
-        return this._postRequest(cmd).then(m=>{
+        return this._postRequest(cmd).then(m => {
             return JSON.parse(m.toString())
         })
     }
@@ -70,41 +70,41 @@ module.exports = class DisplayWindow {
                 }
     */
 
-    createUniformGrid(options){
+    createUniformGrid(options) {
         options.window_id = this.window_id
         let cmd = {
-            command : "create-grid",
-            options : options
+            command: "create-grid",
+            options: options
         }
-        return this._postRequest(cmd).then(m=>{
+        return this._postRequest(cmd).then(m => {
             return JSON.parse(m.toString())
         })
     }
 
-    addToGrid(label, bounds, backgroundStyle){
+    addToGrid(label, bounds, backgroundStyle) {
         let cmd = {
-            command : "add-to-grid",
-            options : {
-                window_id : this.window_id,
-                label : label,
-                bounds : bounds,
-                style : backgroundStyle
+            command: "add-to-grid",
+            options: {
+                window_id: this.window_id,
+                label: label,
+                bounds: bounds,
+                style: backgroundStyle
             }
         }
-        return this._postRequest(cmd).then(m=>{
+        return this._postRequest(cmd).then(m => {
             return JSON.parse(m.toString())
         })
     }
 
-    removeFromGrid(label){
+    removeFromGrid(label) {
         let cmd = {
-            command : "remove-from-grid",
-            options : {
-                window_id : this.window_id,
-                label : label
+            command: "remove-from-grid",
+            options: {
+                window_id: this.window_id,
+                label: label
             }
         }
-        return this._postRequest(cmd).then(m=>{
+        return this._postRequest(cmd).then(m => {
             return JSON.parse(m.toString())
         })
     }
@@ -114,26 +114,26 @@ module.exports = class DisplayWindow {
         returns the gridlayout
 
     */
-    getGrid(){
+    getGrid() {
         let cmd = {
-            command : 'get-grid',
-            options : {
-                window_id : this.window_id
+            command: 'get-grid',
+            options: {
+                window_id: this.window_id
             }
         }
-        return this._postRequest(cmd).then(m=>{
+        return this._postRequest(cmd).then(m => {
             return JSON.parse(m.toString())
         })
     }
 
-    getUniformGridCellSize(){
+    getUniformGridCellSize() {
         let cmd = {
-            command : 'uniform-grid-cell-size',
-            options : {
-                window_id : this.window_id
+            command: 'uniform-grid-cell-size',
+            options: {
+                window_id: this.window_id
             }
         }
-        return this._postRequest(cmd).then(m=>{
+        return this._postRequest(cmd).then(m => {
             return JSON.parse(m.toString())
         })
     }
@@ -145,32 +145,32 @@ module.exports = class DisplayWindow {
         label is row|col or custom cell name
         js_css_style : http://www.w3schools.com/jsref/dom_obj_style.asp
     */
-    setCellStyle(label, js_css_style, animation){
+    setCellStyle(label, js_css_style, animation) {
         let cmd = {
-            command : 'cell-style',
-            options : {
-                window_id : this.window_id,
-                label : label,
-                style : js_css_style
+            command: 'cell-style',
+            options: {
+                window_id: this.window_id,
+                label: label,
+                style: js_css_style
             }
         }
-        if(animation)
+        if (animation)
             cmd.options.animation_options = animation
 
-        return this._postRequest(cmd).then(m=>{
+        return this._postRequest(cmd).then(m => {
             return JSON.parse(m.toString())
         })
     }
 
-    setFontSize(px_string){
-         let cmd = {
-            command : 'set-displaywindow-font-size',
-            options : {
-                window_id : this.window_id,
-                fontSize : px_string
+    setFontSize(px_string) {
+        let cmd = {
+            command: 'set-displaywindow-font-size',
+            options: {
+                window_id: this.window_id,
+                fontSize: px_string
             }
         }
-        return this._postRequest(cmd).then(m=>{
+        return this._postRequest(cmd).then(m => {
             return JSON.parse(m.toString())
         })
     }
@@ -178,14 +178,14 @@ module.exports = class DisplayWindow {
     /*
         hides the displayWindow
     */
-    hide(){
+    hide() {
         let cmd = {
-            command : 'hide-window',
-            options : {
-                window_id : this.window_id
+            command: 'hide-window',
+            options: {
+                window_id: this.window_id
             }
         }
-        return this._postRequest(cmd).then(m=>{
+        return this._postRequest(cmd).then(m => {
             return JSON.parse(m.toString())
         })
     }
@@ -193,14 +193,14 @@ module.exports = class DisplayWindow {
     /*
         shows the displayWindow
     */
-    show(){
+    show() {
         let cmd = {
-            command : 'show-window',
-            options : {
-                window_id : this.window_id
+            command: 'show-window',
+            options: {
+                window_id: this.window_id
             }
         }
-        return this._postRequest(cmd).then(m=>{
+        return this._postRequest(cmd).then(m => {
             return JSON.parse(m.toString())
         })
     }
@@ -208,86 +208,86 @@ module.exports = class DisplayWindow {
     /*
         permanently closes the displayWindow and destroys the viewobjects
     */
-    close(){
+    close() {
         let cmd = {
-            command : 'close-window',
-            options : {
-                window_id : this.window_id
+            command: 'close-window',
+            options: {
+                window_id: this.window_id
             }
         }
-        return this._postRequest(cmd).then( m => {
+        return this._postRequest(cmd).then(m => {
             m = JSON.parse(m.toString())
-            m.viewObjects.forEach( (v) => {
+            m.viewObjects.forEach((v) => {
                 let view = this.getViewObjectById(v)
-                if(view)
+                if (view)
                     view.destroy()
             })
             this.destroy()
-            return m  
+            return m
         })
     }
 
-    openDevTools(){
+    openDevTools() {
         let cmd = {
-            command : 'window-dev-tools',
-            options : {
-                window_id : this.window_id,
-                devTools : true
+            command: 'window-dev-tools',
+            options: {
+                window_id: this.window_id,
+                devTools: true
             }
         }
-        return this._postRequest(cmd).then(m=>{
+        return this._postRequest(cmd).then(m => {
             return JSON.parse(m.toString())
         })
     }
 
-    closeDevTools(){
+    closeDevTools() {
         let cmd = {
-            command : 'window-dev-tools',
-            options : {
-                window_id : this.window_id,
-                devTools : false
+            command: 'window-dev-tools',
+            options: {
+                window_id: this.window_id,
+                devTools: false
             }
         }
-        return this._postRequest(cmd).then(m=>{
+        return this._postRequest(cmd).then(m => {
             return JSON.parse(m.toString())
         })
     }
 
-    capture(){
+    capture() {
         let cmd = {
-            command : 'capture-window',
-            options : {
-                window_id : this.window_id
+            command: 'capture-window',
+            options: {
+                window_id: this.window_id
             }
         }
         return this._postRequest(cmd)
     }
 
-     /*
-        creates a new viewobject (webpage)
-        options:
-            - url
-            - position (label or grid-top & grid-left)
-            - width // in px or em 
-            - height // in px or em 
-            - cssText (string)
-            - nodeintegration (boolean)
-    */
-    createViewObject(options){
+    /*
+       creates a new viewobject (webpage)
+       options:
+           - url
+           - position (label or grid-top & grid-left)
+           - width // in px or em 
+           - height // in px or em 
+           - cssText (string)
+           - nodeintegration (boolean)
+   */
+    createViewObject(options) {
         options.window_id = this.window_id
         options.displayContext = this.displayContext
         options.displayName = this.displayName
         options.windowName = this.windowName
         let cmd = {
-            command : 'create-viewobj',
-            options : options
-        }        
-        
-        return this._postRequest(cmd).then(m =>{
+            command: 'create-viewobj',
+            options: options
+        }
+
+        return this._postRequest(cmd).then(m => {
             let opt = JSON.parse(m.toString())
             // opt.width = parseFloat(options.width)
             // opt.height = parseFloat(options.height)
-            return new ViewObject(this.io, opt)      
+            return new ViewObject(this.io, opt)
         })
     }
 }

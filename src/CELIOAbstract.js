@@ -8,11 +8,13 @@ module.exports = class CELIOAbstract {
         if (new.target === CELIOAbstract) {
             throw new TypeError("Cannot construct Abstract instances directly");
         }
+
+        this.speaker = new Speaker(this);
         this.transcript = new Transcript(this);
     }
 
     generateUUID() {
-        return uuid.v4();
+        return uuid.v1();
     }
 
     getTranscript() {
@@ -20,11 +22,11 @@ module.exports = class CELIOAbstract {
     }
 
     getStore(){
-        return this.store
+        return this.store;
     }
 
     getSpeaker() {
-        return new Speaker(this);
+        return this.speaker;
     }
 
     createDisplayContext(ur_app_name, window_settings){

@@ -13,10 +13,10 @@ module.exports = class DisplayContext {
 
         if(!_.isEmpty(window_settings)){
             console.log("storing window setting")
-            this.io.getStore().addToHash("display.windowBounds", name , JSON.stringify( window_settings ) )
+            this.io.store.addToHash("display:windowBounds", name , JSON.stringify( window_settings ) )
         }
 
-        this.io.getStore().addToSet("displayContexts", name)    
+        this.io.store.addToSet("display:displayContexts", name)    
         
         this.eventHandlers = new Map()
         this.io.onTopic("display.removed", m => {
@@ -36,7 +36,7 @@ module.exports = class DisplayContext {
             }
 
             //clear up the store
-            this.io.getStore().getHash("dc." + this.name).then( m=>{
+            this.io.store.getHash("display:dc:" + this.name).then( m=>{
                  if(!_.isEmpty(m)) {
                     let mobj = m.displayWinObjMap ? JSON.parse(m.displayWinObjMap) : null
                     if(mobj){
@@ -44,9 +44,9 @@ module.exports = class DisplayContext {
                         mobj = Object.keys(mobj).length > 0 ? mobj : null
                     }
                     if(mobj){
-                        this.io.getStore().addToHash("dc." + this.name, "displayWinObjMap", JSON.stringify(mobj))
+                        this.io.store.addToHash("display:dc:" + this.name, "displayWinObjMap", JSON.stringify(mobj))
                     }else{
-                        this.io.getStore().removeFromHash( "dc." + this.name, "displayWinObjMap" )
+                        this.io.store.removeFromHash( "display:dc:" + this.name, "displayWinObjMap" )
                     }
                     
                     let vobj = m.viewObjDisplayMap ? JSON.parse(m.viewObjDisplayMap) : null
@@ -58,9 +58,9 @@ module.exports = class DisplayContext {
                         vobj = Object.keys(vobj).length > 0 ? vobj : null
                     }
                     if(vobj){
-                        this.io.getStore().addToHash("dc." + this.name, "viewObjDisplayMap", JSON.stringify(vobj))
+                        this.io.store.addToHash("display:dc:" + this.name, "viewObjDisplayMap", JSON.stringify(vobj))
                     }else{
-                        this.io.getStore().removeFromHash( "dc." + this.name, "viewObjDisplayMap" )
+                        this.io.store.removeFromHash( "display:dc:" + this.name, "viewObjDisplayMap" )
                     }
                 }
             })
@@ -77,12 +77,12 @@ module.exports = class DisplayContext {
 
     _postRequest( displayName, data ){
         console.log(displayName ,  data)
-        return this.io.call('display-rpc-queue-' + displayName, JSON.stringify(data))
+        return this.io.call('rpc-display-' + displayName, JSON.stringify(data))
     }
 
     restoreFromStore( reset = false ){
-        console.log("getting state dc."+ this.name)
-        return this.io.getStore().getHash("dc." + this.name ).then( m => {
+        console.log("getting state display:dc:"+ this.name)
+        return this.io.store.getHash("display:dc:" + this.name ).then( m => {
             console.log("from store" , m, _.isEmpty(m))
             if(_.isEmpty(m)) {
                 console.log("initialize from options")
@@ -139,11 +139,11 @@ module.exports = class DisplayContext {
 
     // returns a map of displayName with bounds
     getWindowBounds(){
-        return this.io.getStore().getHashField("display.windowBounds", this.name).then(m=>{
-            console.log("windowBounds" ,  m )
+        return this.io.store.getHashField("display:windowBounds", this.name).then(m=>{
+            console.log("display:windowBounds" ,  m )
             if( m == null){
-                console.log("using display.displays for windowBounds")
-                return this.io.getStore().getHash("display.displays").then( x =>{
+                console.log("using display:displays for windowBounds")
+                return this.io.store.getHash("display:displays").then( x =>{
                     for( let k of Object.keys(x)){
                         x[k] = JSON.parse(x[k])
                         if(x[k].displayName == undefined)
@@ -206,7 +206,7 @@ module.exports = class DisplayContext {
             return Promise.all(_ps)
         }).then( m=> {
             console.log("##windows shown")
-            this.io.getStore().setState("activeDisplayContext", this.name)
+            this.io.store.setState("display:activeDisplayContext", this.name)
             return m
         })
     }
@@ -268,12 +268,12 @@ module.exports = class DisplayContext {
             if(!isHidden){
                 this.displayWindows.clear()
                 this.viewObjects.clear()
-                this.io.getStore().delState('dc.' + this.name)
-                this.io.getStore().removeFromSet("displayContexts", this.name)
-                this.io.getStore().removeFromHash("display.windowBounds", this.name)
-                this.io.getStore().getState('activeDisplayContext').then( x => {
+                this.io.store.delState('display:dc:' + this.name)
+                this.io.store.removeFromSet("display:displayContexts", this.name)
+                this.io.store.removeFromHash("display:windowBounds", this.name)
+                this.io.store.getState('display:activeDisplayContext').then( x => {
                     if( x == this.name)
-                        this.io.getStore().delState('activeDisplayContext')
+                        this.io.store.delState('display:activeDisplayContext')
                 })
             }
             return map
@@ -355,7 +355,7 @@ module.exports = class DisplayContext {
                 map[res.windowName] = res
                 this.displayWindows.set(res.windowName , new DisplayWindow(this.io, res))
             }
-            this.io.getStore().addToHash("dc." + this.name , "displayWinObjMap", JSON.stringify(map) ) 
+            this.io.store.addToHash("display:dc:" + this.name , "displayWinObjMap", JSON.stringify(map) ) 
             return map    
         })
     }
@@ -385,7 +385,7 @@ module.exports = class DisplayContext {
                 for( let [ k,v] of this.viewObjects ){
                     map[k] = v.windowName
                 }
-                this.io.getStore().addToHash("dc." + this.name , "viewObjDisplayMap", JSON.stringify(map) )
+                this.io.store.addToHash("display:dc:" + this.name , "viewObjDisplayMap", JSON.stringify(map) )
                 return vo
             })
         }else{
@@ -405,63 +405,33 @@ module.exports = class DisplayContext {
         }
     }
 
-    onViewObjectCreated( handler ){
-        this._on( `display.${this.name}.viewObjectCreated`, handler )
+    onClosed( handler ){
+        this.io.onTopic('display.displayContext.closed', (msg, headers) => {
+            if(handler != null){
+                let m = JSON.parse(msg.toString())
+                if(m.details.closedDisplayContext == this.name )
+                    handler( m, headers)
+            }
+        })
     }
 
-    OnViewObjectHidden( handler ){
-        this._on( `display.${this.name}.viewObjectHidden`, handler )
+    onActivated( handler ){
+        this.io.onTopic('display.displayContext.changed', (msg, headers)=> {
+            if(handler != null){
+                let m = JSON.parse(msg.toString())
+                if(m.details.displayContext == this.name )
+                    handler( m, headers)
+            }
+        })
     }
 
-    onViewObjectShown( handler ){
-        this._on( `display.${this.name}.viewObjectShown`, handler )
-    }
-
-    onViewObjectClosed( handler ){
-        this._on( `display.${this.name}.viewObjectClosed`, handler )
-    }
-
-    onViewObjectBoundsChanged ( handler ){
-        this._on( `display.${this.name}.viewObjectBoundsChanged`, handler )
-    }
-
-    onViewObjectUrlChanged (handler){
-        this._on( `display.${this.name}.viewObjectUrlChanged`, handler )
-    }
-
-    onViewObjectUrlReloaded (handler){
-        this._on( `display.${this.name}.viewObjectUrlChanged`, handler )
-    }
-
-    onViewObjectCrashed( handler ){
-        this._on( `display.${this.name}.viewObjectCrashed`, handler )
-    }
-
-    onViewObjectGPUCrashed( handler ){
-        this._on( `display.${this.name}.viewObjectGPUCrashed`, handler )
-    }
-
-    onViewObjectPluginCrashed( handler ){
-        this._on( `display.${this.name}.viewObjectPluginCrashed`, handler )
-    }
-
-    onDisplayContextCreated( handler ){
-        this._on( 'display.displayContext.created', handler )
-    }
-
-    onDisplayContextChanged( handler ){
-        this._on( 'display.displayContext.changed', handler )
-    }
-
-    onDisplayContextClosed( handler ){
-        this._on( 'display.displayContext.closed', handler )
-    }
-
-    onDisplayWorkerRemoved( handler ){
-        this._on( 'display.removed', handler )
-    }
-
-    onDisplayWorkerAdded( handler ){
-        this._on( 'display.added', handler )
+    onDeactivated( handler ){
+        this.io.onTopic('display.displayContext.changed', (msg, headers)=> {
+            if(handler != null){
+                let m = JSON.parse(msg.toString())
+                if(m.details.lastDisplayContext == this.name )
+                    handler( m, headers)
+            }
+        })
     }
 }

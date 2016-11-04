@@ -10,7 +10,7 @@ module.exports = class ViewObject {
     }
 
     _postRequest( data ){
-        return this.io.call('display-rpc-queue-' + this.displayName, JSON.stringify(data))
+        return this.io.call('rpc-display-' + this.displayName, JSON.stringify(data))
     } 
 
     setUrl(url){
@@ -192,6 +192,50 @@ module.exports = class ViewObject {
             }
         }
         return this._postRequest(cmd)
+    }
+
+    _on(topic, handler) {
+        this.io.onTopic(topic, (msg, headers)=> {
+            let m = JSON.parse(msg.toString())
+            if(handler != null && m.details.view_id == this.view_id)
+                handler(m, headers)
+        })
+    }
+
+    onHidden( handler ){
+        this._on( `display.${this.displayContext}.viewObjectHidden.${this.view_id}`, handler )
+    }
+
+    onShown( handler ){
+        this._on( `display.${this.displayContext}.viewObjectShown.${this.view_id}`, handler )
+    }
+
+    onClosed( handler ){
+        this._on( `display.${this.displayContext}.viewObjectClosed.${this.view_id}`, handler )
+    }
+
+    onBoundsChanged ( handler ){
+        this._on( `display.${this.displayContext}.viewObjectBoundsChanged.${this.view_id}`, handler )
+    }
+
+    onUrlChanged (handler){
+        this._on( `display.${this.displayContext}.viewObjectUrlChanged.${this.view_id}`, handler )
+    }
+
+    onUrlReloaded (handler){
+        this._on( `display.${this.displayContext}.viewObjectUrlChanged.${this.view_id}`, handler )
+    }
+
+    onCrashed( handler ){
+        this._on( `display.${this.displayContext}.viewObjectCrashed.${this.view_id}`, handler )
+    }
+
+    onGPUCrashed( handler ){
+        this._on( `display.${this.displayContext}.viewObjectGPUCrashed.${this.view_id}`, handler )
+    }
+
+    onPluginCrashed( handler ){
+        this._on( `display.${this.name}.viewObjectPluginCrashed.${this.view_id}`, handler )
     }
    
 

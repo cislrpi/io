@@ -83,10 +83,12 @@ class PoleApp {
     }
 
     setup(){
-        this.io.createDisplayContext(this.name, options).then( m => {
+        this.io.displayContext.create(this.name, options).then( m => {
             this.displayContext = m
-            this.createEvents()
-            
+            this.displayContext.onClosed( () => {
+                process.exit()
+            })
+                        
             console.log("created : ", this.displayContext.name)
             return Promise.map(this.contents, content =>{
                 return this.displayContext.createViewObject( content, content.window )
@@ -107,26 +109,6 @@ class PoleApp {
         })
     }
 
-    createEvents(){
-        
-        // context closed event through this app or through external action
-        this.displayContext.onDisplayContextClosed( (msg, header) =>{
-            if( msg.details.closedDisplayContext == this.name)
-                process.exit()
-        })
-
-        this.displayContext.onDisplayContextChanged ( (msg, header) => {
-            console.log( msg.details.displayContext , msg.details.lastDisplayContext )
-
-            if( msg.details.lastDisplayContext == this.name ){
-
-            }else if( msg.details.displayContext == this.name ){
-
-            }
-        })
-
-
-    }
 }
 
 let app = new PoleApp()

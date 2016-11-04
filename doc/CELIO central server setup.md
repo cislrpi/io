@@ -14,7 +14,9 @@ sudo rabbitmq-plugins enable rabbitmq_management rabbitmq_web_stomp
 
 sudo rabbitmqctl add_user <username> <password>
 sudo rabbitmqctl set_user_tags <username> administrator
-sudo rabbitmqctl set_permissions -p </vhost> <username> ".*" ".*" ".*"
+
+# vhost is optional. If not using it, ignore the section in bracket
+sudo rabbitmqctl set_permissions [-p </vhost>] <username> ".*" ".*" ".*"
 ```
 
 Optional: To enable TLS, edit `/etc/rabbitmq/rabbitmq.config`
@@ -42,9 +44,10 @@ Optional: To enable TLS, edit `/etc/rabbitmq/rabbitmq.config`
 `sudo apt install redis-server redis-tools`
 
 Edit /etc/redis/redis.conf:
-1. Find `requirepass`, uncomment the line, and change the password.
-2. Find `notify-keyspace-events` replace "" with KA
-3. Find `rename-command` section, and add
+- Comment out the line that has `bind 127.0.0.1`
+- Find `requirepass`, uncomment the line, and change the password.
+- Find `notify-keyspace-events` replace "" with KA
+- Find `rename-command` section, and add
 ```
 rename-command CONFIG ""
 rename-command DEBUG ""

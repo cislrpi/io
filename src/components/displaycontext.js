@@ -5,21 +5,21 @@ const _ = require('lodash');
 module.exports = class DisplayContext {
 
     constructor(name, window_settings, io) {
-        console.log("creating obj for display context : ", name)
+        console.log('creating obj for display context : ', name)
         this.io = io
         this.name = name
         this.displayWindows = new Map()
         this.viewObjects = new Map()
 
         if (!_.isEmpty(window_settings)) {
-            console.log("storing window setting")
-            this.io.store.addToHash("display:windowBounds", name, JSON.stringify(window_settings))
+            console.log('storing window setting')
+            this.io.store.addToHash('display:windowBounds', name, JSON.stringify(window_settings))
         }
 
-        this.io.store.addToSet("display:displayContexts", name)
+        this.io.store.addToSet('display:displayContexts', name)
 
         this.eventHandlers = new Map()
-        this.io.onTopic("display.removed", m => {
+        this.io.onTopic('display.removed', m => {
 
             // clean up objects
             let closedDisplay = m.toString()
@@ -36,7 +36,7 @@ module.exports = class DisplayContext {
             }
 
             //clear up the store
-            this.io.store.getHash("display:dc:" + this.name).then(m => {
+            this.io.store.getHash('display:dc:' + this.name).then(m => {
                 if (!_.isEmpty(m)) {
                     let mobj = m.displayWinObjMap ? JSON.parse(m.displayWinObjMap) : null
                     if (mobj) {
@@ -44,9 +44,9 @@ module.exports = class DisplayContext {
                         mobj = Object.keys(mobj).length > 0 ? mobj : null
                     }
                     if (mobj) {
-                        this.io.store.addToHash("display:dc:" + this.name, "displayWinObjMap", JSON.stringify(mobj))
+                        this.io.store.addToHash('display:dc:' + this.name, 'displayWinObjMap', JSON.stringify(mobj))
                     } else {
-                        this.io.store.removeFromHash("display:dc:" + this.name, "displayWinObjMap")
+                        this.io.store.removeFromHash('display:dc:' + this.name, 'displayWinObjMap')
                     }
 
                     let vobj = m.viewObjDisplayMap ? JSON.parse(m.viewObjDisplayMap) : null
@@ -58,9 +58,9 @@ module.exports = class DisplayContext {
                         vobj = Object.keys(vobj).length > 0 ? vobj : null
                     }
                     if (vobj) {
-                        this.io.store.addToHash("display:dc:" + this.name, "viewObjDisplayMap", JSON.stringify(vobj))
+                        this.io.store.addToHash('display:dc:' + this.name, 'viewObjDisplayMap', JSON.stringify(vobj))
                     } else {
-                        this.io.store.removeFromHash("display:dc:" + this.name, "viewObjDisplayMap")
+                        this.io.store.removeFromHash('display:dc:' + this.name, 'viewObjDisplayMap')
                     }
                 }
             })
@@ -81,16 +81,16 @@ module.exports = class DisplayContext {
     }
 
     restoreFromStore(reset = false) {
-        console.log("getting state display:dc:" + this.name)
-        return this.io.store.getHash("display:dc:" + this.name).then(m => {
-            console.log("from store", m, _.isEmpty(m))
+        console.log('getting state display:dc:' + this.name)
+        return this.io.store.getHash('display:dc:' + this.name).then(m => {
+            console.log('from store', m, _.isEmpty(m))
             if (_.isEmpty(m)) {
-                console.log("initialize from options")
+                console.log('initialize from options')
                 return this.getWindowBounds().then(bounds => {
                     return this.initialize(bounds)
                 })
             } else {
-                console.log("restoring from store")
+                console.log('restoring from store')
                 this.displayWindows.clear()
                 this.viewObjects.clear()
 
@@ -109,11 +109,11 @@ module.exports = class DisplayContext {
                         for (let k of Object.keys(vobj)) {
                             let wn = mobj[vobj[k]]
                             let opts = {
-                                "view_id": k,
-                                "window_id": wn.window_id,
-                                "displayName": wn.displayName,
-                                "displayContext": this.name,
-                                "windowName": wn.windowName
+                                'view_id': k,
+                                'window_id': wn.window_id,
+                                'displayName': wn.displayName,
+                                'displayContext': this.name,
+                                'windowName': wn.windowName
                             }
                             this.viewObjects.set(k, new ViewObject(this.io, opts))
                         }
@@ -121,14 +121,14 @@ module.exports = class DisplayContext {
                 }
 
                 if (reset) {
-                    console.log("making it active and reloading")
+                    console.log('making it active and reloading')
                     this.show().then(m => {
                         return this.reloadAll()
                     }).then(m => {
                         console.log(m)
                     })
                 } else {
-                    console.log("making it active ")
+                    console.log('making it active ')
                     this.show().then(m => {
                         return m
                     })
@@ -139,14 +139,14 @@ module.exports = class DisplayContext {
 
     // returns a map of displayName with bounds
     getWindowBounds() {
-        return this.io.store.getHashField("display:windowBounds", this.name).then(m => {
-            console.log("display:windowBounds", m)
+        return this.io.store.getHashField('display:windowBounds', this.name).then(m => {
+            console.log('display:windowBounds', m)
             if (m == null) {
-                console.log("using display:displays for windowBounds")
-                return this.io.store.getHash("display:displays").then(x => {
+                console.log('using display:displays for windowBounds')
+                return this.io.store.getHash('display:displays').then(x => {
                     for (let k of Object.keys(x)) {
                         x[k] = JSON.parse(x[k])
-                        if (x[k].displayName == undefined)
+                        if (x[k].displayName == undefined) 
                             x[k].displayName = k
                         x[k].windowName = k
                         x[k].displayContext = this.name
@@ -154,7 +154,7 @@ module.exports = class DisplayContext {
                     return x
                 })
             } else {
-                console.log("using  windowBounds from store")
+                console.log('using  windowBounds from store')
                 let x = JSON.parse(m)
                 for (let k of Object.keys(x)) {
                     if (x[k].displayName == undefined)
@@ -187,7 +187,7 @@ module.exports = class DisplayContext {
 
     show() {
         let cmd = {
-            command: "set-display-context",
+            command: 'set-display-context',
             options: {
                 context: this.name
             }
@@ -205,15 +205,15 @@ module.exports = class DisplayContext {
             }
             return Promise.all(_ps)
         }).then(m => {
-            console.log("##windows shown")
-            this.io.store.setState("display:activeDisplayContext", this.name)
+            console.log('##windows shown')
+            this.io.store.setState('display:activeDisplayContext', this.name)
             return m
         })
     }
 
     hide() {
         let cmd = {
-            command: "hide-display-context",
+            command: 'hide-display-context',
             options: {
                 context: this.name
             }
@@ -235,7 +235,7 @@ module.exports = class DisplayContext {
 
     close() {
         let cmd = {
-            command: "close-display-context",
+            command: 'close-display-context',
             options: {
                 context: this.name
             }
@@ -247,7 +247,7 @@ module.exports = class DisplayContext {
                     disps.add(m[k].displayName)
                 }
                 let _ps = []
-                console.log("close at ", disps)
+                console.log('close at ', disps)
                 for (let k of disps) {
                     _ps.push(this._postRequest(k, cmd))
                 }
@@ -256,7 +256,7 @@ module.exports = class DisplayContext {
                 return []
             }
         }).then(m => {
-            console.log("##closing dc")
+            console.log('##closing dc')
             let map = []
             let isHidden = false
             for (var i = 0; i < m.length; i++) {
@@ -269,8 +269,8 @@ module.exports = class DisplayContext {
                 this.displayWindows.clear()
                 this.viewObjects.clear()
                 this.io.store.delState('display:dc:' + this.name)
-                this.io.store.removeFromSet("display:displayContexts", this.name)
-                this.io.store.removeFromHash("display:windowBounds", this.name)
+                this.io.store.removeFromSet('display:displayContexts', this.name)
+                this.io.store.removeFromHash('display:windowBounds', this.name)
                 this.io.store.getState('display:activeDisplayContext').then(x => {
                     if (x == this.name)
                         this.io.store.delState('display:activeDisplayContext')
@@ -319,15 +319,15 @@ module.exports = class DisplayContext {
                         colWidth : < float array>, // width percent for each col - 0.0 to 1.0 )
                         padding : <float> // in px or em
                         custom : [  // ( array of json Object)
-                            { "label" : "cel-id-1",  left, top, width, height}, // in px or em or percent
-                            { "label" : "cel-id-2",  left, top, width, height},
-                            { "label" : "cel-id-3",  left, top, width, height},
+                            { 'label' : 'cel-id-1',  left, top, width, height}, // in px or em or percent
+                            { 'label' : 'cel-id-2',  left, top, width, height},
+                            { 'label' : 'cel-id-3',  left, top, width, height},
                             ...
                         ],
                         gridBackground : {
-                            "row|col" : "backgroundColor",
-                            "cel-id-1" : "backgroundColor",
-                            "cel-id-2" : "backgroundColor",
+                            'row|col' : 'backgroundColor',
+                            'cel-id-1' : 'backgroundColor',
+                            'cel-id-2' : 'backgroundColor',
                         }
                 },
                 displayName2 : ...
@@ -338,8 +338,8 @@ module.exports = class DisplayContext {
         return this.show().then(() => {
             let _ps = []
             for (let k of Object.keys(options)) {
-                console.log("creating window for ", k)
-                options[k].template = "index.html"
+                console.log('creating window for ', k)
+                options[k].template = 'index.html'
                 let cmd = {
                     command: 'create-window',
                     options: options[k]
@@ -355,7 +355,7 @@ module.exports = class DisplayContext {
                 map[res.windowName] = res
                 this.displayWindows.set(res.windowName, new DisplayWindow(this.io, res))
             }
-            this.io.store.addToHash("display:dc:" + this.name, "displayWinObjMap", JSON.stringify(map))
+            this.io.store.addToHash('display:dc:' + this.name, 'displayWinObjMap', JSON.stringify(map))
             return map
         })
     }
@@ -376,7 +376,7 @@ module.exports = class DisplayContext {
         return Promise.all(_ps)
     }
 
-    createViewObject(options, windowName = "main") {
+    createViewObject(options, windowName = 'main') {
         options.displayContext = this.name
         if (this.displayWindows.has(windowName)) {
             return this.displayWindows.get(windowName).createViewObject(options).then(vo => {
@@ -385,7 +385,7 @@ module.exports = class DisplayContext {
                 for (let [k, v] of this.viewObjects) {
                     map[k] = v.windowName
                 }
-                this.io.store.addToHash("display:dc:" + this.name, "viewObjDisplayMap", JSON.stringify(map))
+                this.io.store.addToHash('display:dc:' + this.name, 'viewObjDisplayMap', JSON.stringify(map))
                 return vo
             })
         } else {
@@ -394,7 +394,7 @@ module.exports = class DisplayContext {
                     if (bounds[k].displayName == undefined)
                         bounds[k].displayName = k
                     bounds[k].windowName = k
-                    bounds[k].template = "index.html"
+                    bounds[k].template = 'index.html'
                     bounds[k].displayContext = this.name
                 }
                 return this.initialize(bounds)

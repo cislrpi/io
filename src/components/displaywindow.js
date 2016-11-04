@@ -7,7 +7,7 @@ module.exports = class DisplayWindow {
         this.windowName = options.windowName
         this.displayName = options.displayName
         this.displayContext = options.displayContext
-        this.template = "index.html"
+        this.template = 'index.html'
         this.x = options.x
         this.y = options.y
         this.width = options.width
@@ -24,7 +24,7 @@ module.exports = class DisplayWindow {
 
     clearGrid() {
         let cmd = {
-            command: "clear-grid",
+            command: 'clear-grid',
             options: {
                 window_id: this.window_id
             }
@@ -36,7 +36,7 @@ module.exports = class DisplayWindow {
 
     clearContents() {
         let cmd = {
-            command: "clear-contents",
+            command: 'clear-contents',
             options: {
                 window_id: this.window_id
             }
@@ -57,23 +57,23 @@ module.exports = class DisplayWindow {
                 - padding (float) // in px or em
                 (for custom grid)
                 - custom ( array of json Object)
-                   [{ "label" : "cel-id-1",  left, top, width, height}, // in px or em or percent
-                    { "label" : "cel-id-2",  left, top, width, height},
-                    { "label" : "cel-id-3",  left, top, width, height},
+                   [{ 'label' : 'cel-id-1',  left, top, width, height}, // in px or em or percent
+                    { 'label' : 'cel-id-2',  left, top, width, height},
+                    { 'label' : 'cel-id-3',  left, top, width, height},
                     ...
                     ]
             - gridBackground (json Object)
                 {
-                    "row|col" : "backgroundColor",
-                    "cel-id-1" : "backgroundColor",
-                    "cel-id-2" : "backgroundColor",
+                    'row|col' : 'backgroundColor',
+                    'cel-id-1' : 'backgroundColor',
+                    'cel-id-2' : 'backgroundColor',
                 }
     */
 
     createUniformGrid(options) {
         options.window_id = this.window_id
         let cmd = {
-            command: "create-grid",
+            command: 'create-grid',
             options: options
         }
         return this._postRequest(cmd).then(m => {
@@ -83,7 +83,7 @@ module.exports = class DisplayWindow {
 
     addToGrid(label, bounds, backgroundStyle) {
         let cmd = {
-            command: "add-to-grid",
+            command: 'add-to-grid',
             options: {
                 window_id: this.window_id,
                 label: label,
@@ -98,7 +98,7 @@ module.exports = class DisplayWindow {
 
     removeFromGrid(label) {
         let cmd = {
-            command: "remove-from-grid",
+            command: 'remove-from-grid',
             options: {
                 window_id: this.window_id,
                 label: label

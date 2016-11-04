@@ -1,6 +1,4 @@
-
 module.exports = class ViewObject {
-    
     constructor(io, options) {
         this.io = io
         this.view_id = options.view_id
@@ -12,7 +10,7 @@ module.exports = class ViewObject {
 
     _postRequest(data) {
         return this.io.call('rpc-display-' + this.displayName, JSON.stringify(data))
-    } 
+    }
 
     setUrl(url) {
         let cmd = {
@@ -146,7 +144,7 @@ module.exports = class ViewObject {
         let cmd = {
             command: 'forward',
             options: {
-                view_id: this.view_id,
+                view_id: this.view_id
             }
         }
         return this._postRequest(cmd)
@@ -198,8 +196,9 @@ module.exports = class ViewObject {
     _on(topic, handler) {
         this.io.onTopic(topic, (msg, headers) => {
             let m = JSON.parse(msg.toString())
-            if (handler != null && m.details.view_id == this.view_id)
+            if (handler != null && m.details.view_id == this.view_id) {
                 handler(m, headers)
+            }
         })
     }
 
@@ -238,6 +237,4 @@ module.exports = class ViewObject {
     onPluginCrashed(handler) {
         this._on(`display.${this.name}.viewObjectPluginCrashed.${this.view_id}`, handler)
     }
-
-
 }

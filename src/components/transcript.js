@@ -1,49 +1,48 @@
-const uuid = require('uuid');
-
 module.exports = class Transcript {
     constructor(io) {
-        this.io = io;
+        this.io = io
     }
 
     _on(topic, handler) {
-        this.io.onTopic(topic, (msg, headers)=>
-            handler(JSON.parse(msg.toString()), headers));
+        this.io.onTopic(topic, (msg, headers) =>
+            handler(JSON.parse(msg.toString()), headers))
     }
 
     onAll(handler) {
-        this._on('*.*.transcript', handler);
+        this._on('*.*.transcript', handler)
     }
 
     onFinal(handler) {
-        this._on('*.final.transcript', handler);
+        this._on('*.final.transcript', handler)
     }
 
     onInterim(handler) {
-        this._on('*.interim.transcript', handler);
+        this._on('*.interim.transcript', handler)
     }
 
     switchModel(model) {
-        this.io.publishTopic('switch-model.stt.command', model);
+        this.io.publishTopic('switchModel.transcript.command', model)
     }
 
     tagChannel(workerID, channelIndex, name) {
-        this.io.call(`${workerID}-tag-channel`, JSON.stringify({channelIndex, name}));
+        this.io.call(`rpc-transcript-${workerID}-tagchannel`, JSON.stringify({ channelIndex, name }))
     }
 
     addKeywords(words) {
-        this.io.publishTopic('add-keywords.stt.command', JSON.stringify(words));
+        // this.io.store.addToSet('transcript:keywords', )
+        this.io.publishTopic('addKeywords.transcript.command', JSON.stringify(words))
     }
 
     stopPublishing() {
-        this.io.publishTopic('stop-publishing.stt.command', '');
+        this.io.publishTopic('stopPublishing.transcript.command', '')
     }
 
     publish(source, isFinal, msg) {
-        const topic = isFinal ? 'final' : 'interim';
+        const topic = isFinal ? 'final' : 'interim'
         if (!msg.time_captured) {
-            msg.time_captured = new Date().getTime();
+            msg.time_captured = new Date().getTime()
         }
-        msg.messageId = uuid.v1();
-        this.io.publishTopic(`${source}.${topic}.transcript`, JSON.stringify(msg));
+        msg.messageId = this.io.generateUUID()
+        this.io.publishTopic(`${source}.${topic}.transcript`, JSON.stringify(msg))
     }
-};
+}

@@ -1,4 +1,3 @@
-
 const ViewObject = require('./viewobject')
 module.exports = class DisplayWindow {
     constructor(io, options) {
@@ -109,7 +108,6 @@ module.exports = class DisplayWindow {
         })
     }
 
-
     /*
         returns the gridlayout
 
@@ -138,7 +136,6 @@ module.exports = class DisplayWindow {
         })
     }
 
-
     // setting DisplayWindow cssText
 
     /*
@@ -154,8 +151,9 @@ module.exports = class DisplayWindow {
                 style: js_css_style
             }
         }
-        if (animation)
+        if (animation) {
             cmd.options.animation_options = animation
+        }
 
         return this._postRequest(cmd).then(m => {
             return JSON.parse(m.toString())
@@ -219,8 +217,9 @@ module.exports = class DisplayWindow {
             m = JSON.parse(m.toString())
             m.viewObjects.forEach((v) => {
                 let view = this.getViewObjectById(v)
-                if (view)
+                if (view) {
                     view.destroy()
+                }
             })
             this.destroy()
             return m
@@ -268,8 +267,8 @@ module.exports = class DisplayWindow {
        options:
            - url
            - position (label or grid-top & grid-left)
-           - width // in px or em 
-           - height // in px or em 
+           - width // in px or em
+           - height // in px or em
            - cssText (string)
            - nodeintegration (boolean)
    */

@@ -51,7 +51,7 @@ module.exports = class DisplayContextFactory {
         let cmd = {
             command: 'hide-all-windows'
         }
-        this.getActiveDisplays().then(m => {
+        this.getDisplays().then(m => {
             let _ps = []
             for (let k of Object.keys(m)) {
                 _ps.push(this.io.call('rpc-display-' + k, JSON.stringify(cmd)))
@@ -73,7 +73,7 @@ module.exports = class DisplayContextFactory {
         let cmd = {
             command: 'get-focus-window'
         }
-        return this.getActiveDisplays().then(m => {
+        return this.getDisplays().then(m => {
             let _ps = []
             for (let k of Object.keys(m)) {
                 _ps.push(this.io.call('rpc-display-' + k, JSON.stringify(cmd)))

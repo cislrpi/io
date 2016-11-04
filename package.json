@@ -8,7 +8,6 @@
     "test_display_promise": "mocha --timeout 15000 tests/testRPCAsync.js",
     "test_display_events": "mocha --timeout 40000 tests/testDisplayEvents.js"
   },
-
   "contributors": [
     {
       "name": "Yedendra Shrinivasan",
@@ -23,6 +22,7 @@
   "publishConfig": {
     "registry": "https://cel-npm-registry.mybluemix.net/"
   },
+  "private": true,
   "dependencies": {
     "amqplib": "^0.4.2",
     "bluebird": "^3.4.6",

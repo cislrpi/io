@@ -1,4 +1,3 @@
-
 const DisplayContext = require('./displaycontext')
 
 module.exports = class DisplayContextFactory {
@@ -34,7 +33,7 @@ module.exports = class DisplayContextFactory {
             console.log('app name in store : ', name)
             if (name != appname) {
                 this.io.store.setState('display:activeDisplayContext', appname);
-                (new DisplayContext(appname, {}, this.io)).restoreFromStore(reset);
+                (new DisplayContext(appname, {}, this.io)).restoreFromStore(reset)
             } else {
                 console.log('app name : ', appname, 'is already active')
             }
@@ -81,8 +80,9 @@ module.exports = class DisplayContextFactory {
             }
             return Promise.all(_ps)
         }).then(m => {
-            for (var i = 0; i < m.length; i++)
+            for (var i = 0; i < m.length; i++) {
                 m[i] = JSON.parse(m[i].toString())
+            }
 
             return m
         })
@@ -90,49 +90,48 @@ module.exports = class DisplayContextFactory {
 
     _on(topic, handler) {
         this.io.onTopic(topic, (msg, headers) => {
-            if (handler != null)
-                handler(JSON.parse(msg.toString()), headers)
+            if (handler != null) { handler(JSON.parse(msg.toString()), headers) }
         })
     }
 
     onViewObjectCreated(handler) {
-        this._on('display.*.viewObjectCreated.*', handler)
+        this._on(`display.*.viewObjectCreated.*`, handler)
     }
 
     OnViewObjectHidden(handler) {
-        this._on('display.*.viewObjectHidden.*', handler)
+        this._on(`display.*.viewObjectHidden.*`, handler)
     }
 
     onViewObjectShown(handler) {
-        this._on('display.*.viewObjectShown.*', handler)
+        this._on(`display.*.viewObjectShown.*`, handler)
     }
 
     onViewObjectClosed(handler) {
-        this._on('display.*.viewObjectClosed.*', handler)
+        this._on(`display.*.viewObjectClosed.*`, handler)
     }
 
     onViewObjectBoundsChanged(handler) {
-        this._on('display.*.viewObjectBoundsChanged.*', handler)
+        this._on(`display.*.viewObjectBoundsChanged.*`, handler)
     }
 
     onViewObjectUrlChanged(handler) {
-        this._on('display.*.viewObjectUrlChanged.*', handler)
+        this._on(`display.*.viewObjectUrlChanged.*`, handler)
     }
 
     onViewObjectUrlReloaded(handler) {
-        this._on('display.*.viewObjectUrlChanged.*', handler)
+        this._on(`display.*.viewObjectUrlChanged.*`, handler)
     }
 
     onViewObjectCrashed(handler) {
-        this._on('display.*.viewObjectCrashed.*', handler)
+        this._on(`display.*.viewObjectCrashed.*`, handler)
     }
 
     onViewObjectGPUCrashed(handler) {
-        this._on('display.*.viewObjectGPUCrashed.*', handler)
+        this._on(`display.*.viewObjectGPUCrashed.*`, handler)
     }
 
     onViewObjectPluginCrashed(handler) {
-        this._on('display.*.viewObjectPluginCrashed.*', handler)
+        this._on(`display.*.viewObjectPluginCrashed.*`, handler)
     }
 
     onDisplayContextCreated(handler) {

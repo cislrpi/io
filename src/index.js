@@ -11,14 +11,15 @@ const Hotspot = require('./components/hotspot')
 const Store = require('./components/store')
 
 module.exports = class CELIO extends CELIOAbstract {
-    constructor() {
+    constructor(configFile) {
         super()
-        const configFile = path.join(process.cwd(), 'cog.json')
+        if (!configFile) {
+            configFile = path.join(process.cwd(), 'cog.json')
+        }
         nconf.argv().file({ file: configFile }).env('_')
 
         nconf.required(['mq:url', 'mq:username', 'mq:password', 'store:url'])
         nconf.defaults({ 'mq': { 'exchange': 'amq.topic' } })
-        this.exchange = nconf.get('mq:exchange')
 
         const ca = nconf.get('mq:ca')
         const auth = nconf.get('mq:username') + ':' + nconf.get('mq:password') + '@'
@@ -107,13 +108,13 @@ module.exports = class CELIO extends CELIOAbstract {
 
     onTopic(topic, handler) {
         this.pch.then(ch => ch.assertQueue('', { exclusive: true })
-            .then(q => ch.bindQueue(q.queue, this.exchange, topic)
+            .then(q => ch.bindQueue(q.queue, this.config.get('mq:exchange'), topic)
                 .then(() => ch.consume(q.queue, msg =>
                     handler(msg.content, _.merge(msg.fields, msg.properties)), { noAck: true }))))
     }
 
     publishTopic(topic, content, options) {
-        this.pch.then(ch => ch.publish(this.exchange, topic,
+        this.pch.then(ch => ch.publish(this.config.get('mq:exchange'), topic,
             Buffer.isBuffer(content) ? content : new Buffer(content), options))
     }
 }

@@ -1,12 +1,22 @@
 {
   "name": "celio",
   "version": "2.0.0",
-  "description": "",
+  "description": "A Framework for Building Multimodal Cognitive Applications",
   "main": "lib/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "eslint src/",
+    "compile": "babel src/ --out-dir lib/",
+    "preversion": "npm test",
+    "version": "npm run compile",
+    "postversion": "git push origin master && npm publish",
+    "test": "npm run lint && npm run test_display_promise",
     "test_display_promise": "mocha --timeout 15000 tests/testRPCAsync.js",
-    "test_display_events": "mocha --timeout 40000 tests/testDisplayEvents.js"
+    "test_display_events": "mocha --timeout 40000 tests/testDisplayEvents.js",
+    "release-minor": "npm version minor",
+    "release-major": "npm version major"
+  },
+  "engines": {
+    "node": ">=4.0.0"
   },
   "contributors": [
     {

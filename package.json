@@ -22,7 +22,7 @@
   "publishConfig": {
     "registry": "https://cel-npm-registry.mybluemix.net/"
   },
-  "private": true,
+  "license": "UNLICENSED",
   "dependencies": {
     "amqplib": "^0.4.2",
     "bluebird": "^3.4.6",

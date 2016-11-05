@@ -11,7 +11,8 @@
     "preversion": "npm test",
     "version": "npm run compile && git add -A",
     "postversion": "git push origin master && git push origin --tags && npm publish",
-    "test": "npm run lint && npm run test_display_promise",
+    "pretest": "npm run compile",
+    "test": "npm run lint && mocha",
     "test_display_promise": "mocha --timeout 15000 test/testRPCAsync.js",
     "test_display_events": "mocha --timeout 40000 test/testDisplayEvents.js",
     "release-patch": "false",
@@ -42,6 +43,7 @@
   "dependencies": {
     "amqplib": "^0.4.2",
     "bluebird": "^3.4.6",
+    "chai-as-promised": "^6.0.0",
     "lodash": "^4.13.1",
     "nconf": "^0.8.4",
     "redis": "^2.6.2",

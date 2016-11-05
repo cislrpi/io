@@ -1,6 +1,7 @@
-const CELIO = require('../lib/index.js');
+const CELIO = require('../src/index')
 
-const io = new CELIO();
+describe('CELIO', ()=>{})
+const io = new CELIO()
 io.publishTopic('pool.knice', JSON.stringify({descrips: ["a"], ingests: {}}))
 io.onTopic('pool.knice', msg=>console.log(msg.toString()))
 // const t = io.getTranscript();

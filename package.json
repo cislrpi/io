@@ -1,17 +1,20 @@
 {
   "name": "celio",
   "version": "2.0.0",
-  "description": "A Framework for Building Multimodal Cognitive Applications",
+  "description": "A framework for building distributed, multimodal applications",
   "main": "lib/index.js",
   "scripts": {
+    "start": "npm install && npm prune",
     "lint": "eslint src/",
     "compile": "babel src/ --out-dir lib/",
+    "prepublish": "npm run compile",
     "preversion": "npm test",
-    "version": "npm run compile",
-    "postversion": "git push origin master && npm publish",
+    "version": "npm run compile && git add -A",
+    "postversion": "git push origin master && git push origin --tags && npm publish",
     "test": "npm run lint && npm run test_display_promise",
-    "test_display_promise": "mocha --timeout 15000 tests/testRPCAsync.js",
-    "test_display_events": "mocha --timeout 40000 tests/testDisplayEvents.js",
+    "test_display_promise": "mocha --timeout 15000 test/testRPCAsync.js",
+    "test_display_events": "mocha --timeout 40000 test/testDisplayEvents.js",
+    "release-patch": "false",
     "release-minor": "npm version minor",
     "release-major": "npm version major"
   },
@@ -28,7 +31,10 @@
       "email": "zhangyun@us.ibm.com"
     }
   ],
-  "repository": "https://github.ibm.com/celio/CELIO",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.ibm.com/celio/CELIO.git"
+  },
   "publishConfig": {
     "registry": "https://cel-npm-registry.mybluemix.net/"
   },

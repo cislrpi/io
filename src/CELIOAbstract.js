@@ -19,10 +19,12 @@ module.exports = class CELIOAbstract {
     }
 
     getTranscript() {
+        console.warn('getTranscript is deprecated. Use io.transcript instead.')
         return this.transcript
     }
 
     getSpeaker() {
+        console.warn('getSpeaker is deprecated. Use io.speaker instead.')
         return this.speaker
     }
 }

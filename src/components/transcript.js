@@ -25,7 +25,7 @@ module.exports = class Transcript {
     }
 
     tagChannel(workerID, channelIndex, name) {
-        this.io.call(`rpc-transcript-${workerID}-tagchannel`, JSON.stringify({ channelIndex, name }))
+        this.io.call(`rpc-transcript-${workerID}-tagChannel`, JSON.stringify({ channelIndex, name }))
     }
 
     addKeywords(words) {
@@ -42,7 +42,7 @@ module.exports = class Transcript {
         if (!msg.time_captured) {
             msg.time_captured = new Date().getTime()
         }
-        msg.messageId = this.io.generateUUID()
+        msg.messageID = this.io.generateUUID()
         this.io.publishTopic(`${source}.${topic}.transcript`, JSON.stringify(msg))
     }
 }

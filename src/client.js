@@ -30,7 +30,7 @@ module.exports = class CELIO extends CELIOAbstract {
         this.brokerURL = `${protocol}://${config.mq.url}:${port}/ws`
         const client = Stomp.over(new WebSocket(this.brokerURL))
         client.debug = null
-        this.pconn = new Promise(function(resolve, reject) {
+        this.pconn = new Promise(function (resolve, reject) {
             client.connect(config.mq.username, config.mq.password, () => resolve(client),
                 err => { console.error(err); reject(err) }, config.mq.vhost)
         })
@@ -77,9 +77,26 @@ module.exports = class CELIO extends CELIOAbstract {
         })
     }
 
-    // Webclient should not handle RPC calls.
-    // doCall(queue, handler, noAck=true) {
-    // }
+    doCall(queue, handler) {
+        this.pconn.then(client => client.subscribe(`/queue/${queue}`, msg => {
+            let replyCount = 0
+            function reply(response) {
+                if (replyCount >= 1) {
+                    throw new Error('Replied more than once.')
+                }
+                replyCount++
+                if (response instanceof Error) {
+                    client.send(msg.headers['reply-to'],
+                        { 'correlation-id': msg.headers['correlation-id'], error: response.message }, '')
+                } else {
+                    client.send(msg.headers['reply-to'],
+                        { 'correlation-id': msg.headers['correlation-id'] }, response)
+                }
+            }
+
+            handler({ content: msg.body, headers: msg.headers }, reply)
+        }, { durable: false, 'auto-delete': true }))
+    }
 
     onTopic(topic, handler) {
         this.pconn.then(client => client.subscribe(`/exchange/${this.config.mq.exchange}/${topic}`, msg => {

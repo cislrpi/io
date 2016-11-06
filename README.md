@@ -164,7 +164,7 @@ The `msg` object has at least the following fields:
     final: true,
     keyword_result: {}
   },
-  messageId: "uuid string"
+  messageID: "uuid string"
   time_captured: unix_time
 }
 ```

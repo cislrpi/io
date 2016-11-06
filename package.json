@@ -1,12 +1,29 @@
 {
   "name": "celio",
   "version": "2.0.0",
-  "description": "",
+  "description": "A framework for building distributed, multimodal applications",
   "main": "lib/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "test_display_promise": "mocha --timeout 15000 tests/testRPCAsync.js",
-    "test_display_events": "mocha --timeout 40000 tests/testDisplayEvents.js"
+    "start": "npm install && npm prune",
+    "lint": "eslint src/",
+    "compile": "babel src/ --out-dir lib/",
+    "prepublish": "npm run compile",
+    "preversion": "npm test",
+    "version": "npm run compile && git add -A",
+    "postversion": "git push origin master && git push origin --tags && npm publish",
+    "pretest-browser": "browserify test/browser/index.js -t babelify -o test/browser/page/tests-bundle.js",
+    "test-browser": "testem",
+    "posttest-browser": "rm test/browser/page/tests-bundle.js",
+    "test-node": "mocha test/node",
+    "test": "npm run lint && npm run test-node && npm run test-browser",
+    "test_display_promise": "mocha --timeout 15000 test/testRPCAsync.js",
+    "test_display_events": "mocha --timeout 40000 test/testDisplayEvents.js",
+    "release-patch": "false",
+    "release-minor": "npm version minor",
+    "release-major": "npm version major"
+  },
+  "engines": {
+    "node": ">=4.0.0"
   },
   "contributors": [
     {
@@ -18,10 +35,14 @@
       "email": "zhangyun@us.ibm.com"
     }
   ],
-  "repository": "https://github.ibm.com/celio/CELIO",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.ibm.com/celio/CELIO.git"
+  },
   "publishConfig": {
     "registry": "https://cel-npm-registry.mybluemix.net/"
   },
+  "license": "UNLICENSED",
   "dependencies": {
     "amqplib": "^0.4.2",
     "bluebird": "^3.4.6",
@@ -37,10 +58,14 @@
   "devDependencies": {
     "babel-polyfill": "^6.9.1",
     "babel-preset-es2015": "^6.9.0",
+    "babelify": "^7.3.0",
+    "browserify": "^13.1.1",
     "chai": "^3.5.0",
+    "chai-as-promised": "^6.0.0",
     "chai-eventemitter": "^1.1.1",
     "mocha": "^2.5.3",
     "sinon": "^1.17.4",
-    "sinon-chai": "^2.8.0"
+    "sinon-chai": "^2.8.0",
+    "testem": "^1.13.0"
   }
 }

@@ -24,9 +24,7 @@ module.exports = class Store {
     }
 
     addToHash(key, field, value) {
-        const obj = {}
-        obj[field] = value
-        return this.client.hash(key).update(obj)
+        return this.client.request(['hset', key, field, value])
     }
 
     getHash(key) {
@@ -54,7 +52,10 @@ module.exports = class Store {
     }
 
     setState(key, value) {
-        return this.client.key(key).set(value)
+        return this.client.key(key).set(value).then(status => {
+            if (status) return 'OK'
+            else return null
+        })
     }
 
     getState(key) {

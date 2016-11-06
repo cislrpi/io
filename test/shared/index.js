@@ -1,7 +1,6 @@
 const chai = require('chai')
-const chaiAsPromised = require('chai-as-promised')
+chai.use(require('chai-as-promised'))
 
-chai.use(chaiAsPromised)
 const assert = chai.assert
 
 exports.celio = function () {
@@ -195,5 +194,55 @@ exports.speaker = function () {
             assert.becomes(pbegin, 'Hi', 'onBeginSpeak'),
             assert.becomes(pend, 'Hi', 'onEndSpeak')
         ])
+    })
+}
+
+exports.transcript = function () {
+    it('should receive events in onAll, onFinal, onInterim', function () {
+        this.timeout(10000)
+        const pAll = new Promise((resolve, reject) => {
+            this.io.transcript.onAll(msg => resolve(msg))
+        })
+        const pFinal = new Promise((resolve, reject) => {
+            this.io.transcript.onFinal(msg => resolve(msg))
+        })
+        const pInterim = new Promise((resolve, reject) => {
+            this.io.transcript.onInterim(msg => resolve(msg))
+        })
+
+        return Promise.all([
+            assert.eventually.property(pAll, 'workerID'),
+            assert.eventually.property(pAll, 'channelIndex'),
+            assert.eventually.property(pAll, 'messageID'),
+            assert.eventually.property(pAll, 'time_captured'),
+            assert.eventually.deepProperty(pAll, 'result.alternatives'),
+            assert.eventually.deepProperty(pFinal, 'result.final'),
+            assert.eventually.deepProperty(pFinal, 'result.alternatives'),
+            assert.eventually.deepProperty(pInterim, 'result.alternatives')
+        ])
+    })
+
+    it('should tagChannel', function (done) {
+        this.timeout(10000)
+        const speaker = this.io.generateUUID()
+        let oldSpeaker
+        this.io.transcript.onInterim(msg => {
+            if (msg.speaker !== speaker) {
+                oldSpeaker = msg.speaker
+                this.io.transcript.tagChannel(msg.workerID, msg.channelIndex, speaker)
+            } else if (msg.speaker === speaker) {
+                this.io.transcript.tagChannel(msg.workerID, msg.channelIndex, oldSpeaker)
+                done()
+            }
+        })
+    })
+
+    it('should stopPublishing (say "start listening" to resume transcription)', function (done) {
+        this.timeout(8000)
+        this.io.transcript.stopPublishing()
+        this.io.transcript.onInterim(msg => assert.fail())
+        setTimeout(function () {
+            done()
+        }, 5000)
     })
 }

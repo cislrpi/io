@@ -1,7 +1,6 @@
 const chai = require('chai')
-const chaiAsPromised = require('chai-as-promised')
+chai.use(require('chai-as-promised'))
 
-chai.use(chaiAsPromised)
 const assert = chai.assert
 
 const CELIO = require('../../src/index')
@@ -43,5 +42,13 @@ describe('node', function () {
         })
 
         shared.speaker()
+    })
+
+    describe('Transcript (require transcript-worker to be running and >>>>you talking<<<', function () {
+        beforeEach(function () {
+            this.io = new CELIO('test/cog.json')
+        })
+
+        shared.transcript()
     })
 })

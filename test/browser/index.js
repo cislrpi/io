@@ -2,26 +2,36 @@ const CELIO = require('../../src/client')
 const shared = require('../shared/')
 const config = require('../cog.json')
 
-describe('CELIO-browser', function () {
-    beforeEach(function () {
-        this.io = new CELIO(config)
+describe('browser', function () {
+    describe('CELIO', function () {
+        beforeEach(function () {
+            this.io = new CELIO(config)
+        })
+
+        shared.celio()
     })
 
-    shared.celio()
-})
+    describe('Store', function () {
+        beforeEach(function () {
+            this.io = new CELIO(config)
+        })
 
-describe('Store', function () {
-    beforeEach(function () {
-        this.io = new CELIO(config)
+        shared.store()
     })
 
-    shared.store()
-})
+    describe('Speaker (require speaker-worker to be running)', function () {
+        beforeEach(function () {
+            this.io = new CELIO(config)
+        })
 
-describe('Speaker (require speaker-worker to be running)', function () {
-    beforeEach(function () {
-        this.io = new CELIO(config)
+        shared.speaker()
     })
 
-    shared.speaker()
+    describe('Transcript (require transcript-worker to be running and >>>>you talking<<<', function () {
+        beforeEach(function () {
+            this.io = new CELIO(config)
+        })
+
+        shared.transcript()
+    })
 })

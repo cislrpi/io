@@ -77,9 +77,26 @@ module.exports = class CELIO extends CELIOAbstract {
         })
     }
 
-    // Webclient should not handle RPC calls.
-    // doCall(queue, handler, noAck=true) {
-    // }
+    doCall(queue, handler) {
+        this.pconn.then(client => client.subscribe(`/queue/${queue}`, msg => {
+            let replyCount = 0
+            function reply(response) {
+                if (replyCount >= 1) {
+                    throw new Error('Replied more than once.')
+                }
+                replyCount++
+                if (response instanceof Error) {
+                    client.send(msg.headers['reply-to'],
+                        { 'correlation-id': msg.headers['correlation-id'], error: response.message }, '')
+                } else {
+                    client.send(msg.headers['reply-to'],
+                    { 'correlation-id': msg.headers['correlation-id'] }, response)
+                }
+            }
+
+            handler({ content: msg.body, headers: msg.headers }, reply)
+        }, {durable: false, 'auto-delete': true}))
+    }
 
     onTopic(topic, handler) {
         this.pconn.then(client => client.subscribe(`/exchange/${this.config.mq.exchange}/${topic}`, msg => {

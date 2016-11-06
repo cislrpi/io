@@ -11,8 +11,11 @@
     "preversion": "npm test",
     "version": "npm run compile && git add -A",
     "postversion": "git push origin master && git push origin --tags && npm publish",
-    "pretest": "npm run compile",
-    "test": "npm run lint && mocha",
+    "pretest-browser": "browserify test/browser/index.js -t babelify -o test/browser/page/tests-bundle.js",
+    "test-browser": "testem",
+    "posttest-browser": "rm test/browser/page/tests-bundle.js",
+    "test-node": "mocha --compilers js:babel-core/register test/node",
+    "test": "npm run lint && npm run test-node && npm run test-browser",
     "test_display_promise": "mocha --timeout 15000 test/testRPCAsync.js",
     "test_display_events": "mocha --timeout 40000 test/testDisplayEvents.js",
     "release-patch": "false",
@@ -43,7 +46,6 @@
   "dependencies": {
     "amqplib": "^0.4.2",
     "bluebird": "^3.4.6",
-    "chai-as-promised": "^6.0.0",
     "lodash": "^4.13.1",
     "nconf": "^0.8.4",
     "redis": "^2.6.2",
@@ -56,10 +58,14 @@
   "devDependencies": {
     "babel-polyfill": "^6.9.1",
     "babel-preset-es2015": "^6.9.0",
+    "babelify": "^7.3.0",
+    "browserify": "^13.1.1",
     "chai": "^3.5.0",
+    "chai-as-promised": "^6.0.0",
     "chai-eventemitter": "^1.1.1",
     "mocha": "^2.5.3",
     "sinon": "^1.17.4",
-    "sinon-chai": "^2.8.0"
+    "sinon-chai": "^2.8.0",
+    "testem": "^1.13.0"
   }
 }

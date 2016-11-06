@@ -19,7 +19,8 @@ module.exports = class CELIO extends CELIOAbstract {
         nconf.argv().file({ file: configFile }).env('_')
 
         nconf.required(['mq:url', 'mq:username', 'mq:password', 'store:url'])
-        nconf.defaults({ 'mq': { 'exchange': 'amq.topic' } })
+
+        this._exchange = nconf.get('mq:exchange') ? nconf.get('mq:exchange') : 'amq.topic'
 
         const ca = nconf.get('mq:ca')
         const auth = nconf.get('mq:username') + ':' + nconf.get('mq:password') + '@'
@@ -108,13 +109,13 @@ module.exports = class CELIO extends CELIOAbstract {
 
     onTopic(topic, handler) {
         this.pch.then(ch => ch.assertQueue('', { exclusive: true })
-            .then(q => ch.bindQueue(q.queue, this.config.get('mq:exchange'), topic)
+            .then(q => ch.bindQueue(q.queue, this._exchange, topic)
                 .then(() => ch.consume(q.queue, msg =>
                     handler(msg.content, _.merge(msg.fields, msg.properties)), { noAck: true }))))
     }
 
     publishTopic(topic, content, options) {
-        this.pch.then(ch => ch.publish(this.config.get('mq:exchange'), topic,
+        this.pch.then(ch => ch.publish(this._exchange, topic,
             Buffer.isBuffer(content) ? content : new Buffer(content), options))
     }
 }

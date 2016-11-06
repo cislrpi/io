@@ -30,7 +30,7 @@ module.exports = class CELIO extends CELIOAbstract {
         this.brokerURL = `${protocol}://${config.mq.url}:${port}/ws`
         const client = Stomp.over(new WebSocket(this.brokerURL))
         client.debug = null
-        this.pconn = new Promise(function(resolve, reject) {
+        this.pconn = new Promise(function (resolve, reject) {
             client.connect(config.mq.username, config.mq.password, () => resolve(client),
                 err => { console.error(err); reject(err) }, config.mq.vhost)
         })
@@ -90,12 +90,12 @@ module.exports = class CELIO extends CELIOAbstract {
                         { 'correlation-id': msg.headers['correlation-id'], error: response.message }, '')
                 } else {
                     client.send(msg.headers['reply-to'],
-                    { 'correlation-id': msg.headers['correlation-id'] }, response)
+                        { 'correlation-id': msg.headers['correlation-id'] }, response)
                 }
             }
 
             handler({ content: msg.body, headers: msg.headers }, reply)
-        }, {durable: false, 'auto-delete': true}))
+        }, { durable: false, 'auto-delete': true }))
     }
 
     onTopic(topic, handler) {

@@ -25,7 +25,7 @@ module.exports = class Transcript {
     }
 
     tagChannel(workerID, channelIndex, name) {
-        this.io.call(`rpc-transcript-${workerID}-tagchannel`, JSON.stringify({ channelIndex, name }))
+        this.io.call(`rpc-transcript-${workerID}-tagChannel`, JSON.stringify({ channelIndex, name }))
     }
 
     addKeywords(words) {

@@ -42,7 +42,7 @@ module.exports = class Transcript {
         if (!msg.time_captured) {
             msg.time_captured = new Date().getTime()
         }
-        msg.messageId = this.io.generateUUID()
+        msg.messageID = this.io.generateUUID()
         this.io.publishTopic(`${source}.${topic}.transcript`, JSON.stringify(msg))
     }
 }

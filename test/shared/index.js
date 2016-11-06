@@ -117,7 +117,7 @@ exports.store = function () {
             assert.equal(m, 0)
             return this.io.store.getHash(key)
         }).then(v => {
-            assert.deepEqual(v, {field: value2})
+            assert.deepEqual(v, { field: value2 })
             return this.io.store.removeFromHash(key, field)
         }).then(m => {
             assert.equal(m, 1)
@@ -144,5 +144,56 @@ exports.store = function () {
             assert.equal(m, 1)
             return this.io.store.delState(key)
         })
+    })
+}
+
+exports.speaker = function () {
+    it('should speak, stop, change volume, on(Begin/End)Speak', function () {
+        this.timeout(20000)
+        const phi = this.io.speaker.speak('Hi').then(m => m.toString())
+        const that = this
+
+        const pstop = new Promise((resolve, reject) => {
+            setTimeout(function () {
+                that.io.speaker.stop().then(m => resolve(m.toString()))
+            }, 14000)
+        })
+
+        const pbegin = new Promise((resolve, reject) => {
+            this.io.speaker.onBeginSpeak(msg => {
+                resolve(msg.text)
+            })
+        })
+
+        const pend = new Promise((resolve, reject) => {
+            this.io.speaker.onEndSpeak(msg => {
+                resolve(msg.text)
+            })
+        })
+
+        const plong = new Promise((resolve, reject) => {
+            setTimeout(function () {
+                that.io.speaker.speak('I will now reduce my volume').then(m => {
+                    assert.equal(m, 'success')
+                    return that.io.speaker.reduceVolume(50)
+                }).then(m => {
+                    assert.equal(m, 'done')
+                    return that.io.speaker.speak('testing testing. I will now increase my volume')
+                }).then(m => {
+                    assert.equal(m, 'success')
+                    return that.io.speaker.increaseVolume(50)
+                }).then(m => {
+                    assert.equal(m, 'done')
+                    return that.io.speaker.speak('testing testing. I will be stopped in 1, 2, 3, 4, 5, 6')
+                }).then(m => resolve(m.toString()))
+            }, 100)
+        })
+        return Promise.all([
+            assert.becomes(phi, 'success', 'speak text'),
+            assert.becomes(pstop, 'done', 'send stop'),
+            assert.becomes(plong, 'stopped', 'change volume, receive stop'),
+            assert.becomes(pbegin, 'Hi', 'onBeginSpeak'),
+            assert.becomes(pend, 'Hi', 'onEndSpeak')
+        ])
     })
 }

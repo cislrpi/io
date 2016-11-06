@@ -14,7 +14,7 @@
     "pretest-browser": "browserify test/browser/index.js -t babelify -o test/browser/page/tests-bundle.js",
     "test-browser": "testem",
     "posttest-browser": "rm test/browser/page/tests-bundle.js",
-    "test-node": "mocha --compilers js:babel-core/register test/node",
+    "test-node": "mocha test/node",
     "test": "npm run lint && npm run test-node && npm run test-browser",
     "test_display_promise": "mocha --timeout 15000 test/testRPCAsync.js",
     "test_display_events": "mocha --timeout 40000 test/testDisplayEvents.js",

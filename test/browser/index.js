@@ -1,9 +1,3 @@
-const chai = require('chai')
-const chaiAsPromised = require('chai-as-promised')
-
-chai.use(chaiAsPromised)
-const assert = chai.assert
-
 const CELIO = require('../../src/client')
 const shared = require('../shared/')
 const config = require('../cog.json')
@@ -16,10 +10,18 @@ describe('CELIO-browser', function () {
     shared.celio()
 })
 
-describe('store', function () {
+describe('Store', function () {
     beforeEach(function () {
         this.io = new CELIO(config)
     })
 
     shared.store()
+})
+
+describe('Speaker (require speaker-worker to be running)', function () {
+    beforeEach(function () {
+        this.io = new CELIO(config)
+    })
+
+    shared.speaker()
 })

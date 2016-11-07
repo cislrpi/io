@@ -78,7 +78,7 @@ There are a couple of notations to support placement of view objects
 
 ## API Reference
 
-- [io.displayContext](displayfactor.md)
+- [io.displayContext](displayfactory.md)
 - [DisplayContext](displaycontext.md)
-- [Window](displaywindow.md)
+- [Window](window.md)
 - [ViewObject](viewobject.md)

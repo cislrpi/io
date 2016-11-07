@@ -130,7 +130,7 @@ module.exports = class ViewObject {
         return this._postRequest(cmd)
     }
 
-    goBack(options) {
+    goBack() {
         let cmd = {
             command: 'back',
             options: {

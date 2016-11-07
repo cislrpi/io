@@ -98,7 +98,7 @@ module.exports = class DisplayContextFactory {
         this._on(`display.*.viewObjectCreated.*`, handler)
     }
 
-    OnViewObjectHidden(handler) {
+    onViewObjectHidden(handler) {
         this._on(`display.*.viewObjectHidden.*`, handler)
     }
 

@@ -14,7 +14,7 @@ module.exports = class DisplayWindow {
     }
 
     _postRequest(data) {
-        return this.io.call('rpc-display-' + this.displayName, JSON.stringify(data))
+        return this.io.call('rpc-display-' + this.displayName, JSON.stringify(data)).then(msg => msg.content)
     }
 
     id() {

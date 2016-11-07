@@ -9,7 +9,7 @@ module.exports = class ViewObject {
     }
 
     _postRequest(data) {
-        return this.io.call('rpc-display-' + this.displayName, JSON.stringify(data))
+        return this.io.call('rpc-display-' + this.displayName, JSON.stringify(data)).then(msg => msg.content)
     }
 
     setUrl(url) {

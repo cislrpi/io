@@ -22,7 +22,8 @@
         - [View Object](#view-object)
         - [CELIO API](#celio-api)
             - [getDisplay](#getdisplay)
-        - [DISPLAY API](#display-api)
+        - [DISPLAY API](#./doc/Display.md)
+
             - [Events](#events)
             - [getScreens](#getscreens)
             - [setAppContext](#setappcontext)

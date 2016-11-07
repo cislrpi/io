@@ -3,7 +3,16 @@ const bluebird = require('bluebird')
 bluebird.promisifyAll(redis.RedisClient.prototype)
 bluebird.promisifyAll(redis.Multi.prototype)
 
-module.exports = class Store {
+/**
+ * Class representing the Store object.
+ * @prop client - The node-redis client object.
+ */
+class Store {
+    /**
+     * @param  {Object} options - redis connection configuration.
+     * @param  {string} options.url - redis url.
+     * @param  {string} [options.password] - redis password.
+     */
     constructor(options) {
         if (options.url) {
             options.url = 'redis://' + options.url
@@ -11,6 +20,12 @@ module.exports = class Store {
         this.client = redis.createClient(options)
     }
 
+    /**
+     * @param  {string} key - The key for the hash.
+     * @param  {string} field - The field name to add to the hash.
+     * @param  {any} value - The value to set.
+     * @returns {Promise} The promise that resolves to 1 or 0.
+     */
     addToHash(key, field, value) {
         return this.client.hsetAsync(key, field, value)
     }
@@ -58,3 +73,5 @@ module.exports = class Store {
         return this.client
     }
 }
+
+module.exports = Store

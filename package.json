@@ -6,6 +6,7 @@
   "scripts": {
     "start": "npm install && npm prune",
     "lint": "eslint src/",
+    "docs": "documentation build ./src/index.js --github -f html -o ./.ignore",
     "compile": "babel src/ --out-dir lib/",
     "prepublish": "npm run compile",
     "preversion": "npm test",
@@ -17,6 +18,7 @@
     "test": "npm run lint && npm run test-node && npm run test-browser",
     "test_display_promise": "mocha --timeout 15000 test/testRPCAsync.js",
     "test_display_events": "mocha --timeout 40000 test/testDisplayEvents.js",
+    "update-gh-pages": "git checkout gh-pages && mv .ignore/* ./",
     "release-patch": "false",
     "release-minor": "npm version minor",
     "release-major": "npm version major"
@@ -62,6 +64,7 @@
     "chai": "^3.5.0",
     "chai-as-promised": "^6.0.0",
     "chai-eventemitter": "^1.1.1",
+    "documentation": "^4.0.0-beta12",
     "mocha": "^2.5.3",
     "sinon": "^1.17.4",
     "sinon-chai": "^2.8.0",

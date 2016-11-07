@@ -1,6 +1,3 @@
-/* eslint-env node */
-
-const path = require('path')
 const fs = require('fs')
 const nconf = require('nconf')
 const amqp = require('amqplib')
@@ -11,13 +8,44 @@ const Hotspot = require('./components/hotspot')
 const Store = require('./components/store')
 
 /**
- * Class representing the CELIO object.
- * @extends CELIOAbstract
+ * Callback for sending replies back to the caller. Can only be used once in a RPC handler.
+ * @callback replyCallback
+ * @param {(Buffer | Error)} response - A reply message.
  */
-module.exports = class CELIO extends CELIOAbstract {
+
+/**
+ * Send acknowledgement back to signal the caller that the call is handled.
+ * @callback ackCallback
+ */
+
+/**
+ * Callback for handling the call.
+ * @callback subscriptionCallback
+ * @param {Buffer} content - The message content.
+ * @param {Object} headers - The message headers.
+ */
+
+/**
+ * Callback for handling the call.
+ * @callback rpcCallback
+ * @param {Object} msg - A message to trigger the call.
+ * @param {Buffer} msg.content - The message content.
+ * @param {Object} msg.headers - The message headers.
+ * @param {replyCallback} reply - The function used to send replies back to the caller.
+ * @param {ackCallback} [ack] - The function used to send acknowledgement. This is only available if noAck is set to false.
+ */
+
+/**
+ * Class representing the CELIO object.
+ * @prop {DisplayContextFactory} displayContext - The displayContext factory.
+ * @prop {Store} store - The singleton store object.
+ * @prop {Transcript} transcript - The singleton transcript object
+ * @prop {Speaker} speaker - The singleton speaker object
+ */
+class CELIO extends CELIOAbstract {
     /**
      * Create the CELIO object, and establish connections to the central message broker and store
-     * @param  {string} configFile='./cog.json' - The file path of the cog.json file.
+     * @param  {string} [configFile='./cog.json'] - The file path of the cog.json file.
      */
     constructor(configFile = './cog.json') {
         super()
@@ -54,13 +82,21 @@ module.exports = class CELIO extends CELIOAbstract {
      * @param  {number[]} region.center - The center point ([x, y, z]) of the region.
      * @param  {number} region.width - Width in mm.
      * @param  {number} region.height - Height in mm.
-     * @param  {bool} excludeEventsOutsideRegion=true - whether to exclude events outside the region.
+     * @param  {bool} [excludeEventsOutsideRegion=true] - whether to exclude events outside the region.
      * @returns {Hotspot} The hotspot object.
      */
     createHotspot(region, excludeEventsOutsideRegion = true) {
         return new Hotspot(this, region, excludeEventsOutsideRegion)
     }
 
+    /**
+     * Make remote procedural call (RPC).
+     * @param  {string} queue - The queue name to send the call to.
+     * @param  {(Buffer | String | Array)} content - The RPC parameters.
+     * @param  {Object} [options={}] - The calling options.
+     * @param  {number} options.expiration=3000 - The timeout duration of the call.
+     * @return {Promise} A promise that resolves to the reply content.
+     */
     call(queue, content, options = {}) {
         return new Promise((resolve, reject) => {
             this.pconn.then(conn => conn.createChannel()
@@ -85,7 +121,7 @@ module.exports = class CELIO extends CELIOAbstract {
                                 if (msg.properties.headers.error) {
                                     reject(new Error(msg.properties.headers.error))
                                 } else {
-                                    resolve(msg)
+                                    resolve({content: msg.content, headers: _.merge(msg.fields, msg.properties)})
                                 }
 
                                 clearTimeout(timeoutID)
@@ -97,7 +133,14 @@ module.exports = class CELIO extends CELIOAbstract {
         })
     }
 
-    // when noAck is false, the handler should acknowledge the message using the provided function;
+    /**
+     * Receive RPCs from a queue and handle them.
+     * @param  {string} queue - The queue name to listen to.
+     * @param  {rpcCallback} handler - The actual function handling the call.
+     * @param  {bool} [noAck=true] - Whether to acknowledge the call automatically. If set to false, the handler has to acknowledge the call manually.
+     * @param  {bool} [exclusive=true] - Whether to declare an exclusive queue. If set to false, multiple clients can share the same the workload.
+     * @returns {void}
+     */
     doCall(queue, handler, noAck = true, exclusive = true) {
         this.pch.then(ch => {
             ch.prefetch(1)
@@ -116,22 +159,38 @@ module.exports = class CELIO extends CELIOAbstract {
                             { correlationId: request.properties.correlationId })
                     }
                 }
+                function ack() { ch.ack(request) }
 
                 handler({ content: request.content, headers: _.merge(request.fields, request.properties) }, reply,
-                    noAck ? undefined : function ack() { ch.ack(request) })
+                    noAck ? undefined : ack)
             }, { noAck }))
         })
     }
 
+    /**
+     * Subscribe to a topic.
+     * @param  {string} topic - The topic to subscribe to. Should be of a form 'tag1.tag2...'. Supports wildcard.
+     * For more information, refer to the {@link https://www.rabbitmq.com/tutorials/tutorial-five-javascript.html|Rabbitmq tutorial}.
+     * @param  {subscriptionCallback} handler - The callback function to process the messages from the topic.
+     * @returns {void}
+     */
     onTopic(topic, handler) {
         this.pch.then(ch => ch.assertQueue('', { exclusive: true })
             .then(q => ch.bindQueue(q.queue, this._exchange, topic)
                 .then(() => ch.consume(q.queue, msg =>
                     handler(msg.content, _.merge(msg.fields, msg.properties)), { noAck: true }))))
     }
-
+    /**
+     * Publish a message to the specified topic.
+     * @param  {string} topic - The routing key for the message.
+     * @param  {(Buffer | String | Array)} content - The message to publish.
+     * @param  {Object} [options] - Publishing options. Leave it undefined is fine.
+     * @return {void}
+     */
     publishTopic(topic, content, options) {
         this.pch.then(ch => ch.publish(this._exchange, topic,
             Buffer.isBuffer(content) ? content : new Buffer(content), options))
     }
 }
+
+module.exports = CELIO

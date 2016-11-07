@@ -7,7 +7,10 @@ const lowv = 200
 const highv = 4000
 const vanishTime = 1000
 
-module.exports = class Hotspot extends EventEmitter {
+/**
+ * Class representing the Hotspot object.
+ */
+class Hotspot extends EventEmitter {
     constructor(io, region, excludeEventsOutsideRegion) {
         super()
         // Construct a rectangle for hit test
@@ -222,3 +225,5 @@ module.exports = class Hotspot extends EventEmitter {
         this.on('detach', handler)
     }
 }
+
+module.exports = Hotspot

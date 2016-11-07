@@ -10,12 +10,17 @@ const CELIOAbstract = require('./CELIOAbstract')
 const Hotspot = require('./components/hotspot')
 const Store = require('./components/store')
 
+/**
+ * Class representing the CELIO object.
+ * @extends CELIOAbstract
+ */
 module.exports = class CELIO extends CELIOAbstract {
-    constructor(configFile) {
+    /**
+     * Create the CELIO object, and establish connections to the central message broker and store
+     * @param  {string} configFile='./cog.json' - The file path of the cog.json file.
+     */
+    constructor(configFile = './cog.json') {
         super()
-        if (!configFile) {
-            configFile = path.join(process.cwd(), 'cog.json')
-        }
         nconf.argv().file({ file: configFile }).env('_')
 
         nconf.required(['mq:url', 'mq:username', 'mq:password', 'store:url'])
@@ -41,6 +46,17 @@ module.exports = class CELIO extends CELIOAbstract {
         this.store = new Store(nconf.get('store'))
     }
 
+    /**
+     * Create a rectangular hotspot region that observes pointer movements and clicks.
+     * @param  {Object} region - The hotspot region.
+     * @param  {number[]} region.normal - The normal unit vector ([x, y, z]) of the region.
+     * @param  {number[]} region.over - The horizontal unit vector ([x, y, z]) of the region.
+     * @param  {number[]} region.center - The center point ([x, y, z]) of the region.
+     * @param  {number} region.width - Width in mm.
+     * @param  {number} region.height - Height in mm.
+     * @param  {bool} excludeEventsOutsideRegion=true - whether to exclude events outside the region.
+     * @returns {Hotspot} The hotspot object.
+     */
     createHotspot(region, excludeEventsOutsideRegion = true) {
         return new Hotspot(this, region, excludeEventsOutsideRegion)
     }
@@ -69,7 +85,7 @@ module.exports = class CELIO extends CELIOAbstract {
                                 if (msg.properties.headers.error) {
                                     reject(new Error(msg.properties.headers.error))
                                 } else {
-                                    resolve(msg.content, _.merge(msg.fields, msg.properties))
+                                    resolve(msg)
                                 }
 
                                 clearTimeout(timeoutID)

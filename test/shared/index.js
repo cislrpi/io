@@ -48,7 +48,7 @@ exports.celio = function () {
             assert.equal(request.content.toString(), ping)
             reply(pong)
         })
-        return this.io.call(queue, ping).then(resp => assert.equal(resp.toString(), pong))
+        return this.io.call(queue, ping).then(resp => assert.equal(resp.content.toString(), pong))
     })
 
     it('should allow RPC to return error', function () {
@@ -149,12 +149,12 @@ exports.store = function () {
 exports.speaker = function () {
     it('should speak, stop, change volume, on(Begin/End)Speak', function () {
         this.timeout(20000)
-        const phi = this.io.speaker.speak('Hi').then(m => m.toString())
+        const phi = this.io.speaker.speak('Hi').then(m => m.content.toString())
         const that = this
 
         const pstop = new Promise((resolve, reject) => {
             setTimeout(function () {
-                that.io.speaker.stop().then(m => resolve(m.toString()))
+                that.io.speaker.stop().then(m => resolve(m.content.toString()))
             }, 14000)
         })
 
@@ -173,18 +173,18 @@ exports.speaker = function () {
         const plong = new Promise((resolve, reject) => {
             setTimeout(function () {
                 that.io.speaker.speak('I will now reduce my volume').then(m => {
-                    assert.equal(m, 'success')
+                    assert.equal(m.content, 'success')
                     return that.io.speaker.reduceVolume(50)
                 }).then(m => {
-                    assert.equal(m, 'done')
+                    assert.equal(m.content, 'done')
                     return that.io.speaker.speak('testing testing. I will now increase my volume')
                 }).then(m => {
-                    assert.equal(m, 'success')
+                    assert.equal(m.content, 'success')
                     return that.io.speaker.increaseVolume(50)
                 }).then(m => {
-                    assert.equal(m, 'done')
+                    assert.equal(m.content, 'done')
                     return that.io.speaker.speak('testing testing. I will be stopped in 1, 2, 3, 4, 5, 6')
-                }).then(m => resolve(m.toString()))
+                }).then(m => resolve(m.content.toString()))
             }, 100)
         })
         return Promise.all([

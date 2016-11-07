@@ -65,7 +65,7 @@ module.exports = class CELIO extends CELIOAbstract {
                         if (msg.headers.error) {
                             reject(new Error(msg.headers.error))
                         } else {
-                            resolve(msg.body, msg.headers)
+                            resolve({content: msg.body, headers: msg.headers})
                         }
 
                         clearTimeout(timeoutID)

@@ -73,7 +73,7 @@ module.exports = class DisplayContext {
 
     _postRequest(displayName, data) {
         console.log(displayName, data)
-        return this.io.call('rpc-display-' + displayName, JSON.stringify(data))
+        return this.io.call('rpc-display-' + displayName, JSON.stringify(data)).then(msg => msg.content)
     }
 
     restoreFromStore(reset = false) {

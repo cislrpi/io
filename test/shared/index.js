@@ -226,13 +226,17 @@ exports.transcript = function () {
         this.timeout(10000)
         const speaker = this.io.generateUUID()
         let oldSpeaker
+        let tagged = false
         this.io.transcript.onInterim(msg => {
-            if (msg.speaker !== speaker) {
-                oldSpeaker = msg.speaker
-                this.io.transcript.tagChannel(msg.workerID, msg.channelIndex, speaker)
-            } else if (msg.speaker === speaker) {
-                this.io.transcript.tagChannel(msg.workerID, msg.channelIndex, oldSpeaker)
-                done()
+            if (!tagged) {
+                if (msg.speaker !== speaker) {
+                    oldSpeaker = msg.speaker
+                    this.io.transcript.tagChannel(msg.workerID, msg.channelIndex, speaker)
+                } else if (msg.speaker === speaker) {
+                    this.io.transcript.tagChannel(msg.workerID, msg.channelIndex, oldSpeaker)
+                    tagged = true
+                    done()
+                }
             }
         })
     })

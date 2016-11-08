@@ -2,7 +2,7 @@ const CELIO = require('../src/index.js')
 const io = new CELIO()
 let display = io.getDisplay()
 let win_obj
-let view_obj 
+let view_obj
 let sc
 const chai = require('chai')
 chai.use(require('chai-eventemitter'))

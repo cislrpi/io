@@ -9,7 +9,7 @@ class DisplayContextFactory {
     }
 
     /**
-    * Get available Display Workers details
+    * gets the Display Workers details running in the environment.
     * @returns {Promise} A ES2015 Map object with displayNames as keys and bounds as values.
     */
     getDisplays() {
@@ -22,10 +22,18 @@ class DisplayContextFactory {
         })
     }
 
+    /**
+    * list display contexts live in the environment.
+    * @returns {Promise} An array of String containing display context names.
+    */
     list() {
         return this.io.store.getSet('display:displayContexts')
     }
 
+    /**
+    * gets the activelist display contexts.
+    * @returns {Promise} An array of String containing display context names.
+    */
     getActive() {
         return this.io.store.getState('display:activeDisplayContext').then(m => {
             console.log('active display context is ', m)
@@ -39,64 +47,83 @@ class DisplayContextFactory {
         })
     }
 
-    setActive(appname, reset) {
-        console.log('requested app name : ', appname)
+    /**
+    * sets a display context active. Making a display context active ensures only windows of the display context are visible. Windows from other display contexts are hidden.
+    * @param {string} display_ctx_name - display context name.
+    * @param {boolean} [reset=false] if the viewObjects of the displayContext need to be reloaded.
+    */
+    setActive(display_ctx_name, reset = false) {
+        console.log('requested app name : ', display_ctx_name)
         this.io.store.getState('display:activeDisplayContext').then(name => {
             console.log('app name in store : ', name)
-            if (name != appname) {
-                this.io.store.setState('display:activeDisplayContext', appname);
-                (new DisplayContext(appname, {}, this.io)).restoreFromStore(reset)
+            if (name !== display_ctx_name) {
+                this.io.store.setState('display:activeDisplayContext', display_ctx_name);
+                (new DisplayContext(display_ctx_name, {}, this.io)).restoreFromStore(reset)
             } else {
-                console.log('app name : ', appname, 'is already active')
+                console.log('app name : ', display_ctx_name, 'is already active')
             }
         })
     }
 
-    create(ur_app_name, window_settings) {
-        let _dc = new DisplayContext(ur_app_name, window_settings, this.io)
+    /**
+    * Creates a display context. If the display context already exists, it is made active and a DisplayContext Object is restored from store.
+    * @param {string} display_ctx_name - display context name.
+    * @param {boolean} [reset=false] if the viewObjects of the displayContext need to be reloaded.
+    * @returns {Promise<Object>} A DisplayContext Object is returned.
+    */
+    create(display_ctx_name, window_settings) {
+        let _dc = new DisplayContext(display_ctx_name, window_settings, this.io)
         return _dc.restoreFromStore().then(m => {
             return _dc
         })
     }
 
+    /**
+    * hides all display contexts. If the display context already exists, it is made active and a DisplayContext Object is restored from store.
+    * @returns {Promise<Object>} A array of JSON object containing status of hide function execution at all display workers.
+    */
     hideAll() {
         let cmd = {
             command: 'hide-all-windows'
         }
-        this.getDisplays().then(m => {
+        return this.getDisplays().then(m => {
             let _ps = []
-            for (let k of Object.keys(m)) {
-                _ps.push(this.io.call('rpc-display-' + k, JSON.stringify(cmd)))
+            for (let [k] of m) {
+                _ps.push(this.io.call('rpc-display-' + k, JSON.stringify(cmd)).then(m => JSON.parse(m.content)))
             }
             return Promise.all(_ps)
-        }).then(m => {
-            return m
         })
     }
 
-    getFocusedDisplayWindow(displayName = 'main') {
+    /**
+     * gets the details of the focused window from a display.
+     * @params {string} [displayName='main']
+     * @returns {Promise<object>} A JSON object with window name.
+     * @example <caption> A sample output </caption>
+     * { "command" : "get-focus-window",
+     *   "status" : "success",
+     *   "window_id" : 23,
+     *   "displayName" : this.displayName,
+     *   "displayContext" : "creative"
+     * }
+     */
+    getFocusedWindow(displayName = 'main') {
         let cmd = {
             command: 'get-focus-window'
         }
-        return this.io.call('rpc-display-' + displayName, JSON.stringify(cmd)).then(m => { return JSON.parse(m.toString()) })
+        return this.io.call('rpc-display-' + displayName, JSON.stringify(cmd)).then(m => JSON.parse(m.content))
     }
 
-    getFocusedDisplayWindows() {
+    getFocusedWindows() {
         let cmd = {
             command: 'get-focus-window'
         }
         return this.getDisplays().then(m => {
             let _ps = []
-            for (let k of Object.keys(m)) {
-                _ps.push(this.io.call('rpc-display-' + k, JSON.stringify(cmd)))
+            for (let [k] of m) {
+                _ps.push(this.io.call('rpc-display-' + k, JSON.stringify(cmd)).then(m => JSON.parse(m.content)))
             }
             return Promise.all(_ps)
-        }).then(m => {
-            for (var i = 0; i < m.length; i++) {
-                m[i] = JSON.parse(m[i].toString())
-            }
-
-            return m
         })
     }
 

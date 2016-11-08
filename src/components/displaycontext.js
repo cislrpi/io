@@ -73,7 +73,10 @@ module.exports = class DisplayContext {
 
     _postRequest(displayName, data) {
         console.log(displayName, data)
-        return this.io.call('rpc-display-' + displayName, JSON.stringify(data)).then(msg => msg.content)
+        return this.io.call('rpc-display-' + displayName, JSON.stringify(data)).then(msg => {
+            console.log(msg.content.toString())
+            return JSON.parse(msg.content.toString())
+        })
     }
 
     restoreFromStore(reset = false) {
@@ -141,7 +144,7 @@ module.exports = class DisplayContext {
                 return this.io.store.getHash('display:displays').then(x => {
                     for (let k of Object.keys(x)) {
                         x[k] = JSON.parse(x[k])
-                        if (x[k].displayName == undefined) { x[k].displayName = k }
+                        if (x[k].displayName === undefined) { x[k].displayName = k }
                         x[k].windowName = k
                         x[k].displayContext = this.name
                     }
@@ -151,7 +154,7 @@ module.exports = class DisplayContext {
                 console.log('using  windowBounds from store')
                 let x = JSON.parse(m)
                 for (let k of Object.keys(x)) {
-                    if (x[k].displayName == undefined) { x[k].displayName = k }
+                    if (x[k].displayName === undefined) { x[k].displayName = k }
                     x[k].windowName = k
                     x[k].displayContext = this.name
                 }
@@ -251,7 +254,7 @@ module.exports = class DisplayContext {
             let map = []
             let isHidden = false
             for (var i = 0; i < m.length; i++) {
-                let res = JSON.parse(m[i].toString())
+                let res = m[i]
                 if (res.command == 'hide-display-context') { isHidden = true }
                 map.push(res)
             }
@@ -342,8 +345,8 @@ module.exports = class DisplayContext {
         }).then(m => {
             let map = {}
             for (var i = 0; i < m.length; i++) {
-                let res = JSON.parse(m[i].toString())
-                console.log(res)
+                let res = m[i]
+                console.log('init:', res)
                 map[res.windowName] = res
                 this.displayWindows.set(res.windowName, new DisplayWindow(this.io, res))
             }

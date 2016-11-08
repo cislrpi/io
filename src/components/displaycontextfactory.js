@@ -3,7 +3,7 @@ const DisplayContext = require('./displaycontext')
  * Class representing the DisplayContextFactory object.
  */
 class DisplayContextFactory {
-    
+
     constructor(io) {
         this.io = io
     }
@@ -78,7 +78,7 @@ class DisplayContextFactory {
         let cmd = {
             command: 'get-focus-window'
         }
-        return this.io.call('rpc-display-' + k, JSON.stringify(cmd)).then(m => { return JSON.parse(m.toString()) })
+        return this.io.call('rpc-display-' + displayName, JSON.stringify(cmd)).then(m => { return JSON.parse(m.toString()) })
     }
 
     getFocusedDisplayWindows() {

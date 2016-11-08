@@ -118,16 +118,15 @@ module.exports = class DisplayContext {
 
                 if (reset) {
                     console.log('making it active and reloading')
-                    this.show().then(m => {
+                    return this.show().then(m => {
                         return this.reloadAll()
                     }).then(m => {
                         console.log(m)
+                        return m
                     })
                 } else {
                     console.log('making it active ')
-                    this.show().then(m => {
-                        return m
-                    })
+                    return this.show()
                 }
             }
         })

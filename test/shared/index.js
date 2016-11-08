@@ -31,13 +31,13 @@ exports.celio = function () {
         const self = this
         setTimeout(function () {
             self.io.publishTopic(topic, data)
-        }, 50)
+        }, 100)
     })
 
     it('should return timeout error when RPC failed', function () {
         const queue = 'rpc-test3'
         const m = 'Request timed out after'
-        return assert.isRejected(this.io.call(queue, 'hello', { expiration: 50 }), Error, m)
+        return assert.isRejected(this.io.call(queue, 'hello', { expiration: 100 }), Error, m)
     })
 
     it('should do RPC', function () {
@@ -226,13 +226,17 @@ exports.transcript = function () {
         this.timeout(10000)
         const speaker = this.io.generateUUID()
         let oldSpeaker
+        let tagged = false
         this.io.transcript.onInterim(msg => {
-            if (msg.speaker !== speaker) {
-                oldSpeaker = msg.speaker
-                this.io.transcript.tagChannel(msg.workerID, msg.channelIndex, speaker)
-            } else if (msg.speaker === speaker) {
-                this.io.transcript.tagChannel(msg.workerID, msg.channelIndex, oldSpeaker)
-                done()
+            if (!tagged) {
+                if (msg.speaker !== speaker) {
+                    oldSpeaker = msg.speaker
+                    this.io.transcript.tagChannel(msg.workerID, msg.channelIndex, speaker)
+                } else if (msg.speaker === speaker) {
+                    this.io.transcript.tagChannel(msg.workerID, msg.channelIndex, oldSpeaker)
+                    tagged = true
+                    done()
+                }
             }
         })
     })

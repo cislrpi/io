@@ -1,6 +1,6 @@
 {
   "name": "celio",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "A framework for building distributed, multimodal applications",
   "main": "lib/index.js",
   "scripts": {
@@ -10,7 +10,7 @@
     "compile": "babel src/ --out-dir lib/",
     "prepublish": "npm run compile",
     "preversion": "npm test",
-    "version": "git add -A",
+    "version": "git add package.json",
     "pretest-browser": "browserify test/browser/index.js -t babelify -o test/browser/page/tests-bundle.js",
     "test-browser": "testem",
     "posttest-browser": "rm test/browser/page/tests-bundle.js",

@@ -3,5 +3,10 @@
        "url": "localhost",
        "username": "guest",
        "password": "guest"
+    },
+    "store" : {
+        "url" : "redis domain name",
+        "username" : "webdis username",
+        "password" : "webdis password and redis password need to be the same"
     }
 }

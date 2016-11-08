@@ -1,2 +1,4 @@
 node_modules/
-cog.json
+lib/
+.ignore/
+npm-debug.log

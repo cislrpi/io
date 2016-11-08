@@ -67,46 +67,47 @@ rename-command RENAME ""
 ## Install Webdis
 Version 0.1.2 and above is required to do authentication over CORS.
 For now, we have to compile it from source.
+
 1. First, we need the systemd init script from the deb package, so install the deb package first:
 `sudo apt install webdis`
 2. Compile new webdis:
-```
-sudo apt-get install libevent-dev
-git clone https://github.com/nicolasff/webdis.git
-cd webdis
-make clean all
-sudo mv webdis /usr/bin
-```
+  ```
+  sudo apt-get install libevent-dev
+  git clone https://github.com/nicolasff/webdis.git
+  cd webdis
+  make clean all
+  sudo mv webdis /usr/bin
+  ```
 3. Edit `/etc/webdis/webdis.json` to something like below, note to change username and passwords.
-```
-{
-    "redis_host": "127.0.0.1",
+  ```
+  {
+      "redis_host": "127.0.0.1",
 
-    "redis_port": 6379,
-    "redis_auth": "<redis_password>",
+      "redis_port": 6379,
+      "redis_auth": "<redis_password>",
 
-    "http_host": "0.0.0.0",
-    "http_port": 7379,
-    "threads": 2,
+      "http_host": "0.0.0.0",
+      "http_port": 7379,
+      "threads": 2,
 
-    "daemonize": true,
-    "pidfile": "/var/run/webdis/webdis.pid",
+      "daemonize": true,
+      "pidfile": "/var/run/webdis/webdis.pid",
 
-    "database": 0,
+      "database": 0,
 
-    "acl": [
-      {
-        "disabled": ["*"]
-      },
-      {
-        "http_basic_auth": "<username>:<password>",
-        "enabled": ["*"],
-        "disabled": ["DEBUG", "FLUSHDB", "FLUSHALL", "PEXPIRE", "CONFIG", "SHUTDOWN", "BGREWRITEAOF", "BGSAVE", "SAVE", "SPOP", "RENAME"]
-      }
-    ],
-    "verbosity": 3,
-    "logfile": "/var/log/webdis/webdis.log"
-}
-```
+      "acl": [
+        {
+          "disabled": ["*"]
+        },
+        {
+          "http_basic_auth": "<username>:<password>",
+          "enabled": ["*"],
+          "disabled": ["DEBUG", "FLUSHDB", "FLUSHALL", "PEXPIRE", "CONFIG", "SHUTDOWN", "BGREWRITEAOF", "BGSAVE", "SAVE", "SPOP", "RENAME"]
+        }
+      ],
+      "verbosity": 3,
+      "logfile": "/var/log/webdis/webdis.log"
+  }
+  ```
 4. Restart webdis:
 `sudo systemctl restart webdis`

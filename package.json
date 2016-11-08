@@ -6,7 +6,7 @@
   "scripts": {
     "start": "npm install && npm prune",
     "lint": "eslint src/",
-    "docs": "documentation build ./src/index.js --github -f html -o ./.ignore",
+    "docs": "jsdoc -c .jsdoc",
     "compile": "babel src/ --out-dir lib/",
     "prepublish": "npm run compile",
     "preversion": "npm test",
@@ -64,7 +64,8 @@
     "chai": "^3.5.0",
     "chai-as-promised": "^6.0.0",
     "chai-eventemitter": "^1.1.1",
-    "documentation": "^4.0.0-beta12",
+    "docdash": "^0.4.0",
+    "jsdoc": "^3.4.2",
     "mocha": "^2.5.3",
     "sinon": "^1.17.4",
     "sinon-chai": "^2.8.0",

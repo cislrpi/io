@@ -65,8 +65,4 @@ module.exports = class Store {
     delState(key) {
         return this.client.key(key).del()
     }
-
-    getRedisClient() {
-        return this.client
-    }
 }

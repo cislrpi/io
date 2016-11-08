@@ -19,7 +19,7 @@ const Store = require('./components/store')
  */
 
 /**
- * Callback for handling the call.
+ * Callback for handling the subscription.
  * @callback subscriptionCallback
  * @param {Buffer} content - The message content.
  * @param {Object} headers - The message headers.
@@ -37,17 +37,13 @@ const Store = require('./components/store')
 
 /**
  * Class representing the CELIO object.
- * @prop {DisplayContextFactory} displayContext - The displayContext factory.
- * @prop {Store} store - The singleton store object.
- * @prop {Transcript} transcript - The singleton transcript object
- * @prop {Speaker} speaker - The singleton speaker object
  */
 class CELIO extends CELIOAbstract {
     /**
      * Create the CELIO object, and establish connections to the central message broker and store
-     * @param  {string} [configFile='./cog.json'] - The file path of the cog.json file.
+     * @param  {string} [configFile='cog.json'] - The file path of the cog.json file.
      */
-    constructor(configFile = './cog.json') {
+    constructor(configFile = 'cog.json') {
         super()
         nconf.argv().file({ file: configFile }).env('_')
 
@@ -69,10 +65,43 @@ class CELIO extends CELIOAbstract {
         // Make a shared channel for publishing and subscribe
         this.pch = this.pconn.then(conn => conn.createChannel())
 
+        /**
+         * The singleton config object.
+         * @type {nconf}
+         */
         this.config = nconf
-        // Make the store connection
+
+        /**
+         * The singleton store object.
+         * @type {Store}
+         */
         this.store = new Store(nconf.get('store'))
     }
+
+    /**
+    * Generate UUID.
+    * @name CELIO#generateUUID
+    * @function
+    * @returns {string} The unique ID.
+    */
+
+    /**
+    * The singleton speaker object.
+    * @name CELIO#speaker
+    * @type {Speaker}
+    */
+
+    /**
+     * The singleton transcript object.
+     * @name CELIO#transcript
+     * @type {Transcript}
+     */
+
+    /**
+     * The displayContext factory.
+     * @name CELIO#displayContext
+     * @type {DisplayContextFactory}
+     */
 
     /**
      * Create a rectangular hotspot region that observes pointer movements and clicks.
@@ -139,7 +168,6 @@ class CELIO extends CELIOAbstract {
      * @param  {rpcCallback} handler - The actual function handling the call.
      * @param  {bool} [noAck=true] - Whether to acknowledge the call automatically. If set to false, the handler has to acknowledge the call manually.
      * @param  {bool} [exclusive=true] - Whether to declare an exclusive queue. If set to false, multiple clients can share the same the workload.
-     * @returns {void}
      */
     doCall(queue, handler, noAck = true, exclusive = true) {
         this.pch.then(ch => {
@@ -170,9 +198,8 @@ class CELIO extends CELIOAbstract {
     /**
      * Subscribe to a topic.
      * @param  {string} topic - The topic to subscribe to. Should be of a form 'tag1.tag2...'. Supports wildcard.
-     * For more information, refer to the {@link https://www.rabbitmq.com/tutorials/tutorial-five-javascript.html|Rabbitmq tutorial}.
+     * For more information, refer to the [Rabbitmq tutorial](https://www.rabbitmq.com/tutorials/tutorial-five-javascript.html).
      * @param  {subscriptionCallback} handler - The callback function to process the messages from the topic.
-     * @returns {void}
      */
     onTopic(topic, handler) {
         this.pch.then(ch => ch.assertQueue('', { exclusive: true })
@@ -184,8 +211,7 @@ class CELIO extends CELIOAbstract {
      * Publish a message to the specified topic.
      * @param  {string} topic - The routing key for the message.
      * @param  {(Buffer | String | Array)} content - The message to publish.
-     * @param  {Object} [options] - Publishing options. Leave it undefined is fine.
-     * @return {void}
+     * @param  {Object} [options] - Publishing options. Leaving it undefined is fine.
      */
     publishTopic(topic, content, options) {
         this.pch.then(ch => ch.publish(this._exchange, topic,

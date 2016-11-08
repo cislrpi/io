@@ -120,7 +120,7 @@ class CELIOWeb extends CELIOAbstract {
      * Receive RPCs from a queue and handle them.
      * @param  {string} queue - The queue name to listen to.
      * @param  {webRPCCallback} handler - The actual function handling the call.
-     * @returns {void}
+     * 
      */
     doCall(queue, handler) {
         this.pconn.then(client => client.subscribe(`/queue/${queue}`, msg => {
@@ -148,7 +148,7 @@ class CELIOWeb extends CELIOAbstract {
      * @param  {string} topic - The topic to subscribe to. Should be of a form 'tag1.tag2...'. Supports wildcard.
      * For more information, refer to this [Rabbitmq tutorial]{@link https://www.rabbitmq.com/tutorials/tutorial-five-javascript.html}
      * @param  {webSubscriptionCallback} handler - The callback function to process the messages from the topic.
-     * @returns {void}
+     * 
      */
     onTopic(topic, handler) {
         this.pconn.then(client => client.subscribe(`/exchange/${this.config.mq.exchange}/${topic}`, msg => {
@@ -161,7 +161,7 @@ class CELIOWeb extends CELIOAbstract {
      * @param  {string} topic - The routing key for the message.
      * @param  {string} content - The message to publish.
      * @param  {Object} [options] - Publishing options. Leave it undefined is fine.
-     * @return {void}
+     * @return {undefined}
      */
     publishTopic(topic, content, options) {
         this.pconn.then(client => client.send(`/exchange/${this.config.mq.exchange}/${topic}`, options, content))

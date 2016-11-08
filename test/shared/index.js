@@ -173,13 +173,13 @@ exports.speaker = function () {
         const plong = new Promise((resolve, reject) => {
             setTimeout(function () {
                 that.io.speaker.speak('I will now reduce my volume').then(m => {
-                    assert.equal(m.content, 'success')
+                    assert.equal(m.content, 'succeeded')
                     return that.io.speaker.reduceVolume(50)
                 }).then(m => {
                     assert.equal(m.content, 'done')
                     return that.io.speaker.speak('testing testing. I will now increase my volume')
                 }).then(m => {
-                    assert.equal(m.content, 'success')
+                    assert.equal(m.content, 'succeeded')
                     return that.io.speaker.increaseVolume(50)
                 }).then(m => {
                     assert.equal(m.content, 'done')
@@ -188,9 +188,9 @@ exports.speaker = function () {
             }, 100)
         })
         return Promise.all([
-            assert.becomes(phi, 'success', 'speak text'),
+            assert.becomes(phi, 'succeeded', 'speak text'),
             assert.becomes(pstop, 'done', 'send stop'),
-            assert.becomes(plong, 'stopped', 'change volume, receive stop'),
+            assert.becomes(plong, 'interrupted', 'change volume, receive stop'),
             assert.becomes(pbegin, 'Hi', 'onBeginSpeak'),
             assert.becomes(pend, 'Hi', 'onEndSpeak')
         ])

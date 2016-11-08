@@ -11,6 +11,9 @@ const vanishTime = 1000
  * Class representing the Hotspot object.
  */
 class Hotspot extends EventEmitter {
+    /**
+     * Use {@link CELIO#createHotspot} instead.
+     */
     constructor(io, region, excludeEventsOutsideRegion) {
         super()
         // Construct a rectangle for hit test
@@ -42,10 +45,10 @@ class Hotspot extends EventEmitter {
             }
         }, vanishTime)
     }
+
     /**
      * Set the rectangular region for the hotpot.
-     * @param  {Region} region
-     * @returns void
+     * @param  {Object} region
      */
     setRegion(region) {
         const norm = new Three.Vector3(region.normal[0], region.normal[1], region.normal[2])
@@ -60,6 +63,7 @@ class Hotspot extends EventEmitter {
 
     /**
      * Calculate the intersection point. Return null if no intersection.
+     * @private
      * @param  {Ray} pointer
      * @returns Point
      */
@@ -193,34 +197,66 @@ class Hotspot extends EventEmitter {
         }
     }
 
+    /**
+     * Subscribe to pointer-move events.
+     * @param  {} handler
+     */
     onPointerMove(handler) {
         this.on('move', handler)
     }
 
+    /**
+     * Subscribe to pointer-enter events.
+     * @param  {} handler
+     */
     onPointerEnter(handler) {
         this.on('enter', handler)
     }
 
+    /**
+     * Subscribe to pointer-leave events.
+     * @param  {} handler
+     */
     onPointerLeave(handler) {
         this.on('leave', handler)
     }
 
+    /**
+     * Subscribe to pointer-down events.
+     * @param  {} handler
+     */
     onPointerDown(handler) {
         this.on('down', handler)
     }
 
+    /**
+     * Subscribe to pointer-up events.
+     * @param  {} handler
+     */
     onPointerUp(handler) {
         this.on('up', handler)
     }
 
+    /**
+     * Subscribe to pointer-click events.
+     * @param  {} handler
+     */
     onPointerClick(handler) {
         this.on('click', handler)
     }
 
+    /**
+     * Subscribe to pointer-attach events.
+     * @param  {} handler
+     */
     onPointerAttach(handler) {
         this.on('attach', handler)
     }
 
+    /**
+     * Subscribe to pointer-detach events.
+     * @param  {} handler
+     */
     onPointerDetach(handler) {
         this.on('detach', handler)
     }

@@ -31,13 +31,13 @@ exports.celio = function () {
         const self = this
         setTimeout(function () {
             self.io.publishTopic(topic, data)
-        }, 50)
+        }, 100)
     })
 
     it('should return timeout error when RPC failed', function () {
         const queue = 'rpc-test3'
         const m = 'Request timed out after'
-        return assert.isRejected(this.io.call(queue, 'hello', { expiration: 50 }), Error, m)
+        return assert.isRejected(this.io.call(queue, 'hello', { expiration: 100 }), Error, m)
     })
 
     it('should do RPC', function () {

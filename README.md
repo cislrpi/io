@@ -52,11 +52,17 @@ This configuration object has username and password in it,
 so please don't share it with others and don't commit it to your repository.
 Your applications can only communicate with each other if they use the same configuration.
 
+<<<<<<< Updated upstream
 To use it in nodejs:
 ```js
 var CELIO = require('celio');
 var io = new CELIO();
 ```
+=======
+You don't need the `mq` configuration if you're just hosting a webpage. For all other stuff, you need the `mq` configuration.
+This configuration object has username and password in it, so please don't share it with others and don't commit it to your repository.
+Your applications can only communicate with each other if they use the same exchange.
+>>>>>>> Stashed changes
 
 To use it in the browser with webpack or browserify:
 ```js
@@ -66,7 +72,13 @@ var config = require('path/to/cog.json');
 var io = new CELIO(config);
 ```
 
+<<<<<<< Updated upstream
 # Overview
+=======
+## Central Server Setup
+If you need to set up a central server for your environment, please follow the installation instructions [here](doc/CELIO central server setup.md)
+
+>>>>>>> Stashed changes
 ## Publish and Subscribe
 The following functions are provided to publish and subscribe messages.
 ### Publish

@@ -193,6 +193,56 @@ module.exports = class ViewObject {
         return this._postRequest(cmd)
     }
 
+    playVideo() {
+        let cmd = {
+            command: 'play-video',
+            options: {
+                view_id: this.view_id
+            }
+        }
+        return this._postRequest(cmd)
+    }
+
+    pauseVideo() {
+        let cmd = {
+            command: 'pause-video',
+            options: {
+                view_id: this.view_id
+            }
+        }
+        return this._postRequest(cmd)
+    }
+
+    setCurrentVideoTime() {
+        let cmd = {
+            command: 'set-current-video-time',
+            options: {
+                view_id: this.view_id
+            }
+        }
+        return this._postRequest(cmd)
+    }
+
+    // getCurrentVideoTime() {
+    //     let cmd = {
+    //         command: 'get-current-video-time',
+    //         options: {
+    //             view_id: this.view_id
+    //         }
+    //     }
+    //     return this._postRequest(cmd)
+    // }
+
+    replayVideo() {
+        let cmd = {
+            command: 'replay-video',
+            options: {
+                view_id: this.view_id
+            }
+        }
+        return this._postRequest(cmd)
+    }
+
     _on(topic, handler) {
         this.io.onTopic(topic, (msg, headers) => {
             let m = JSON.parse(msg.toString())

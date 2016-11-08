@@ -1,16 +1,28 @@
 const DisplayContext = require('./displaycontext')
-
-module.exports = class DisplayContextFactory {
-
+/**
+ * Class representing the DisplayContextFactory object.
+ */
+class DisplayContextFactory {
+    
     constructor(io) {
         this.io = io
     }
 
+    /**
+    * Get available Display Workers details
+    * @returns {Promise} A ES2015 Map object with displayNames as keys and bounds as values.
+    */
     getDisplays() {
-        return this.io.store.getHash('display:displays')
+        return this.io.store.getHash('display:displays').then(m => {
+            let map = new Map()
+            for (var k of Object.keys(m)) {
+                map.set(k, JSON.parse(m[k]))
+            }
+            return map
+        })
     }
 
-    getList() {
+    list() {
         return this.io.store.getSet('display:displayContexts')
     }
 
@@ -155,3 +167,5 @@ module.exports = class DisplayContextFactory {
     }
 
 }
+
+module.exports = DisplayContextFactory

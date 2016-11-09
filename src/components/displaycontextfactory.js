@@ -148,15 +148,24 @@ class DisplayContextFactory {
     * sets a display context active. Making a display context active ensures only windows of the display context are visible. Windows from other display contexts are hidden.
     * @param {string} display_ctx_name - display context name.
     * @param {boolean} [reset=false] if the viewObjects of the displayContext need to be reloaded.
+    * @returns {Promise} return false if the display context name is already active.
     */
     setActive(display_ctx_name, reset = false) {
         console.log('requested app name : ', display_ctx_name)
-        this.io.store.getState('display:activeDisplayContext').then(name => {
+        return this.io.store.getState('display:activeDisplayContext').then(name => {
             console.log('app name in store : ', name)
             if (name !== display_ctx_name) {
-                this.io.store.setState('display:activeDisplayContext', display_ctx_name);
-                (new DisplayContext(display_ctx_name, {}, this.io)).restoreFromStore(reset)
-
+                this.io.store.setState('display:activeDisplayContext', display_ctx_name)
+                return (new DisplayContext(display_ctx_name, {}, this.io)).restoreFromStore(reset).then(m => {
+                    this.io.publishTopic('display.displayContext.changed', JSON.stringify({
+                        'type': 'displayContextChanged',
+                        'details': {
+                            'displayContext': display_ctx_name,
+                            'lastDisplayContext': name
+                        }
+                    }))
+                    return m
+                })
                 /*
                     io.publishTopic("display.displayContext.changed", JSON.stringify({
                         type : "displayContextChanged",
@@ -168,6 +177,7 @@ class DisplayContextFactory {
                 */
             } else {
                 console.log('app name : ', display_ctx_name, 'is already active')
+                return false
             }
         })
     }
@@ -254,6 +264,9 @@ class DisplayContextFactory {
                 _ps.push(this.io.call('rpc-display-' + k, JSON.stringify(cmd)).then(m => JSON.parse(m.content)))
             }
             return Promise.all(_ps)
+        }).then(m => {
+            this.io.store.delState('display:activeDisplayContext')
+            return m
         })
     }
 

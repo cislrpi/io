@@ -18,7 +18,7 @@ class DisplayWindow {
     }
 
     _postRequest(data) {
-        return this.io.call('rpc-display-' + this.displayName, JSON.stringify(data)).then(msg => msg.content)
+        return this.io.call('rpc-display-' + this.displayName, JSON.stringify(data)).then(msg => JSON.parse(msg.content.toString()))
     }
 
     id() {
@@ -36,9 +36,7 @@ class DisplayWindow {
                 window_id: this.window_id
             }
         }
-        return this._postRequest(cmd).then(m => {
-            return JSON.parse(m.toString())
-        })
+        return this._postRequest(cmd)
     }
 
     /**
@@ -52,9 +50,7 @@ class DisplayWindow {
                 window_id: this.window_id
             }
         }
-        return this._postRequest(cmd).then(m => {
-            return JSON.parse(m.toString())
-        })
+        return this._postRequest(cmd)
     }
 
     /*
@@ -106,9 +102,7 @@ class DisplayWindow {
             command: 'create-grid',
             options: options
         }
-        return this._postRequest(cmd).then(m => {
-            return JSON.parse(m.toString())
-        })
+        return this._postRequest(cmd)
     }
 
     /**
@@ -128,9 +122,7 @@ class DisplayWindow {
                 style: backgroundStyle
             }
         }
-        return this._postRequest(cmd).then(m => {
-            return JSON.parse(m.toString())
-        })
+        return this._postRequest(cmd)
     }
 
     /**
@@ -146,9 +138,7 @@ class DisplayWindow {
                 label: label
             }
         }
-        return this._postRequest(cmd).then(m => {
-            return JSON.parse(m.toString())
-        })
+        return this._postRequest(cmd)
     }
 
     /*
@@ -166,9 +156,7 @@ class DisplayWindow {
                 window_id: this.window_id
             }
         }
-        return this._postRequest(cmd).then(m => {
-            return JSON.parse(m.toString())
-        })
+        return this._postRequest(cmd)
     }
 
     /**
@@ -182,9 +170,7 @@ class DisplayWindow {
                 window_id: this.window_id
             }
         }
-        return this._postRequest(cmd).then(m => {
-            return JSON.parse(m.toString())
-        })
+        return this._postRequest(cmd)
     }
 
     /**
@@ -209,9 +195,7 @@ class DisplayWindow {
             cmd.options.animation_options = animation
         }
 
-        return this._postRequest(cmd).then(m => {
-            return JSON.parse(m.toString())
-        })
+        return this._postRequest(cmd)
     }
 
     /**
@@ -227,9 +211,7 @@ class DisplayWindow {
                 fontSize: px_string
             }
         }
-        return this._postRequest(cmd).then(m => {
-            return JSON.parse(m.toString())
-        })
+        return this._postRequest(cmd)
     }
 
     /**
@@ -243,9 +225,7 @@ class DisplayWindow {
                 window_id: this.window_id
             }
         }
-        return this._postRequest(cmd).then(m => {
-            return JSON.parse(m.toString())
-        })
+        return this._postRequest(cmd)
     }
 
     /**
@@ -260,9 +240,7 @@ class DisplayWindow {
                 window_id: this.window_id
             }
         }
-        return this._postRequest(cmd).then(m => {
-            return JSON.parse(m.toString())
-        })
+        return this._postRequest(cmd)
     }
 
     /**
@@ -277,7 +255,6 @@ class DisplayWindow {
             }
         }
         return this._postRequest(cmd).then(m => {
-            m = JSON.parse(m.toString())
             m.viewObjects.forEach((v) => {
                 let view = this.getViewObjectById(v)
                 if (view) {
@@ -301,9 +278,7 @@ class DisplayWindow {
                 devTools: true
             }
         }
-        return this._postRequest(cmd).then(m => {
-            return JSON.parse(m.toString())
-        })
+        return this._postRequest(cmd)
     }
 
     /**
@@ -318,9 +293,7 @@ class DisplayWindow {
                 devTools: false
             }
         }
-        return this._postRequest(cmd).then(m => {
-            return JSON.parse(m.toString())
-        })
+        return this._postRequest(cmd)
     }
 
     /**
@@ -334,7 +307,7 @@ class DisplayWindow {
                 window_id: this.window_id
             }
         }
-        return this._postRequest(cmd)
+        return this.io.call('rpc-display-' + this.displayName, JSON.stringify(cmd))
     }
 
     /*
@@ -375,10 +348,7 @@ class DisplayWindow {
         }
 
         return this._postRequest(cmd).then(m => {
-            let opt = JSON.parse(m.toString())
-            // opt.width = parseFloat(options.width)
-            // opt.height = parseFloat(options.height)
-            return new ViewObject(this.io, opt)
+            return new ViewObject(this.io, m)
         })
     }
 }

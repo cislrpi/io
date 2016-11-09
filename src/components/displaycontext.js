@@ -17,7 +17,7 @@ class DisplayContext {
     /**
     * Creates an instance of DisplayContext.
     * @param {String} name Display context name
-    * @param {Object.<String, window_settings>} window_settings
+    * @param {Object.<String, window_settings>} window_settings - a collection of named window settings
     * @param {Object} io CELIO object instance
     */
     constructor(name, window_settings, io) {
@@ -38,11 +38,11 @@ class DisplayContext {
         this.io.onTopic('display.removed', m => {
             // clean up objects
             let closedDisplay = m.toString()
-            let closedWindowObjId = this.displayWindows.get(closedDisplay)
+            // let closedWindowObjId = this.displayWindows.get(closedDisplay)
             this.displayWindows.delete(closedDisplay)
             let toRemove = []
             for (let [k, v] of this.viewObjects) {
-                if (v.displayName == closedDisplay) { toRemove.push(k) }
+                if (v.displayName === closedDisplay) { toRemove.push(k) }
             }
 
             for (let k = 0; k < toRemove.length; k++) {
@@ -184,7 +184,7 @@ class DisplayContext {
     /**
      * gets a window object by window name
      * @param {any} displayName
-     * @returns {DisplayWindow}
+     * @returns {DisplayWindow} returns an instance of DisplayWindow
      */
     getDisplayWindowSync(displayName) {
         return this.displayWindows.get(displayName)
@@ -192,9 +192,9 @@ class DisplayContext {
 
     /**
      * gets a window object by window id
-     * @param {Number} window_id
-     * @param {String} displayName
-     * @returns {DisplayWindow}
+     * @param {Number} window_id window id
+     * @param {String} displayName display's name
+     * @returns {DisplayWindow} returns an instance of DisplayWindow
      */
     getDisplayWindowByIdSync(window_id, displayName) {
         for (let [k, v] of this.displayWindows) {
@@ -213,7 +213,7 @@ class DisplayContext {
 
     /**
      * Shows all windows of a display context
-     * @returns {display_rpc_result}
+     * @returns {display_rpc_result} returns a status object
      */
     show() {
         let cmd = {
@@ -243,7 +243,7 @@ class DisplayContext {
 
     /**
      * hides all windows of a display context
-     * @returns {display_rpc_result}
+     * @returns {display_rpc_result} returns a status object
      */
     hide() {
         let cmd = {
@@ -269,7 +269,7 @@ class DisplayContext {
 
     /**
     * closes all windows of a display context
-    * @returns {display_rpc_result}
+    * @returns {display_rpc_result} returns a status object
     */
     close() {
         let cmd = {
@@ -310,6 +310,7 @@ class DisplayContext {
                 this.io.store.removeFromHash('display:windowBounds', this.name)
                 this.io.store.getState('display:activeDisplayContext').then(x => {
                     if (x === this.name) {
+                        console.log('clearing up active display context')
                         this.io.store.delState('display:activeDisplayContext')
                     }
                 })
@@ -324,7 +325,7 @@ class DisplayContext {
 
     /**
     * reloads all viewObjects of a display context
-    * @returns {display_rpc_result}
+    * @returns {display_rpc_result} returns a status object
     */
     reloadAll() {
         let _ps = []
@@ -371,7 +372,8 @@ class DisplayContext {
 
     /**
     * gets a viewObject by id
-    * @returns {ViewObject}
+    * @param {String} id - an uuid of the viewobject
+    * @returns {ViewObject} returns the ViewObject instance
     */
     getViewObjectByIdSync(id) {
         return this.viewObjects.get(id)
@@ -379,7 +381,7 @@ class DisplayContext {
 
     /**
       * gets all viewObjects
-      * @returns {Map.<String, ViewObject>}
+      * @returns {Map.<String, ViewObject>} returns the collection of ViewObject instances
       */
     getViewObjectsSync() {
         return this.viewObjects
@@ -387,7 +389,7 @@ class DisplayContext {
 
     /**
      * gets a viewObject by id
-     * @returns {Array.<Buffer>}
+     * @returns {Array.<Buffer>} returns an array of screenshot image buffer
      */
     captureDisplayWindows() {
         let _ps = []
@@ -399,9 +401,9 @@ class DisplayContext {
 
     /**
      * Creates a view object
-     * @param {Object} options
-     * @param {String} [windowName='main']
-     * @returns {ViewObject}
+     * @param {Object} options - view object options
+     * @param {String} [windowName='main'] - window name
+     * @returns {ViewObject} returns the ViewObject instance
      */
     createViewObject(options, windowName = 'main') {
         options.displayContext = this.name
@@ -434,13 +436,13 @@ class DisplayContext {
 
     /**
      * DisplayContext closed event
-     * @param {displayContextClosedEventCallback} handler
+     * @param {displayContextClosedEventCallback} handler - event handler
      */
     onClosed(handler) {
         this.io.onTopic('display.displayContext.closed', (msg, headers) => {
             if (handler != null) {
                 let m = JSON.parse(msg.toString())
-                if (m.details.closedDisplayContext == this.name) {
+                if (m.details.closedDisplayContext === this.name) {
                     handler(m, headers)
                 }
             }
@@ -449,13 +451,13 @@ class DisplayContext {
 
     /**
      * DisplayContext changed event
-     * @param {displayContextChangedEventCallback} handler
+     * @param {displayContextChangedEventCallback} handler - event handler
      */
     onActivated(handler) {
         this.io.onTopic('display.displayContext.changed', (msg, headers) => {
             if (handler != null) {
                 let m = JSON.parse(msg.toString())
-                if (m.details.displayContext == this.name) {
+                if (m.details.displayContext === this.name) {
                     handler(m, headers)
                 }
             }
@@ -464,13 +466,13 @@ class DisplayContext {
 
     /**
      * DisplayContext changed event
-     * @param {displayContextChangedEventCallback} handler
+     * @param {displayContextChangedEventCallback} handler - event handler
      */
     onDeactivated(handler) {
         this.io.onTopic('display.displayContext.changed', (msg, headers) => {
             if (handler != null) {
                 let m = JSON.parse(msg.toString())
-                if (m.details.lastDisplayContext == this.name) {
+                if (m.details.lastDisplayContext === this.name) {
                     handler(m, headers)
                 }
             }

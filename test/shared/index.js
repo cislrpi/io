@@ -1,6 +1,6 @@
 const chai = require('chai')
 chai.use(require('chai-as-promised'))
-
+exports.display = require('./display')
 const assert = chai.assert
 
 exports.celio = function () {
@@ -250,3 +250,5 @@ exports.transcript = function () {
         }, 5000)
     })
 }
+
+

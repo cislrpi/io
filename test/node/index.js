@@ -51,4 +51,11 @@ describe('node', function () {
 
         shared.transcript()
     })
+
+    describe('Display (require display-worker to be running)', function () {
+        beforeEach(function () {
+            this.io = new CELIO('test/cog.json')
+        })
+        shared.display.display()
+    })
 })

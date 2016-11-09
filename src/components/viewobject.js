@@ -14,7 +14,7 @@ class ViewObject {
     }
 
     _postRequest(data) {
-        return this.io.call('rpc-display-' + this.displayName, JSON.stringify(data)).then(msg => msg.content)
+        return this.io.call('rpc-display-' + this.displayName, JSON.stringify(data)).then(msg => JSON.parse(msg.content.toString()))
     }
 
     /**
@@ -251,7 +251,7 @@ class ViewObject {
             command: 'set-audio-muted',
             options: {
                 view_id: this.view_id,
-                audio: val
+                audio: mute
             }
         }
         return this._postRequest(cmd)

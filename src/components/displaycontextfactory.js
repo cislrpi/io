@@ -214,6 +214,12 @@ class DisplayContextFactory {
             'row': 2,
             'col': 2,
             'padding': 5
+        },
+        'gridBackground' : {
+            '1|1' : 'white',
+            '1|2' : 'grey',
+            '2|1' : 'grey',
+            '2|2' : 'white'
         }
     }
 }

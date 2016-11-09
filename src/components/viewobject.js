@@ -1,4 +1,9 @@
-module.exports = class ViewObject {
+
+/**
+ * Class representing the ViewObject
+ * @class ViewObject
+ */
+class ViewObject {
     constructor(io, options) {
         this.io = io
         this.view_id = options.view_id
@@ -12,6 +17,11 @@ module.exports = class ViewObject {
         return this.io.call('rpc-display-' + this.displayName, JSON.stringify(data)).then(msg => msg.content)
     }
 
+    /**
+     * Sets the url of the view object
+     * @param {String} url
+     * @returns {display_rpc_result}
+     */
     setUrl(url) {
         let cmd = {
             command: 'set-url',
@@ -23,6 +33,10 @@ module.exports = class ViewObject {
         return this._postRequest(cmd)
     }
 
+    /**
+     * gets the current url of the view object
+     * @returns {Promise}
+     */
     getUrl() {
         let cmd = {
             command: 'get-url',
@@ -33,6 +47,11 @@ module.exports = class ViewObject {
         return this._postRequest(cmd)
     }
 
+    /**
+     * sets the css style string
+     * @param {String} css_string
+     * @returns {display_rpc_result}
+     */
     setCSSStyle(css_string) {
         let cmd = {
             command: 'set-webview-css-style',
@@ -44,6 +63,11 @@ module.exports = class ViewObject {
         return this._postRequest(cmd)
     }
 
+    /**
+     * enables device emulation
+     * @param {Object} options http://electron.atom.io/docs/api/web-contents/#contentsenabledeviceemulationparameters
+     * @returns {display_rpc_result}
+    */
     enableDeviceEmulation(options) {
         let cmd = {
             command: 'enable-device-emulation',
@@ -55,6 +79,10 @@ module.exports = class ViewObject {
         return this._postRequest(cmd)
     }
 
+    /**
+     * disables device emulation
+     * @returns {display_rpc_result}
+     */
     disableDeviceEmulation() {
         let cmd = {
             command: 'disable-device-emulation',
@@ -65,6 +93,10 @@ module.exports = class ViewObject {
         return this._postRequest(cmd)
     }
 
+    /**
+     * reloads the view object
+     * @returns {display_rpc_result}
+     */
     reload() {
         let cmd = {
             command: 'reload',
@@ -75,6 +107,10 @@ module.exports = class ViewObject {
         return this._postRequest(cmd)
     }
 
+    /**
+     * hides the view object
+     * @returns {display_rpc_result}
+     */
     hide() {
         let cmd = {
             command: 'hide',
@@ -85,6 +121,10 @@ module.exports = class ViewObject {
         return this._postRequest(cmd)
     }
 
+    /**
+     * shows the view object
+     * @returns {display_rpc_result}
+     */
     show() {
         let cmd = {
             command: 'show',
@@ -95,6 +135,10 @@ module.exports = class ViewObject {
         return this._postRequest(cmd)
     }
 
+    /**
+     * closes the view object
+     * @returns {display_rpc_result}
+     */
     close() {
         let cmd = {
             command: 'close',
@@ -105,6 +149,11 @@ module.exports = class ViewObject {
         return this._postRequest(cmd)
     }
 
+    /**
+     * setBounds the view object
+     * @param {Object} options
+     * @returns {display_rpc_result}
+     */
     setBounds(options) {
         // if(options.scaleContent){
         //     let w = parseFloat(options.width)
@@ -120,6 +169,10 @@ module.exports = class ViewObject {
         return this._postRequest(cmd)
     }
 
+    /**
+     * gets the bounds of the view object
+     * @returns {display_rpc_result}
+     */
     getBounds() {
         let cmd = {
             command: 'get-bounds',
@@ -130,6 +183,10 @@ module.exports = class ViewObject {
         return this._postRequest(cmd)
     }
 
+    /**
+     * navigates back if available
+     * @returns {display_rpc_result}
+     */
     goBack() {
         let cmd = {
             command: 'back',
@@ -140,6 +197,10 @@ module.exports = class ViewObject {
         return this._postRequest(cmd)
     }
 
+    /**
+     * navigates forward if available
+     * @returns {display_rpc_result}
+     */
     goForward() {
         let cmd = {
             command: 'forward',
@@ -150,6 +211,10 @@ module.exports = class ViewObject {
         return this._postRequest(cmd)
     }
 
+    /**
+      * opens debug console
+      * @returns {display_rpc_result}
+      */
     openDevTools() {
         let cmd = {
             command: 'view-object-dev-tools',
@@ -161,6 +226,10 @@ module.exports = class ViewObject {
         return this._postRequest(cmd)
     }
 
+    /**
+     * closes debug console
+     * @returns {display_rpc_result}
+     */
     closeDevTools() {
         let cmd = {
             command: 'view-object-dev-tools',
@@ -172,7 +241,12 @@ module.exports = class ViewObject {
         return this._postRequest(cmd)
     }
 
-    setAudioMuted(val) {
+    /**
+     * sets audio muted
+     * @param {boolean} mute
+     * @returns {display_rpc_result}
+     */
+    setAudioMuted(mute) {
         let cmd = {
             command: 'set-audio-muted',
             options: {
@@ -183,6 +257,10 @@ module.exports = class ViewObject {
         return this._postRequest(cmd)
     }
 
+    /**
+      * gets if audio muted
+      * @returns {display_rpc_result}
+      */
     isAudioMuted() {
         let cmd = {
             command: 'get-audio-muted',
@@ -193,6 +271,10 @@ module.exports = class ViewObject {
         return this._postRequest(cmd)
     }
 
+    /**
+     * Plays video if the source url is video file
+     * @returns {display_rpc_result}
+     */
     playVideo() {
         let cmd = {
             command: 'play-video',
@@ -203,6 +285,10 @@ module.exports = class ViewObject {
         return this._postRequest(cmd)
     }
 
+    /**
+     * Pauses video if the source url is video file
+     * @returns {display_rpc_result}
+     */
     pauseVideo() {
         let cmd = {
             command: 'pause-video',
@@ -213,6 +299,10 @@ module.exports = class ViewObject {
         return this._postRequest(cmd)
     }
 
+    /**
+     * Sets the current time of the video if the source url is video file
+     * @returns {display_rpc_result}
+     */
     setCurrentVideoTime() {
         let cmd = {
             command: 'set-current-video-time',
@@ -233,6 +323,10 @@ module.exports = class ViewObject {
     //     return this._postRequest(cmd)
     // }
 
+    /**
+    * replays video if the source url is video file
+    * @returns {display_rpc_result}
+    */
     replayVideo() {
         let cmd = {
             command: 'replay-video',
@@ -252,39 +346,77 @@ module.exports = class ViewObject {
         })
     }
 
+    /**
+    * viewObject hidden event
+    * @param {viewObjectBasicEventCallback} handler
+    */
     onHidden(handler) {
         this._on(`display.${this.displayContext}.viewObjectHidden.${this.view_id}`, handler)
     }
 
+    /**
+      * viewObject became visible event
+      * @param {viewObjectBasicEventCallback} handler
+      */
     onShown(handler) {
         this._on(`display.${this.displayContext}.viewObjectShown.${this.view_id}`, handler)
     }
 
+    /**
+    * viewObject closed event
+    * @param {viewObjectBasicEventCallback} handler
+    */
     onClosed(handler) {
         this._on(`display.${this.displayContext}.viewObjectClosed.${this.view_id}`, handler)
     }
 
+    /**
+      * viewObject bounds changed event
+      * @param {viewObjectBoundsEventCallback} handler
+      */
     onBoundsChanged(handler) {
         this._on(`display.${this.displayContext}.viewObjectBoundsChanged.${this.view_id}`, handler)
     }
 
+    /**
+    * viewObject URL changed event
+    * @param {viewObjectURLEventCallback} handler
+    */
     onUrlChanged(handler) {
         this._on(`display.${this.displayContext}.viewObjectUrlChanged.${this.view_id}`, handler)
     }
 
+    /**
+     * viewObject URL reloaded event
+     * @param {viewObjectURLEventCallback} handler
+     */
     onUrlReloaded(handler) {
         this._on(`display.${this.displayContext}.viewObjectUrlChanged.${this.view_id}`, handler)
     }
 
+    /**
+     * viewObject crashed event
+     * @param {viewObjectBasicEventCallback} handler
+     */
     onCrashed(handler) {
         this._on(`display.${this.displayContext}.viewObjectCrashed.${this.view_id}`, handler)
     }
 
+    /**
+     * viewObject GPU crashed event
+     * @param {viewObjectBasicEventCallback} handler
+     */
     onGPUCrashed(handler) {
         this._on(`display.${this.displayContext}.viewObjectGPUCrashed.${this.view_id}`, handler)
     }
 
+    /**
+    * viewObject plugin crashed event
+    * @param {viewObjectBasicEventCallback} handler
+    */
     onPluginCrashed(handler) {
         this._on(`display.${this.name}.viewObjectPluginCrashed.${this.view_id}`, handler)
     }
 }
+
+module.exports = ViewObject

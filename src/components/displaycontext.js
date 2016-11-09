@@ -2,8 +2,24 @@ const DisplayWindow = require('./displaywindow')
 const ViewObject = require('./viewobject')
 const _ = require('lodash')
 
-module.exports = class DisplayContext {
+/**
+ * @typedef {Promise.<Object>} display_rpc_result
+ * @property {string} status success or Error message
+ * @property {string} command The command name
+ * @property {string} displayName Display Name
+ * @property {string} displayContext DisplayContext Name
+ */
 
+/**
+ * Class representing the DisplayContext object.
+ */
+class DisplayContext {
+    /**
+    * Creates an instance of DisplayContext.
+    * @param {String} name Display context name
+    * @param {Object.<String, window_settings>} window_settings
+    * @param {Object} io CELIO object instance
+    */
     constructor(name, window_settings, io) {
         console.log('creating obj for display context : ', name)
         this.io = io
@@ -74,7 +90,6 @@ module.exports = class DisplayContext {
     _postRequest(displayName, data) {
         console.log(displayName, data)
         return this.io.call('rpc-display-' + displayName, JSON.stringify(data)).then(msg => {
-            console.log(msg.content.toString())
             return JSON.parse(msg.content.toString())
         })
     }
@@ -135,7 +150,10 @@ module.exports = class DisplayContext {
         })
     }
 
-    // returns a map of displayName with bounds
+    /**
+     * gets a map of displayName with bounds
+     * @returns {Promise.<Object>} A map of displayNames with bounds
+     */
     getWindowBounds() {
         return this.io.store.getHashField('display:windowBounds', this.name).then(m => {
             console.log('display:windowBounds', m)
@@ -163,22 +181,40 @@ module.exports = class DisplayContext {
         })
     }
 
-    // returns the window_object corresponding to the displayName
+    /**
+     * gets a window object by window name
+     * @param {any} displayName
+     * @returns {DisplayWindow}
+     */
     getDisplayWindowSync(displayName) {
         return this.displayWindows.get(displayName)
     }
 
-    getDisplayWindowByIdSync(window_id) {
+    /**
+     * gets a window object by window id
+     * @param {Number} window_id
+     * @param {String} displayName
+     * @returns {DisplayWindow}
+     */
+    getDisplayWindowByIdSync(window_id, displayName) {
         for (let [k, v] of this.displayWindows) {
-            if (v.window_id === window_id) { return v }
+            if (v.window_id === window_id && v.displayName === displayName) { return v }
         }
         return new Error(`Window id ${window_id} is not present`)
     }
 
+    /**
+     * gets all window names
+     * @returns {Array.<String>} An array of window names
+     */
     getDisplayWindowNameSync() {
         return this.displayWindows.keys()
     }
 
+    /**
+     * Shows all windows of a display context
+     * @returns {display_rpc_result}
+     */
     show() {
         let cmd = {
             command: 'set-display-context',
@@ -205,6 +241,10 @@ module.exports = class DisplayContext {
         })
     }
 
+    /**
+     * hides all windows of a display context
+     * @returns {display_rpc_result}
+     */
     hide() {
         let cmd = {
             command: 'hide-display-context',
@@ -227,6 +267,10 @@ module.exports = class DisplayContext {
         })
     }
 
+    /**
+    * closes all windows of a display context
+    * @returns {display_rpc_result}
+    */
     close() {
         let cmd = {
             command: 'close-display-context',
@@ -255,7 +299,7 @@ module.exports = class DisplayContext {
             let isHidden = false
             for (var i = 0; i < m.length; i++) {
                 let res = m[i]
-                if (res.command == 'hide-display-context') { isHidden = true }
+                if (res.command === 'hide-display-context') { isHidden = true }
                 map.push(res)
             }
             if (!isHidden) {
@@ -265,15 +309,23 @@ module.exports = class DisplayContext {
                 this.io.store.removeFromSet('display:displayContexts', this.name)
                 this.io.store.removeFromHash('display:windowBounds', this.name)
                 this.io.store.getState('display:activeDisplayContext').then(x => {
-                    if (x == this.name) {
+                    if (x === this.name) {
                         this.io.store.delState('display:activeDisplayContext')
                     }
                 })
+                this.io.publishTopic('display.displayContext.closed', JSON.stringify({
+                    'type': 'displayContextClosed',
+                    'details': map
+                }))
             }
             return map
         })
     }
 
+    /**
+    * reloads all viewObjects of a display context
+    * @returns {display_rpc_result}
+    */
     reloadAll() {
         let _ps = []
         for (let [k, v] of this.viewObjects) {
@@ -291,44 +343,6 @@ module.exports = class DisplayContext {
         })
     }
 
-    /*
-        initializes a displayWindow  for list of displays
-        args:
-         bounds : //(json object)
-            {
-                displayName1 : {
-                     x : <int>,
-                     y : <int>,
-                     width : <int>,
-                     height : <int>
-                },
-                displayName2 : ...
-            }
-         options : //(json object)
-            {
-                displayName1 : {
-                    contentGrid : { //(for uniform grid)
-                        row : <int>, // no of rows
-                        col : <int>, // no of cols
-                        rowHeight : < float array> , // height percent for each row - 0.0 to 1.0 )
-                        colWidth : < float array>, // width percent for each col - 0.0 to 1.0 )
-                        padding : <float> // in px or em
-                        custom : [  // ( array of json Object)
-                            { "label" : "cel-id-1",  left, top, width, height}, // in px or em or percent
-                            { "label" : "cel-id-2",  left, top, width, height},
-                            { "label" : "cel-id-3",  left, top, width, height},
-                            ...
-                        ],
-                        gridBackground : {
-                            "row|col" : "backgroundColor",
-                            "cel-id-1" : "backgroundColor",
-                            "cel-id-2" : "backgroundColor",
-                        }
-                },
-                displayName2 : ...
-            }
-
-    */
     initialize(options) {
         return this.show().then(() => {
             let _ps = []
@@ -355,14 +369,26 @@ module.exports = class DisplayContext {
         })
     }
 
+    /**
+    * gets a viewObject by id
+    * @returns {ViewObject}
+    */
     getViewObjectByIdSync(id) {
         return this.viewObjects.get(id)
     }
 
+    /**
+      * gets all viewObjects
+      * @returns {Map.<String, ViewObject>}
+      */
     getViewObjectsSync() {
         return this.viewObjects
     }
 
+    /**
+     * gets a viewObject by id
+     * @returns {Array.<Buffer>}
+     */
     captureDisplayWindows() {
         let _ps = []
         for (let [k, v] of this.displayWindows) {
@@ -371,6 +397,12 @@ module.exports = class DisplayContext {
         return Promise.all(_ps)
     }
 
+    /**
+     * Creates a view object
+     * @param {Object} options
+     * @param {String} [windowName='main']
+     * @returns {ViewObject}
+     */
     createViewObject(options, windowName = 'main') {
         options.displayContext = this.name
         if (this.displayWindows.has(windowName)) {
@@ -400,6 +432,10 @@ module.exports = class DisplayContext {
         }
     }
 
+    /**
+     * DisplayContext closed event
+     * @param {displayContextClosedEventCallback} handler
+     */
     onClosed(handler) {
         this.io.onTopic('display.displayContext.closed', (msg, headers) => {
             if (handler != null) {
@@ -411,6 +447,10 @@ module.exports = class DisplayContext {
         })
     }
 
+    /**
+     * DisplayContext changed event
+     * @param {displayContextChangedEventCallback} handler
+     */
     onActivated(handler) {
         this.io.onTopic('display.displayContext.changed', (msg, headers) => {
             if (handler != null) {
@@ -422,6 +462,10 @@ module.exports = class DisplayContext {
         })
     }
 
+    /**
+     * DisplayContext changed event
+     * @param {displayContextChangedEventCallback} handler
+     */
     onDeactivated(handler) {
         this.io.onTopic('display.displayContext.changed', (msg, headers) => {
             if (handler != null) {
@@ -433,3 +477,5 @@ module.exports = class DisplayContext {
         })
     }
 }
+
+module.exports = DisplayContext

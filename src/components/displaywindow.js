@@ -1,5 +1,9 @@
 const ViewObject = require('./viewobject')
-module.exports = class DisplayWindow {
+/**
+ * Class representing DisplayWindow
+ * @class DisplayWindow
+ */
+class DisplayWindow {
     constructor(io, options) {
         this.io = io
         this.window_id = options.window_id
@@ -21,6 +25,10 @@ module.exports = class DisplayWindow {
         return this.window_id
     }
 
+    /**
+     * Clears grid defined in the display window
+     * @returns {display_rpc_result}
+     */
     clearGrid() {
         let cmd = {
             command: 'clear-grid',
@@ -33,6 +41,10 @@ module.exports = class DisplayWindow {
         })
     }
 
+    /**
+     * Clears contents (viewobjects) defined in the display window
+     * @returns {display_rpc_result}
+     */
     clearContents() {
         let cmd = {
             command: 'clear-contents',
@@ -69,6 +81,25 @@ module.exports = class DisplayWindow {
                 }
     */
 
+    /**
+     * Creates a  simple grid layout in the display window
+     * @example <caption> A sample options object </caption>
+     * 'contentGrid': {
+            'row': 2,
+            'col': 2,
+            'padding': 5,
+            'rowHeight' : [ 0.5, 0.5] // ( float array, height percent for each row - 0.0 to 1.0 )
+            'colWidth' : [ 0.4, 0.6] //( float array,  width percent for each col - 0.0 to 1.0 )
+        },
+        'gridBackground' : {
+            '1|1' : 'white',
+            '1|2' : 'grey',
+            '2|1' : 'grey',
+            '2|2' : 'white'
+        }
+     * @param {Object} options
+     * @returns {display_rpc_result}
+     */
     createUniformGrid(options) {
         options.window_id = this.window_id
         let cmd = {
@@ -80,6 +111,13 @@ module.exports = class DisplayWindow {
         })
     }
 
+    /**
+     * adds a cell to the grid
+     * @param {String} label
+     * @param {Object.<{left: String, top: String, width : String, height: String}>} bounds
+     * @param {String} backgroundStyle
+     * @returns {display_rpc_result}
+     */
     addToGrid(label, bounds, backgroundStyle) {
         let cmd = {
             command: 'add-to-grid',
@@ -95,6 +133,11 @@ module.exports = class DisplayWindow {
         })
     }
 
+    /**
+     * Removes a cell from the grid
+     * @param {String} label - cell label
+     * @returns {display_rpc_result}
+     */
     removeFromGrid(label) {
         let cmd = {
             command: 'remove-from-grid',
@@ -112,6 +155,10 @@ module.exports = class DisplayWindow {
         returns the gridlayout
 
     */
+    /**
+     * get the grid layout object
+     * @returns {Object}
+     */
     getGrid() {
         let cmd = {
             command: 'get-grid',
@@ -124,6 +171,10 @@ module.exports = class DisplayWindow {
         })
     }
 
+    /**
+     * gets the cell size of the uniform content grid
+     * @returns {{width : Number, height : Number }}
+     */
     getUniformGridCellSize() {
         let cmd = {
             command: 'uniform-grid-cell-size',
@@ -136,12 +187,15 @@ module.exports = class DisplayWindow {
         })
     }
 
-    // setting DisplayWindow cssText
-
-    /*
-        label is row|col or custom cell name
-        js_css_style : http://www.w3schools.com/jsref/dom_obj_style.asp
-    */
+    /**
+     * setting DisplayWindow cssText
+     * label is row|col or custom cell name
+     * js_css_style : http://www.w3schools.com/jsref/dom_obj_style.asp
+     * @param {String} label
+     * @param {String} js_css_style - based on  http://www.w3schools.com/jsref/dom_obj_style.asp
+     * @param {Object} animation - based on W3 animation API
+     * @returns {display_rpc_result}
+     */
     setCellStyle(label, js_css_style, animation) {
         let cmd = {
             command: 'cell-style',
@@ -160,6 +214,11 @@ module.exports = class DisplayWindow {
         })
     }
 
+    /**
+     * Sets the font size of the display window object
+     * @param {String} px_string - font size in pixels
+     * @returns {display_rpc_result}
+     */
     setFontSize(px_string) {
         let cmd = {
             command: 'set-displaywindow-font-size',
@@ -173,9 +232,10 @@ module.exports = class DisplayWindow {
         })
     }
 
-    /*
-        hides the displayWindow
-    */
+    /**
+     * Hides the display window
+     * @returns {display_rpc_result}
+     */
     hide() {
         let cmd = {
             command: 'hide-window',
@@ -188,9 +248,11 @@ module.exports = class DisplayWindow {
         })
     }
 
-    /*
-        shows the displayWindow
-    */
+    /**
+     * shows the displayWindow
+     * @returns {display_rpc_result}
+     * @memberOf DisplayWindow
+     */
     show() {
         let cmd = {
             command: 'show-window',
@@ -203,9 +265,10 @@ module.exports = class DisplayWindow {
         })
     }
 
-    /*
-        permanently closes the displayWindow and destroys the viewobjects
-    */
+    /**
+     * closes the displayWindow and destroys the viewobjects
+     * @returns {display_rpc_result}
+     */
     close() {
         let cmd = {
             command: 'close-window',
@@ -226,6 +289,10 @@ module.exports = class DisplayWindow {
         })
     }
 
+    /**
+     * opens debug console
+     * @returns {display_rpc_result}
+     */
     openDevTools() {
         let cmd = {
             command: 'window-dev-tools',
@@ -239,6 +306,10 @@ module.exports = class DisplayWindow {
         })
     }
 
+    /**
+     * closes the debug console
+     * @returns {display_rpc_result}
+     */
     closeDevTools() {
         let cmd = {
             command: 'window-dev-tools',
@@ -252,6 +323,10 @@ module.exports = class DisplayWindow {
         })
     }
 
+    /**
+     * gets the screen grab of the display window
+     * @returns {Promise.<Buffer>}
+     */
     capture() {
         let cmd = {
             command: 'capture-window',
@@ -272,6 +347,23 @@ module.exports = class DisplayWindow {
            - cssText (string)
            - nodeintegration (boolean)
    */
+    /**
+     * Creates a view object in the window
+     * @param {Object} options
+     * @param {String} options.url
+     * @param {Object|String} [options.position]
+     * @param {Number} options.position.grid-top
+     * @param {Number} options.position.grid-left
+     * @param {String} options.width - in pixels or em
+     * @param {String} options.height - in pixels or em
+     * @param {boolean} options.nodeintegration
+     * @param {String} options.cssText
+     * @param {boolean} options.uiDraggable
+     * @param {boolean} options.uiClosable
+     * @param {object} options.deviceEmulation
+     * @param {Number} options.deviceEmulation.scale
+     * @returns {ViewObject}
+     */
     createViewObject(options) {
         options.window_id = this.window_id
         options.displayContext = this.displayContext
@@ -290,3 +382,5 @@ module.exports = class DisplayWindow {
         })
     }
 }
+
+module.exports = DisplayWindow

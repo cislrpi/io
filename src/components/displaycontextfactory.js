@@ -1,4 +1,101 @@
 const DisplayContext = require('./displaycontext')
+
+/**
+ * @typedef {Object} focus_window
+ * @property {string} status success or Error message
+ * @property {number} window_id Window Id, when status is success
+ * @property {string} command The command name
+ * @property {string} displayName Display Name
+ * @property {string} displayContext DisplayContext Name
+ * @example
+ * { "command" : "get-focus-window",
+ *   "status" : "success",
+ *   "window_id" : 23,
+ *   "displayName" : "main",
+ *   "displayContext" : "creative"
+ *  }
+ */
+
+/**
+ * @typedef {Object} window_settings
+ * @property {string} displayName Display Name
+ * @property {number} x
+ * @property {number} y
+ * @property {number} width
+ * @property {number} height
+ * @property {object} contentGrid
+ * @property {number} contentGrid.row
+ * @property {number} contentGrid.col
+ * @property {number} contentGrid.padding
+ * @property {Object.<String,String>} gridBackground. key is "row|col" and value is a valid html color string
+ * @property {String} fontSize
+ */
+
+/**
+ * Callback for handling viewObjects event subscriptions.
+ * @callback viewObjectBasicEventCallback
+ * @param {Object} message - The message content parsed into a javascript object.
+ * @param {String} message.type - event type
+ * @param {String} message.displayContext - The display context name
+ * @param {Object} message.details - The message details.
+ * @param {String} message.details.view_id - view object id
+ */
+
+/**
+ * Callback for handling viewObjects URL event subscriptions.
+ * @callback viewObjectURLEventCallback
+ * @param {Object} message - The message content parsed into a javascript object.
+ * @param {String} message.type - event type
+ * @param {String} message.displayContext - The display context name
+ * @param {Object} message.details - The message details.
+ * @param {String} message.details.view_id - view object id
+ * @param {String} message.details.url - view object url
+ */
+
+/**
+ * Callback for handling viewObject created event subscriptions.
+ * @callback viewObjectCreatedEventCallback
+ * @param {Object} message - The message content parsed into a javascript object.
+ * @param {String} message.type - event type
+ * @param {String} message.displayContext - The display context name
+ * @param {Object} message.details - The message details.
+ */
+
+/**
+ * Callback for handling viewObject Bounds change event subscriptions.
+ * @callback viewObjectBoundsEventCallback
+ * @param {Object} message - The message content parsed into a javascript object.
+ * @param {String} message.type - event type
+ * @param {String} message.displayContext - The display context name
+ * @param {Object} message.details - The message details.
+ * @param {String} message.details.view_id - view object id
+ * @param {Number} message.details.top - Top position in pixel.
+ * @param {Number} message.details.left - Left position in pixel.
+ * @param {Number} message.details.width - Width in pixel.
+ * @param {Number} message.details.height - Height position in pixel.
+ */
+
+/**
+ * Callback for handling displayContextClosed event subscriptions.
+ * @callback displayContextClosedEventCallback
+ * @param {Object} message - The message content parsed into a javascript object.
+ * @param {String} message.type - event type
+ * @param {String} message.displayContext - The display context name
+ * @param {Object} message.details - The message details.
+ * @param {String} message.details.view_id - view object id
+ * @param {Number} message.details.top - Top position in pixel.
+ * @param {Number} message.details.left - Left position in pixel.
+ * @param {Number} message.details.width - Width in pixel.
+ * @param {Number} message.details.height - Height position in pixel.
+ */
+
+/**
+ * Callback for handling display worker add/remove event subscriptions.
+ * Display worker added event
+ * @callback displayEventCallback
+ * @param {String} displayName
+ */
+
 /**
  * Class representing the DisplayContextFactory object.
  */
@@ -59,6 +156,16 @@ class DisplayContextFactory {
             if (name !== display_ctx_name) {
                 this.io.store.setState('display:activeDisplayContext', display_ctx_name);
                 (new DisplayContext(display_ctx_name, {}, this.io)).restoreFromStore(reset)
+
+                /*
+                    io.publishTopic("display.displayContext.changed", JSON.stringify({
+                        type : "displayContextChanged",
+                        details : {
+                            displayContext : this.activeDisplayContext,
+                            lastDisplayContext : lastContext
+                        }
+                    }))
+                */
             } else {
                 console.log('app name : ', display_ctx_name, 'is already active')
             }
@@ -68,12 +175,61 @@ class DisplayContextFactory {
     /**
     * Creates a display context. If the display context already exists, it is made active and a DisplayContext Object is restored from store.
     * @param {string} display_ctx_name - display context name.
-    * @param {boolean} [reset=false] if the viewObjects of the displayContext need to be reloaded.
+    * @param {Object.<String, window_settings>} [window_settings={}] Key is window name and value is an object
     * @returns {Promise<Object>} A DisplayContext Object is returned.
+    * @example
+{
+    'windowA': {
+        'displayName': 'main',
+        'x': 0,
+        'y': 0,
+        'width': 500,
+        'height': 500,
+        'contentGrid': {
+            'row': 2,
+            'col': 2,
+            'padding': 5
+        },
+        'fontSize': '50px'
+    },
+    'windowB': {
+        'displayName': 'main',
+        'x': 505,
+        'y': 0,
+        'width': 500,
+        'height': 500,
+        'contentGrid': {
+            'row': 2,
+            'col': 2,
+            'padding': 5
+        }
+    },
+    'windowC': {
+        'displayName': 'main',
+        'x': 1010,
+        'y': 0,
+        'width': 500,
+        'height': 500,
+        'contentGrid': {
+            'row': 2,
+            'col': 2,
+            'padding': 5
+        }
+    }
+}
     */
-    create(display_ctx_name, window_settings) {
+    create(display_ctx_name, window_settings = {}) {
         let _dc = new DisplayContext(display_ctx_name, window_settings, this.io)
         return _dc.restoreFromStore().then(m => {
+            /*
+                io.publishTopic("display.displayContext.created", JSON.stringify({
+                    type : "displayContextCreated",
+                    details : {
+                        displayContext : this.activeDisplayContext,
+                        lastDisplayContext : lastContext
+                    }
+                }))
+            */
             return _dc
         })
     }
@@ -97,15 +253,8 @@ class DisplayContextFactory {
 
     /**
      * gets the details of the focused window from a display.
-     * @params {string} [displayName='main']
-     * @returns {Promise<object>} A JSON object with window name.
-     * @example <caption> A sample output </caption>
-     * { "command" : "get-focus-window",
-     *   "status" : "success",
-     *   "window_id" : 23,
-     *   "displayName" : this.displayName,
-     *   "displayContext" : "creative"
-     * }
+     * @param {string} [displayName=main] - Display Name.
+     * @returns {Promise.<focus_window>} - A JSON object with window details.
      */
     getFocusedWindow(displayName = 'main') {
         let cmd = {
@@ -114,6 +263,10 @@ class DisplayContextFactory {
         return this.io.call('rpc-display-' + displayName, JSON.stringify(cmd)).then(m => JSON.parse(m.content))
     }
 
+    /**
+     * gets the details of the focused window from all displays.
+     * @returns {Promise.<Array.<focus_window>>} - An array of JSON object with window details.
+     */
     getFocusedWindows() {
         let cmd = {
             command: 'get-focus-window'
@@ -133,62 +286,122 @@ class DisplayContextFactory {
         })
     }
 
+    /**
+     * viewObject created event
+     * @param {viewObjectCreatedEventCallback} handler
+     */
     onViewObjectCreated(handler) {
         this._on(`display.*.viewObjectCreated.*`, handler)
     }
 
+    /**
+     * viewObject hidden event
+     * @param {viewObjectBasicEventCallback} handler
+     */
     onViewObjectHidden(handler) {
         this._on(`display.*.viewObjectHidden.*`, handler)
     }
 
+    /**
+     * viewObject became visible event
+     * @param {viewObjectBasicEventCallback} handler
+     */
     onViewObjectShown(handler) {
         this._on(`display.*.viewObjectShown.*`, handler)
     }
 
+    /**
+     * viewObject closed event
+     * @param {viewObjectBasicEventCallback} handler
+     */
     onViewObjectClosed(handler) {
         this._on(`display.*.viewObjectClosed.*`, handler)
     }
 
+    /**
+     * viewObject bounds changed event
+     * @param {viewObjectBoundsEventCallback} handler
+     */
     onViewObjectBoundsChanged(handler) {
         this._on(`display.*.viewObjectBoundsChanged.*`, handler)
     }
 
+    /**
+     * viewObject URL changed event
+     * @param {viewObjectURLEventCallback} handler
+     */
     onViewObjectUrlChanged(handler) {
         this._on(`display.*.viewObjectUrlChanged.*`, handler)
     }
 
+    /**
+     * viewObject URL reloaded event
+     * @param {viewObjectURLEventCallback} handler
+     */
     onViewObjectUrlReloaded(handler) {
         this._on(`display.*.viewObjectUrlChanged.*`, handler)
     }
 
+    /**
+     * viewObject crashed event
+     * @param {viewObjectBasicEventCallback} handler
+     */
     onViewObjectCrashed(handler) {
         this._on(`display.*.viewObjectCrashed.*`, handler)
     }
 
+    /**
+     * viewObject GPU crashed event
+     * @param {viewObjectBasicEventCallback} handler
+     */
     onViewObjectGPUCrashed(handler) {
         this._on(`display.*.viewObjectGPUCrashed.*`, handler)
     }
 
+    /**
+     * viewObject plugin crashed event
+     * @param {viewObjectBasicEventCallback} handler
+     */
     onViewObjectPluginCrashed(handler) {
         this._on(`display.*.viewObjectPluginCrashed.*`, handler)
     }
 
+    /**
+     * DisplayContext created event
+     * @param {displayContextCreatedEventCallback} handler
+     */
     onDisplayContextCreated(handler) {
         this._on('display.displayContext.created', handler)
     }
 
+    /**
+     * DisplayContext changed event
+     * @param {displayContextChangedEventCallback} handler
+     */
     onDisplayContextChanged(handler) {
         this._on('display.displayContext.changed', handler)
     }
 
+    /**
+     * DisplayContext closed event
+     * @param {displayContextClosedEventCallback} handler
+     */
     onDisplayContextClosed(handler) {
         this._on('display.displayContext.closed', handler)
     }
 
+    /**
+     * Display worker removed event
+     * @param {displayEventCallback} handler
+     */
     onDisplayWorkerRemoved(handler) {
         this._on('display.removed', handler)
     }
 
+    /**
+     * Display worker added event
+     * @param {displayEventCallback} handler
+     */
     onDisplayWorkerAdded(handler) {
         this._on('display.added', handler)
     }

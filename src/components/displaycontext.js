@@ -28,7 +28,7 @@ class DisplayContext {
         this.viewObjects = new Map()
 
         if (!_.isEmpty(window_settings)) {
-            console.log('storing window setting')
+            // console.log('storing window setting')
             this.io.store.addToHash('display:windowBounds', name, JSON.stringify(window_settings))
         }
 
@@ -88,23 +88,23 @@ class DisplayContext {
     }
 
     _postRequest(displayName, data) {
-        console.log(displayName, data)
+        // console.log(displayName, data)
         return this.io.call('rpc-display-' + displayName, JSON.stringify(data)).then(msg => {
             return JSON.parse(msg.content.toString())
         })
     }
 
     restoreFromStore(reset = false) {
-        console.log('getting state display:dc:' + this.name)
+        // console.log('getting state display:dc:' + this.name)
         return this.io.store.getHash('display:dc:' + this.name).then(m => {
-            console.log('from store', m, _.isEmpty(m))
+            // console.log('from store', m, _.isEmpty(m))
             if (_.isEmpty(m)) {
-                console.log('initialize from options')
+                console.log(`initialize display context - ${this.name} from options`)
                 return this.getWindowBounds().then(bounds => {
                     return this.initialize(bounds)
                 })
             } else {
-                console.log('restoring from store')
+                console.log(`restoring display context - ${this.name} from store`)
                 this.displayWindows.clear()
                 this.viewObjects.clear()
 
@@ -156,9 +156,9 @@ class DisplayContext {
      */
     getWindowBounds() {
         return this.io.store.getHashField('display:windowBounds', this.name).then(m => {
-            console.log('display:windowBounds', m)
+            // console.log('display:windowBounds', m)
             if (m == null) {
-                console.log('using display:displays for windowBounds')
+                // console.log('using display:displays for windowBounds')
                 return this.io.store.getHash('display:displays').then(x => {
                     for (let k of Object.keys(x)) {
                         x[k] = JSON.parse(x[k])
@@ -169,7 +169,7 @@ class DisplayContext {
                     return x
                 })
             } else {
-                console.log('using  windowBounds from store')
+                // console.log('using  windowBounds from store')
                 let x = JSON.parse(m)
                 for (let k of Object.keys(x)) {
                     if (x[k].displayName === undefined) { x[k].displayName = k }
@@ -228,14 +228,14 @@ class DisplayContext {
             for (let k of Object.keys(m)) {
                 disps.add(m[k].displayName)
             }
-            console.log(disps)
+            // console.log(disps)
             let _ps = []
             for (let k of disps) {
                 _ps.push(this._postRequest(k, cmd))
             }
             return Promise.all(_ps)
         }).then(m => {
-            console.log('##windows shown')
+            // console.log('##windows shown')
             this.io.store.setState('display:activeDisplayContext', this.name)
             return m
         })
@@ -334,7 +334,7 @@ class DisplayContext {
         }
 
         return Promise.all(_ps).then(m => {
-            console.log(m)
+            // console.log(m)
             let map = []
             for (var i = 0; i < m.length; i++) {
                 let res = JSON.parse(m[i].toString())
@@ -348,7 +348,7 @@ class DisplayContext {
         return this.show().then(() => {
             let _ps = []
             for (let k of Object.keys(options)) {
-                console.log('creating window for ', k)
+                // console.log('creating window for ', k)
                 options[k].template = 'index.html'
                 let cmd = {
                     command: 'create-window',
@@ -361,7 +361,7 @@ class DisplayContext {
             let map = {}
             for (var i = 0; i < m.length; i++) {
                 let res = m[i]
-                console.log('init:', res)
+                // console.log('init:', res)
                 map[res.windowName] = res
                 this.displayWindows.set(res.windowName, new DisplayWindow(this.io, res))
             }

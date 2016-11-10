@@ -1,11 +1,10 @@
 {
   "mq": {
-    "url": "cel-central.watson.ibm.com/test",
-    "username": "test",
-    "password": "test"
+    "url": "localhost",
+    "username": "guest",
+    "password": "guest"
   },
   "store" : {
-    "url" : "cel-central.watson.ibm.com/1",
-    "password": "c0gnitive"
+    "url" : "localhost"
   }
 }

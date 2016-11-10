@@ -4,10 +4,31 @@ const _ = require('lodash')
 
 /**
  * @typedef {Promise.<Object>} display_rpc_result
- * @property {string} status success or Error message
- * @property {string} command The command name
- * @property {string} displayName Display Name
- * @property {string} displayContext DisplayContext Name
+ * @property {String} status success or Error message
+ * @property {String} command The command name
+ * @property {String} displayName Display Name
+ * @property {String} displayContext DisplayContext Name
+ */
+
+/**
+ * @typedef {Object} viewobject_options
+ * @property {String} url - url starting with http:// or https://; or local file on display-worker starting with file://<absolute path>  success or Error message
+ * @property {String} left - left position in pixels or em
+ * @property {String} top -  top position in pixels or em
+ * @property {String} width - width in pixels or em
+ * @property {String} height -  height in pixels or em
+ * @property {boolean} uiDraggable - sets if the viewObject is draggable using a pointing device
+ * @property {boolean} uiClosable - sets if the viewObject is closable using a pointing device
+ * @property {Object} [position] - Specifies position in grid mode. ignores left and top if specified
+ * @property {Number} [position.grid-left] - column position
+ * @property {Number} [position.grid-top] - row position
+ * @property {boolean} [nodeintegration] - specifies if the guest page needs to use Electron resources
+ * @property {Object} [deviceEmulation] - Specifies device emulation parametes. ( For all parameter options refer http://electron.atom.io/docs/api/web-contents/#contentsenabledeviceemulationparameters)
+ * @property {Number} deviceEmulation.scale - Scale of emulated view inside available space (not in fit to view mode) (default: 1)
+ * @property {Object} deviceEmulation.offset - Offset of the emulated view inside available space (not in fit to view mode) (default: {x: 0, y: 0})
+ * @property {Number} deviceEmulation.offset.x - Set the x axis offset from top left corner
+ * @property {Number} deviceEmulation.offset.y - Set the y axis offset from top left corner
+ * @property {boolean} deviceEmulation.fitToView -  Whether emulated view should be scaled down if necessary to fit into available space (default: false)
  */
 
 /**
@@ -401,7 +422,7 @@ class DisplayContext {
 
     /**
      * Creates a view object
-     * @param {Object} options - view object options
+     * @param {viewobject_options} options - view object options
      * @param {String} [windowName='main'] - window name
      * @returns {ViewObject} returns the ViewObject instance
      */

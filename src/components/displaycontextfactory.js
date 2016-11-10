@@ -151,9 +151,9 @@ class DisplayContextFactory {
     * @returns {Promise} return false if the display context name is already active.
     */
     setActive(display_ctx_name, reset = false) {
-        console.log('requested app name : ', display_ctx_name)
         return this.io.store.getState('display:activeDisplayContext').then(name => {
-            console.log('app name in store : ', name)
+            console.log('Current active display context name : ', name)
+            console.log('requested display context name to be made active : ', display_ctx_name)
             if (name !== display_ctx_name) {
                 this.io.store.setState('display:activeDisplayContext', display_ctx_name)
                 return (new DisplayContext(display_ctx_name, {}, this.io)).restoreFromStore(reset).then(m => {
@@ -237,15 +237,12 @@ class DisplayContextFactory {
     create(display_ctx_name, window_settings = {}) {
         let _dc = new DisplayContext(display_ctx_name, window_settings, this.io)
         return _dc.restoreFromStore().then(m => {
-            /*
-                io.publishTopic("display.displayContext.created", JSON.stringify({
-                    type : "displayContextCreated",
-                    details : {
-                        displayContext : this.activeDisplayContext,
-                        lastDisplayContext : lastContext
-                    }
-                }))
-            */
+            this.io.publishTopic('display.displayContext.created', JSON.stringify({
+                type: 'displayContextCreated',
+                details: {
+                    displayContext: display_ctx_name
+                }
+            }))
             return _dc
         })
     }

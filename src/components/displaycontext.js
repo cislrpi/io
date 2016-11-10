@@ -12,7 +12,7 @@ const _ = require('lodash')
 
 /**
  * @typedef {Object} viewobject_options
- * @property {String} url - url starting with http:// or https://; or local file on display-worker starting with file://<absolute path>  success or Error message
+ * @property {String} url - url starting with http:// or https://; or local file on display-worker starting with file://<absolute path>
  * @property {String} left - left position in pixels or em
  * @property {String} top -  top position in pixels or em
  * @property {String} width - width in pixels or em

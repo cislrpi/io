@@ -145,17 +145,36 @@ exports.store = function () {
             return this.io.store.del(key)
         })
     })
+
+    it('should subscribe to changes', function (done) {
+        setTimeout(() => {
+            this.io.store.setState(key, value)
+        }, 100)
+
+        setTimeout(() => {
+            this.io.store.setState(key2, value)
+        }, 200)
+
+        this.io.store.onChange(key, event => {
+            assert.equal(event, 'set')
+        })
+
+        this.io.store.onChange(key2, event => {
+            assert.equal(event, 'set')
+            this.io.store.del(key2)
+            this.io.store.del(key)
+            done()
+        })
+    })
 }
 
 exports.speaker = function () {
     it('should speak, stop, change volume, on(Begin/End)Speak', function () {
         this.timeout(20000)
         const phi = this.io.speaker.speak('Hi').then(m => m.content.toString())
-        const that = this
-
         const pstop = new Promise((resolve, reject) => {
-            setTimeout(function () {
-                that.io.speaker.stop().then(m => resolve(m.content.toString()))
+            setTimeout(() => {
+                this.io.speaker.stop().then(m => resolve(m.content.toString()))
             }, 14000)
         })
 
@@ -172,19 +191,19 @@ exports.speaker = function () {
         })
 
         const plong = new Promise((resolve, reject) => {
-            setTimeout(function () {
-                that.io.speaker.speak('I will now reduce my volume').then(m => {
+            setTimeout(() => {
+                this.io.speaker.speak('I will now reduce my volume').then(m => {
                     assert.equal(m.content, 'succeeded')
-                    return that.io.speaker.reduceVolume(50)
+                    return this.io.speaker.reduceVolume(50)
                 }).then(m => {
                     assert.equal(m.content, 'done')
-                    return that.io.speaker.speak('testing testing. I will now increase my volume')
+                    return this.io.speaker.speak('testing testing. I will now increase my volume')
                 }).then(m => {
                     assert.equal(m.content, 'succeeded')
-                    return that.io.speaker.increaseVolume(50)
+                    return this.io.speaker.increaseVolume(50)
                 }).then(m => {
                     assert.equal(m.content, 'done')
-                    return that.io.speaker.speak('testing testing. I will be stopped in 1, 2, 3, 4, 5, 6')
+                    return this.io.speaker.speak('testing testing. I will be stopped in 1, 2, 3, 4, 5, 6')
                 }).then(m => resolve(m.content.toString()))
             }, 100)
         })
@@ -251,5 +270,4 @@ exports.transcript = function () {
         }, 5000)
     })
 }
-
 

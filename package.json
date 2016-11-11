@@ -16,8 +16,6 @@
     "posttest-browser": "rm test/browser/page/tests-bundle.js",
     "test-node": "mocha test/node",
     "test": "npm run lint && npm run test-node && npm run test-browser",
-    "test_display_promise": "mocha --timeout 15000 test/testRPCAsync.js",
-    "test_display_events": "mocha --timeout 40000 test/testDisplayEvents.js",
     "update-gh-pages": "git checkout gh-pages && cp -Rf .ignore/ . && rm -r .ignore/",
     "release-patch": "false",
     "release-minor": "npm version minor",

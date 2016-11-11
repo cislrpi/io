@@ -11,14 +11,19 @@ class Store {
      * Use {@link CELIO#store} instead.
      */
     constructor(options) {
-        if (options.url) {
-            options.url = 'redis://' + options.url
+        const components = options.url.split('/')
+        if (components.length > 1) {
+            this.database = components[1]
+        } else {
+            this.database = '0'
         }
+        options.url = 'redis://' + options.url
         /**
          * The node-redis client object. Only use this if you want to use advanced redis commands.
          * @type node-redis
          */
         this.client = redis.createClient(options)
+        this.subscriber = this.client.duplicate()
     }
 
     /**
@@ -111,6 +116,7 @@ class Store {
     getState(key) {
         return this.client.getAsync(key)
     }
+
     /**
      * Delete a key.
      * @param  {string} key - The key.
@@ -118,6 +124,21 @@ class Store {
      */
     del(key) {
         return this.client.delAsync(key)
+    }
+
+    /**
+     * Subscribe to changes on a key.
+     * @param  {string} key - The key.
+     * @param  {} handler - Handler for the change event
+     */
+    onChange(key, handler) {
+        const keyChannel = `__keyspace@${this.database}__:${key}`
+        this.subscriber.subscribe(keyChannel)
+        this.subscriber.on('message', (channel, event) => {
+            if (channel === keyChannel) {
+                handler(event)
+            }
+        })
     }
 }
 

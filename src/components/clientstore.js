@@ -3,8 +3,21 @@ const redis = require('webdismay')
 
 module.exports = class Store {
     constructor(options) {
+        if (!options.webdis_port) {
+            options.webdis_port = 7379
+        }
+
+        const components = options.url.split('/')
+        if (components.length > 1) {
+            this.database = components[1]
+        } else {
+            this.database = '0'
+        }
+
+        this.url = `http://${components[0]}:${options.webdis_port}/`
+
         let params = {
-            endPoint: 'http://' + options.url + ':7379/',
+            endPoint: this.url,
             postProcess: null
         }
         if (options.username && options.password) {
@@ -62,7 +75,29 @@ module.exports = class Store {
         return this.client.key(key).get()
     }
 
-    delState(key) {
+    del(key) {
         return this.client.key(key).del()
+    }
+
+    onChange(key, handler) {
+        const xhr = new XMLHttpRequest()
+        let previous_response_length = 0
+
+        const keyChannel = `__keyspace@${this.database}__:${key}`
+        xhr.open('POST', this.url, true)
+        xhr.onreadystatechange = checkData
+        xhr.send(`SUBSCRIBE/${keyChannel}`)
+
+        function checkData() {
+            if (xhr.readyState === 3) {
+                const response = xhr.responseText
+                const chunk = response.slice(previous_response_length)
+                previous_response_length = response.length
+                const command = JSON.parse(chunk)
+                if (command.SUBSCRIBE[0] === 'message') {
+                    handler(command.SUBSCRIBE[2])
+                }
+            }
+        }
     }
 }

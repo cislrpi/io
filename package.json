@@ -16,7 +16,7 @@
     "posttest-browser": "rm test/browser/page/tests-bundle.js",
     "test-node": "mocha test/node",
     "test": "npm run lint && npm run test-node && npm run test-browser",
-    "update-gh-pages": "git checkout gh-pages && cp -Rf .ignore/ . && rm -r .ignore/",
+    "update-gh-pages": "git checkout gh-pages && git pull origin gh-pages && cp -Rf .ignore/ . && rm -r .ignore/",
     "release-patch": "false",
     "release-minor": "npm version minor",
     "release-major": "npm version major"

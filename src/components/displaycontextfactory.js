@@ -262,7 +262,7 @@ class DisplayContextFactory {
             }
             return Promise.all(_ps)
         }).then(m => {
-            this.io.store.delState('display:activeDisplayContext')
+            this.io.store.del('display:activeDisplayContext')
             return m
         })
     }

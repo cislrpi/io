@@ -79,12 +79,13 @@ exports.celio = function () {
 exports.store = function () {
     const OK = 'OK'
     const key = 'test'
+    const key2 = 'test2'
     const field = 'field'
     const value = 'hello'
     const value2 = 'world'
 
     it('should have working methods for key', function () {
-        return this.io.store.delState(key)
+        return this.io.store.del(key)
             .then(_ => this.io.store.getState(key))
             .then(v => {
                 assert.isNull(v)
@@ -97,7 +98,7 @@ exports.store = function () {
                 return this.io.store.getState(key)
             }).then(v => {
                 assert.equal(v, value2)
-                return this.io.store.delState(key)
+                return this.io.store.del(key)
             }).then(m => {
                 assert.equal(m, 1)
             })
@@ -123,7 +124,7 @@ exports.store = function () {
             return this.io.store.getHash(key)
         }).then(o => {
             assert.deepEqual(o, {})
-            return this.io.store.delState(key)
+            return this.io.store.del(key)
         })
     })
     it('should have working methods for set', function () {
@@ -141,7 +142,7 @@ exports.store = function () {
             return this.io.store.removeFromSet(key, value)
         }).then(m => {
             assert.equal(m, 1)
-            return this.io.store.delState(key)
+            return this.io.store.del(key)
         })
     })
 }

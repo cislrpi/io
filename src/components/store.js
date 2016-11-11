@@ -116,7 +116,7 @@ class Store {
      * @param  {string} key - The key.
      * @returns {Promise} Resolves to 1 if succeed.
      */
-    delState(key) {
+    del(key) {
         return this.client.delAsync(key)
     }
 }

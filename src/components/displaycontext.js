@@ -326,13 +326,13 @@ class DisplayContext {
             if (!isHidden) {
                 this.displayWindows.clear()
                 this.viewObjects.clear()
-                this.io.store.delState('display:dc:' + this.name)
+                this.io.store.del('display:dc:' + this.name)
                 this.io.store.removeFromSet('display:displayContexts', this.name)
                 this.io.store.removeFromHash('display:windowBounds', this.name)
                 this.io.store.getState('display:activeDisplayContext').then(x => {
                     if (x === this.name) {
                         console.log('clearing up active display context')
-                        this.io.store.delState('display:activeDisplayContext')
+                        this.io.store.del('display:activeDisplayContext')
                     }
                 })
                 this.io.publishTopic('display.displayContext.closed', JSON.stringify({

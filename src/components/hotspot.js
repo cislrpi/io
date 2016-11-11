@@ -8,6 +8,28 @@ const highv = 4000
 const vanishTime = 1000
 
 /**
+ * @typedef Pointer
+ * @property {Array<number>} Pointer.loc - The location [x,y,z] of the pointer in space.
+ * @property {Array<number>} Pointer.aim - A unit vector [x,y,z] representing the pointing direction.
+ * @property {string} Pointer.name - A unique name of the pointer.
+ */
+
+/**
+ * @typedef Intersection
+ * @property {number} Intersection.x - Horizontal location of the intersection point relative to the origin of the region. In mm.
+ * @property {number} Intersection.y - Vertical location of the intersection point relative to the origin of the region. In mm.
+ * @property {boolean} hit - within or outside the region.
+ * @property {number} distanceAlongRay - The distance between the source of the pointer and the intersection point. In mm.
+ * @property {number} distanceAlongNormal - The distance between the source of the pointer and the region along the region's normal vector. In mm.
+ * @property {Pointer} details - The underlying pointer object. Which has aim and loc property.
+ */
+
+/**
+ * @callback PointerEventCallback
+ * @param {Intersection} pointer
+ */
+
+/**
  * Class representing the Hotspot object.
  */
 class Hotspot extends EventEmitter {
@@ -64,7 +86,7 @@ class Hotspot extends EventEmitter {
     /**
      * Calculate the intersection point. Return null if no intersection.
      * @private
-     * @param  {Ray} pointer
+     * @param {Ray} pointer
      * @returns Point
      */
     _intersect(pointer) {
@@ -199,7 +221,7 @@ class Hotspot extends EventEmitter {
 
     /**
      * Subscribe to pointer-move events.
-     * @param  {} handler
+     * @param  {PointerEventCallback} handler
      */
     onPointerMove(handler) {
         this.on('move', handler)
@@ -207,7 +229,7 @@ class Hotspot extends EventEmitter {
 
     /**
      * Subscribe to pointer-enter events.
-     * @param  {} handler
+     * @param  {PointerEventCallback} handler
      */
     onPointerEnter(handler) {
         this.on('enter', handler)
@@ -215,7 +237,7 @@ class Hotspot extends EventEmitter {
 
     /**
      * Subscribe to pointer-leave events.
-     * @param  {} handler
+     * @param  {PointerEventCallback} handler
      */
     onPointerLeave(handler) {
         this.on('leave', handler)
@@ -223,7 +245,7 @@ class Hotspot extends EventEmitter {
 
     /**
      * Subscribe to pointer-down events.
-     * @param  {} handler
+     * @param  {PointerEventCallback} handler
      */
     onPointerDown(handler) {
         this.on('down', handler)
@@ -231,7 +253,7 @@ class Hotspot extends EventEmitter {
 
     /**
      * Subscribe to pointer-up events.
-     * @param  {} handler
+     * @param  {PointerEventCallback} handler
      */
     onPointerUp(handler) {
         this.on('up', handler)
@@ -239,7 +261,7 @@ class Hotspot extends EventEmitter {
 
     /**
      * Subscribe to pointer-click events.
-     * @param  {} handler
+     * @param  {PointerEventCallback} handler
      */
     onPointerClick(handler) {
         this.on('click', handler)
@@ -247,7 +269,7 @@ class Hotspot extends EventEmitter {
 
     /**
      * Subscribe to pointer-attach events.
-     * @param  {} handler
+     * @param  {PointerEventCallback} handler
      */
     onPointerAttach(handler) {
         this.on('attach', handler)
@@ -255,7 +277,7 @@ class Hotspot extends EventEmitter {
 
     /**
      * Subscribe to pointer-detach events.
-     * @param  {} handler
+     * @param  {PointerEventCallback} handler
      */
     onPointerDetach(handler) {
         this.on('detach', handler)

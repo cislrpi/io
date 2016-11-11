@@ -172,8 +172,8 @@ class DisplayContext {
     }
 
     /**
-     * gets a map of displayName with bounds
-     * @returns {Promise.<Object>} A map of displayNames with bounds
+     * gets a map of windowName with bounds
+     * @returns {Promise.<Object>} A map of windowNames with bounds
      */
     getWindowBounds() {
         return this.io.store.getHashField('display:windowBounds', this.name).then(m => {
@@ -204,11 +204,11 @@ class DisplayContext {
 
     /**
      * gets a window object by window name
-     * @param {any} displayName
+     * @param {any} windowName
      * @returns {DisplayWindow} returns an instance of DisplayWindow
      */
-    getDisplayWindowSync(displayName) {
-        return this.displayWindows.get(displayName)
+    getDisplayWindowSync(windowName) {
+        return this.displayWindows.get(windowName)
     }
 
     /**
@@ -228,7 +228,7 @@ class DisplayContext {
      * gets all window names
      * @returns {Array.<String>} An array of window names
      */
-    getDisplayWindowNameSync() {
+    getDisplayWindowNamesSync() {
         return this.displayWindows.keys()
     }
 

@@ -65,10 +65,7 @@ module.exports = class Store {
     }
 
     setState(key, value) {
-        return this.client.key(key).set(value).then(status => {
-            if (status) return 'OK'
-            else return null
-        })
+        return this.client.key(key).getset(value)
     }
 
     getState(key) {

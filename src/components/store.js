@@ -105,7 +105,7 @@ class Store {
      * @returns {Promise} Resolves to 'OK' if succeed.
      */
     setState(key, value) {
-        return this.client.setAsync(key, value)
+        return this.client.getsetAsync(key, value)
     }
 
     /**

@@ -100,7 +100,9 @@ const DisplayContext = require('./displaycontext')
  * Class representing the DisplayContextFactory object.
  */
 class DisplayContextFactory {
-
+    /**
+     * Use {@link CELIO#displayContext} instead.
+     */
     constructor(io) {
         this.io = io
     }
@@ -138,8 +140,7 @@ class DisplayContextFactory {
                 let _dc = new DisplayContext(m, {}, this.io)
                 return _dc.restoreFromStore().then(m => { return _dc })
             } else {
-                let _dc = new DisplayContext('default', {}, this.io)
-                return _dc.restoreFromStore().then(m => { return _dc })
+                return new Promise((resolve, reject) => reject(new Error('No display context is active')))
             }
         })
     }
@@ -151,11 +152,10 @@ class DisplayContextFactory {
     * @returns {Promise} return false if the display context name is already active.
     */
     setActive(display_ctx_name, reset = false) {
-        return this.io.store.getState('display:activeDisplayContext').then(name => {
+        return this.io.store.setState('display:activeDisplayContext', display_ctx_name).then(name => {
             console.log('Current active display context name : ', name)
             console.log('requested display context name to be made active : ', display_ctx_name)
             if (name !== display_ctx_name) {
-                this.io.store.setState('display:activeDisplayContext', display_ctx_name)
                 return (new DisplayContext(display_ctx_name, {}, this.io)).restoreFromStore(reset).then(m => {
                     this.io.publishTopic('display.displayContext.changed', JSON.stringify({
                         'type': 'displayContextChanged',

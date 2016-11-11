@@ -102,7 +102,7 @@ class Store {
      * Set value to a key.
      * @param  {string} key - The key.
      * @param  {any} value - The value.
-     * @returns {Promise} Resolves to 'OK' if succeed.
+     * @returns {Promise} - returns the old value of the key
      */
     setState(key, value) {
         return this.client.getsetAsync(key, value)

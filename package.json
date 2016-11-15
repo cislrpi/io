@@ -1,6 +1,6 @@
 {
   "name": "celio",
-  "version": "2.3.0",
+  "version": "2.3.1",
   "description": "A framework for building distributed, multimodal applications",
   "main": "lib/index.js",
   "scripts": {

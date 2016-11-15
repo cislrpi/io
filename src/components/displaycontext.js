@@ -409,8 +409,8 @@ class DisplayContext {
     }
 
     /**
-     * gets a viewObject by id
-     * @returns {Array.<Buffer>} returns an array of screenshot image buffer
+     * Captures screenshot of display windows
+     * @returns {Map.<Buffer>} returns a map of screenshot image buffer with windowNames as key and image Buffer as value
      */
     captureDisplayWindows() {
         let _ps = []

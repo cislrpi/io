@@ -5,10 +5,6 @@ const DisplayContextFactory = require('./components/displaycontextfactory')
 
 module.exports = class CELIOAbstract {
     constructor() {
-        if (new.target === CELIOAbstract) {
-            throw new TypeError('Cannot construct Abstract instances directly')
-        }
-
         this.speaker = new Speaker(this)
         this.transcript = new Transcript(this)
         this.displayContext = new DisplayContextFactory(this)

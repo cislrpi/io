@@ -414,10 +414,18 @@ class DisplayContext {
      */
     captureDisplayWindows() {
         let _ps = []
+        let _dispNames = []
         for (let [k, v] of this.displayWindows) {
             _ps.add(v.capture())
+            _dispNames.add(k)
         }
-        return Promise.all(_ps)
+        return Promise.all(_ps).then(m => {
+            let resMap = new Map()
+            for (var i = 0; i < m.length && i < _dispNames.length; i++) {
+                resMap.set(_dispNames[i], m[i])
+            }
+            return resMap
+        })
     }
 
     /**

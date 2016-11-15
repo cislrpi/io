@@ -416,8 +416,8 @@ class DisplayContext {
         let _ps = []
         let _dispNames = []
         for (let [k, v] of this.displayWindows) {
-            _ps.add(v.capture())
-            _dispNames.add(k)
+            _ps.push(v.capture())
+            _dispNames.push(k)
         }
         return Promise.all(_ps).then(m => {
             let resMap = new Map()

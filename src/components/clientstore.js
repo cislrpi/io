@@ -65,7 +65,7 @@ module.exports = class Store {
     }
 
     setState(key, value) {
-        return this.client.key(key).getset(value)
+        return this.client.key(key).getSet(value)
     }
 
     getState(key) {

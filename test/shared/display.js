@@ -77,13 +77,14 @@ exports.display = function () {
         })
     })
 
-    it('should move viewobject', function () {
+    it('should move viewobject', function (done) {
         this.timeout(8000)
-        return assert.becomes(view_obj.setBounds({
+        assert.becomes(view_obj.setBounds({
             left: '30px',
             top: '100px'
         }).then(m => {
             console.log(m)
+            setTimeout(() => { done() }, 3000)
             return m.status
         }), 'success')
     })
@@ -111,7 +112,7 @@ exports.display = function () {
         })
     })
 
-    it('should open new display context - mars  and test content sliding', function (done) {
+    it('should open new display context - mars  and test content sliding', function () {
         return this.io.displayContext.create('mars', settings.single_window_setting).then(m => {
             display_context = m
             return display_context.createViewObject({
@@ -158,12 +159,12 @@ exports.display = function () {
                     'direction': 'down'
                 }
             })
-        // }).then(m => {
-        //     setTimeout(function () {
-        //         return display_context.close()
-        //     }, 3000)
         }).then(m => {
-            done()
+            return assert.isTrue(m instanceof ViewObject)
         })
+    })
+
+    it('should close  display context - mars', function () {
+        return assert.becomes(display_context.close().then(m => m[0].status), 'success')
     })
 }

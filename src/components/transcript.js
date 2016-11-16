@@ -80,7 +80,10 @@ class Transcript {
     tagChannel(workerID, channelIndex, speakerName) {
         return this.io.call(`rpc-transcript-${workerID}-tagChannel`, JSON.stringify({ channelIndex, speaker: speakerName }))
     }
-
+    /**
+     * Add keywords to all transcript worker
+     * @param  {Array<string>} words - An array of keywords
+     */
     addKeywords(words) {
         this.io.store.addToSet('transcript:keywords', ...words)
     }

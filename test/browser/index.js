@@ -34,4 +34,11 @@ describe('browser', function () {
 
         shared.transcript()
     })
+
+    describe('Display (require display-worker to be running)', function () {
+        beforeEach(function () {
+            this.io = new CELIO(config)
+        })
+        shared.display.display()
+    })
 })

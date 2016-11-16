@@ -91,10 +91,10 @@ exports.store = function () {
                 assert.isNull(v)
                 return this.io.store.setState(key, value)
             }).then(m => {
-                assert.equal(m, OK, 'first set')
+                assert.equal(m, null, 'first set')
                 return this.io.store.setState(key, value2)
             }).then(m => {
-                assert.equal(m, OK, 'second set')
+                assert.equal(m, value, 'second set')
                 return this.io.store.getState(key)
             }).then(v => {
                 assert.equal(v, value2)
@@ -130,12 +130,12 @@ exports.store = function () {
     it('should have working methods for set', function () {
         return this.io.store.getSet(key).then(v => {
             assert.deepEqual(v, [])
-            return this.io.store.addToSet(key, value)
+            return this.io.store.addToSet(key, value, value2)
         }).then(m => {
-            assert.equal(m, 1)
+            assert.equal(m, 2)
             return this.io.store.getSet(key)
         }).then(array => {
-            assert.deepEqual(array, [value])
+            assert.deepEqual(array, [value2, value])
             return this.io.store.addToSet(key, value)
         }).then(m => {
             assert.equal(m, 0)
@@ -155,15 +155,23 @@ exports.store = function () {
             this.io.store.setState(key2, value)
         }, 200)
 
+        let observed = false
+
         this.io.store.onChange(key, event => {
-            assert.equal(event, 'set')
+            if (!observed) {
+                assert.equal(event, 'set')
+            }
         })
 
+
         this.io.store.onChange(key2, event => {
-            assert.equal(event, 'set')
-            this.io.store.del(key2)
-            this.io.store.del(key)
-            done()
+            if (!observed) {
+                assert.equal(event, 'set')
+                this.io.store.del(key2)
+                this.io.store.del(key)
+                observed = true
+                done()
+            }
         })
     })
 }

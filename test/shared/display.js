@@ -77,15 +77,15 @@ exports.display = function () {
         })
     })
 
-    it('should move viewobject', function (done) {
+    it('should move viewobject', function () {
         this.timeout(8000)
-        return view_obj.setBounds({
+        return assert.becomes(view_obj.setBounds({
             left: '30px',
             top: '100px'
         }).then(m => {
             console.log(m)
-            return assert.equal(m.status, 'success')
-        }).then(m => done())
+            return m.status
+        }), 'success')
     })
 
     it('should close the display context - venus', function () {

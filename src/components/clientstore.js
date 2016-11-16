@@ -52,8 +52,8 @@ module.exports = class Store {
         return this.client.hash(key).del(field)
     }
 
-    addToSet(key, value) {
-        return this.client.rset(key).add(value)
+    addToSet(key, ...values) {
+        return this.client.rset(key).add(...values)
     }
 
     getSet(key) {

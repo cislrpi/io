@@ -72,11 +72,11 @@ class Store {
     /**
      * Add a value to a set.
      * @param  {string} key - The set key.
-     * @param  {any} value - The value to add.
-     * @returns {Promise} Resolves to 1 if succeed, 0 if the value already exists.
+     * @param  {...string} values - The values to add.
+     * @returns {Promise} Resolves to the number of values added.
      */
-    addToSet(key, value) {
-        return this.client.saddAsync(key, value)
+    addToSet(key, ...values) {
+        return this.client.saddAsync(key, values)
     }
 
     /**

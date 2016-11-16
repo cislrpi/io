@@ -82,8 +82,7 @@ class Transcript {
     }
 
     addKeywords(words) {
-        // this.io.store.addToSet('transcript:keywords', )
-        this.io.publishTopic('addKeywords.transcript.command', JSON.stringify(words))
+        this.io.store.addToSet('transcript:keywords', ...words)
     }
 
     /**

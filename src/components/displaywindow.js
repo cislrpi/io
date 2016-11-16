@@ -297,7 +297,7 @@ class DisplayWindow {
     }
 
     /**
-     * gets the screen grab of the display window
+     * gets the screenshotof the display window as image buffer
      * @returns {Promise.<Buffer>}
      */
     capture() {
@@ -307,7 +307,7 @@ class DisplayWindow {
                 window_id: this.window_id
             }
         }
-        return this.io.call('rpc-display-' + this.displayName, JSON.stringify(cmd))
+        return this.io.call('rpc-display-' + this.displayName, JSON.stringify(cmd)).then(m => m.content)
     }
 
     /*

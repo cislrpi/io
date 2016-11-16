@@ -4,7 +4,7 @@ const _ = require('lodash')
 
 /**
  * @typedef {Promise.<Object>} display_rpc_result
- * @property {String} status success or Error message
+ * @property {String} status success or rejects with an Error message
  * @property {String} command The command name
  * @property {String} displayName Display Name
  * @property {String} displayContext DisplayContext Name
@@ -22,6 +22,8 @@ const _ = require('lodash')
  * @property {Object} [position] - Specifies position in grid mode. ignores left and top if specified
  * @property {Number} [position.grid-left] - column position
  * @property {Number} [position.grid-top] - row position
+ * @property {Object} [slide] - Specifies sliding content in grid mode. Requires position object
+ * @property {String} [direction] - values : 'left', 'right', 'down', 'up'
  * @property {boolean} [nodeintegration] - specifies if the guest page needs to use Electron resources
  * @property {Object} [deviceEmulation] - Specifies device emulation parametes. ( For all parameter options refer http://electron.atom.io/docs/api/web-contents/#contentsenabledeviceemulationparameters)
  * @property {Number} deviceEmulation.scale - Scale of emulated view inside available space (not in fit to view mode) (default: 1)
@@ -178,7 +180,7 @@ class DisplayContext {
     getWindowBounds() {
         return this.io.store.getHashField('display:windowBounds', this.name).then(m => {
             // console.log('display:windowBounds', m)
-            if (m == null) {
+            if (m === null) {
                 // console.log('using display:displays for windowBounds')
                 return this.io.store.getHash('display:displays').then(x => {
                     for (let k of Object.keys(x)) {
@@ -449,7 +451,7 @@ class DisplayContext {
         } else {
             return this.getWindowBounds().then(bounds => {
                 for (let k of Object.keys(bounds)) {
-                    if (bounds[k].displayName == undefined) {
+                    if (bounds[k].displayName === undefined) {
                         bounds[k].displayName = k
                     }
                     bounds[k].windowName = k

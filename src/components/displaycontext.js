@@ -356,15 +356,7 @@ class DisplayContext {
             _ps.push(v.reload())
         }
 
-        return Promise.all(_ps).then(m => {
-            // console.log(m)
-            let map = []
-            for (var i = 0; i < m.length; i++) {
-                let res = JSON.parse(m[i].toString())
-                map.push(res)
-            }
-            return map
-        })
+        return Promise.all(_ps)
     }
 
     initialize(options) {

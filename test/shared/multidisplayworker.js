@@ -14,7 +14,7 @@ exports.multidisplay = function () {
     })
 
     it('should create a display context - venus', function () {
-        return this.io.displayContext.create('triptomarsland', settings.multiple_windows_setting).then(m => {
+        return this.io.displayContext.create('triptomarsland', settings.multiple_disp_worker_setting).then(m => {
             display_context = m
             return assert.isTrue(display_context instanceof DisplayContext)
         })
@@ -55,14 +55,14 @@ exports.multidisplay = function () {
         })
     })
 
-    it('wait for few seconds before closing', function (done) {
-        this.timeout(8000)
-        setTimeout(function () {
-            done()
-        }, 6000)
-    })
+    // it('wait for few seconds before closing', function (done) {
+    //     this.timeout(18000)
+    //     setTimeout(function () {
+    //         done()
+    //     }, 16000)
+    // })
 
-    it('close display context', function () {
-        return assert.becomes(display_context.close().then(m => m[0].status), 'success')
-    })
+    // it('close display context', function () {
+    //     return assert.becomes(display_context.close().then(m => m[0].status), 'success')
+    // })
 }

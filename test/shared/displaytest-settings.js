@@ -64,8 +64,7 @@ exports.multiple_disp_worker_setting = {
             'row': 2,
             'col': 2,
             'padding': 5
-        },
-        'fontSize': '50px'
+        }
     },
     'windowB': {
         'displayName': 'main',

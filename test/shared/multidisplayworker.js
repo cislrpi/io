@@ -55,14 +55,15 @@ exports.multidisplay = function () {
         })
     })
 
-    // it('wait for few seconds before closing', function (done) {
-    //     this.timeout(18000)
-    //     setTimeout(function () {
-    //         done()
-    //     }, 16000)
-    // })
+    // to test menu comment the following two tests
+    it('wait for few seconds before closing', function (done) {
+        this.timeout(6000)
+        setTimeout(function () {
+            done()
+        }, 5000)
+    })
 
-    // it('close display context', function () {
-    //     return assert.becomes(display_context.close().then(m => m[0].status), 'success')
-    // })
+    it('close display context', function () {
+        return assert.becomes(display_context.close().then(m => m[0].status), 'success')
+    })
 }

@@ -156,12 +156,19 @@ exports.display = function () {
                 'uiDraggable': true,
                 'slide': {
                     'cascade': true,
-                    'direction': 'down'
+                    'direction': 'left'
                 }
             })
         }).then(m => {
             return assert.isTrue(m instanceof ViewObject)
         })
+    })
+
+    it('wait for few seconds before closing', function (done) {
+        this.timeout(6000)
+        setTimeout(function () {
+            done()
+        }, 5000)
     })
 
     it('should close  display context - mars', function () {

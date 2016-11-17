@@ -1,6 +1,7 @@
 const chai = require('chai')
 chai.use(require('chai-as-promised'))
 exports.display = require('./display')
+exports.multidisplay = require('./multidisplayworker')
 const assert = chai.assert
 
 exports.celio = function () {

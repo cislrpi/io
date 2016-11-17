@@ -52,10 +52,17 @@ describe('node', function () {
         shared.transcript()
     })
 
-    describe('Display (require display-worker to be running)', function () {
+    describe.skip('Display (require display-worker to be running)', function () {
         beforeEach(function () {
             this.io = new CELIO('test/cog.json')
         })
         shared.display.display()
+    })
+
+    describe('Multiple Display Worker (requires two or more display-workers to be running)', function () {
+        beforeEach(function () {
+            this.io = new CELIO('test/cog.json')
+        })
+        shared.multidisplay.multidisplay()
     })
 })

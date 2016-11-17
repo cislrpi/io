@@ -41,4 +41,11 @@ describe('browser', function () {
         })
         shared.display.display()
     })
+
+    describe.skip('Multiple Display Worker (requires two or more display-workers to be running)', function () {
+        beforeEach(function () {
+            this.io = new CELIO('test/cog.json')
+        })
+        shared.multidisplay.multidisplay()
+    })
 })

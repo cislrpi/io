@@ -44,14 +44,13 @@ class DisplayContext {
     * @param {Object} io CELIO object instance
     */
     constructor(name, window_settings, io) {
-        console.log('creating obj for display context : ', name)
         this.io = io
         this.name = name
         this.displayWindows = new Map()
         this.viewObjects = new Map()
 
         if (!_.isEmpty(window_settings)) {
-            // console.log('storing window setting')
+            // storing window setting
             this.io.store.addToHash('display:windowBounds', name, JSON.stringify(window_settings))
         }
 
@@ -61,7 +60,6 @@ class DisplayContext {
         this.io.onTopic('display.removed', m => {
             // clean up objects
             let closedDisplay = m.toString()
-            // let closedWindowObjId = this.displayWindows.get(closedDisplay)
             this.displayWindows.delete(closedDisplay)
             let toRemove = []
             for (let [k, v] of this.viewObjects) {
@@ -111,23 +109,22 @@ class DisplayContext {
     }
 
     _postRequest(displayName, data) {
-        // console.log(displayName, data)
         return this.io.call('rpc-display-' + displayName, JSON.stringify(data)).then(msg => {
             return JSON.parse(msg.content.toString())
         })
     }
 
     restoreFromStore(reset = false) {
-        // console.log('getting state display:dc:' + this.name)
+        // getting state display:dc:<context_name>
         return this.io.store.getHash('display:dc:' + this.name).then(m => {
-            // console.log('from store', m, _.isEmpty(m))
+            // check if state is empty
             if (_.isEmpty(m)) {
-                console.log(`initialize display context - ${this.name} from options`)
+                // initialize display context from options
                 return this.getWindowBounds().then(bounds => {
                     return this.initialize(bounds)
                 })
             } else {
-                console.log(`restoring display context - ${this.name} from store`)
+                // restoring display context from store
                 this.displayWindows.clear()
                 this.viewObjects.clear()
 
@@ -158,15 +155,14 @@ class DisplayContext {
                 }
 
                 if (reset) {
-                    console.log('making it active and reloading')
+                    // making it active and reloading
                     return this.show().then(m => {
                         return this.reloadAll()
                     }).then(m => {
-                        console.log(m)
                         return m
                     })
                 } else {
-                    console.log('making it active ')
+                    // making it active and not reloading
                     return this.show()
                 }
             }
@@ -179,9 +175,9 @@ class DisplayContext {
      */
     getWindowBounds() {
         return this.io.store.getHashField('display:windowBounds', this.name).then(m => {
-            // console.log('display:windowBounds', m)
+            // get display:windowBounds
             if (m === null) {
-                // console.log('using display:displays for windowBounds')
+                // using display:displays for windowBounds when it is not defined in the store
                 return this.io.store.getHash('display:displays').then(x => {
                     for (let k of Object.keys(x)) {
                         x[k] = JSON.parse(x[k])
@@ -192,7 +188,7 @@ class DisplayContext {
                     return x
                 })
             } else {
-                // console.log('using  windowBounds from store')
+                // use  windowBounds from store
                 let x = JSON.parse(m)
                 for (let k of Object.keys(x)) {
                     if (x[k].displayName === undefined) { x[k].displayName = k }
@@ -251,14 +247,12 @@ class DisplayContext {
             for (let k of Object.keys(m)) {
                 disps.add(m[k].displayName)
             }
-            // console.log(disps)
             let _ps = []
             for (let k of disps) {
                 _ps.push(this._postRequest(k, cmd))
             }
             return Promise.all(_ps)
         }).then(m => {
-            // console.log('##windows shown')
             this.io.store.setState('display:activeDisplayContext', this.name)
             return m
         })
@@ -308,7 +302,6 @@ class DisplayContext {
                     disps.add(m[k].displayName)
                 }
                 let _ps = []
-                console.log('close at ', disps)
                 for (let k of disps) {
                     _ps.push(this._postRequest(k, cmd))
                 }
@@ -317,7 +310,6 @@ class DisplayContext {
                 return []
             }
         }).then(m => {
-            console.log('##closing dc')
             let map = []
             let isHidden = false
             for (var i = 0; i < m.length; i++) {
@@ -333,7 +325,7 @@ class DisplayContext {
                 this.io.store.removeFromHash('display:windowBounds', this.name)
                 this.io.store.getState('display:activeDisplayContext').then(x => {
                     if (x === this.name) {
-                        console.log('clearing up active display context')
+                        // clearing up active display context in store
                         this.io.store.del('display:activeDisplayContext')
                     }
                 })
@@ -362,8 +354,8 @@ class DisplayContext {
     initialize(options) {
         return this.show().then(() => {
             let _ps = []
+            // creating displaywindows
             for (let k of Object.keys(options)) {
-                // console.log('creating window for ', k)
                 options[k].template = 'index.html'
                 let cmd = {
                     command: 'create-window',
@@ -376,7 +368,6 @@ class DisplayContext {
             let map = {}
             for (var i = 0; i < m.length; i++) {
                 let res = m[i]
-                // console.log('init:', res)
                 map[res.windowName] = res
                 this.displayWindows.set(res.windowName, new DisplayWindow(this.io, res))
             }

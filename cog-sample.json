@@ -2,7 +2,8 @@
     "mq": {
        "url": "localhost",
        "username": "guest",
-       "password": "guest"
+       "password": "guest",
+       "exchange": "optional. default to amq.topic"
     },
     "store" : {
         "url" : "redis domain name",

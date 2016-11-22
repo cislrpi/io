@@ -8,6 +8,7 @@ module.exports = class CELIOAbstract {
         this.speaker = new Speaker(this)
         this.transcript = new Transcript(this)
         this.displayContext = new DisplayContextFactory(this)
+        this.rabbitManager = null
     }
 
     generateUUID() {

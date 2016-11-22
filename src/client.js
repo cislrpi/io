@@ -1,8 +1,9 @@
 /* eslint-env browser */
-
+require('whatwg-fetch')
 const Stomp = require('stompjs/lib/stomp').Stomp
 const CELIOAbstract = require('./CELIOAbstract')
 const Store = require('./components/clientstore')
+const RabbitManager = require('./components/clientrabbitmanager')
 
 /**
  * Callback for handling the call.
@@ -44,9 +45,10 @@ class CELIOWeb extends CELIOAbstract {
         const sepPos = config.mq.url.lastIndexOf('/')
         if (sepPos > -1) {
             config.mq.vhost = config.mq.url.substring(sepPos + 1)
-            config.mq.url = config.mq.url.substring(0, sepPos)
+            config.mq.hostname = config.mq.url.substring(0, sepPos)
         } else {
             config.mq.vhost = '/'
+            config.mq.hostname = config.mq.url
         }
 
         let protocol = 'ws'
@@ -58,14 +60,15 @@ class CELIOWeb extends CELIOAbstract {
             port = 15671
         }
 
-        this.brokerURL = `${protocol}://${config.mq.url}:${port}/ws`
+        this.brokerURL = `${protocol}://${config.mq.hostname}:${port}/ws`
         const client = Stomp.over(new WebSocket(this.brokerURL))
         client.debug = null
         this.pconn = new Promise(function (resolve, reject) {
             client.connect(config.mq.username, config.mq.password, () => resolve(client),
                 err => { console.error(err); reject(err) }, config.mq.vhost)
         })
-        this.config = config
+        this.config = new Map()
+        this.config.set('mq', config.mq)
 
         // Make the store connection
         this.store = new Store(config.store)
@@ -80,10 +83,11 @@ class CELIOWeb extends CELIOAbstract {
      * @return {Promise} A promise that resolves to the reply content.
      */
     call(queue, content, options = {}) {
+        const mq = this.config.get('mq')
         return new Promise((resolve, reject) => {
             const rpcClient = Stomp.over(new WebSocket(this.brokerURL))
             rpcClient.debug = null
-            rpcClient.connect(this.config.mq.username, this.config.mq.password, () => {
+            rpcClient.connect(mq.username, mq.password, () => {
                 options['correlation-id'] = this.generateUUID()
                 options['reply-to'] = '/temp-queue/result'
                 if (!options.expiration) {
@@ -112,7 +116,7 @@ class CELIOWeb extends CELIOAbstract {
                     };
                 }
                 rpcClient.send(`/amq/queue/${queue}`, options, content)
-            }, reject, this.config.mq.vhost)
+            }, reject, mq.vhost)
         })
     }
 
@@ -151,9 +155,9 @@ class CELIOWeb extends CELIOAbstract {
      *
      */
     onTopic(topic, handler) {
-        this.pconn.then(client => client.subscribe(`/exchange/${this.config.mq.exchange}/${topic}`, msg => {
+        this.pconn.then(client => client.subscribe(`/exchange/${this.config.get('mq').exchange}/${topic}`, msg => {
             handler(msg.body, msg.headers)
-        }))
+        }, { durable: false, 'auto-delete': true }))
     }
 
     /**
@@ -164,7 +168,14 @@ class CELIOWeb extends CELIOAbstract {
      * @return {undefined}
      */
     publishTopic(topic, content, options) {
-        this.pconn.then(client => client.send(`/exchange/${this.config.mq.exchange}/${topic}`, options, content))
+        this.pconn.then(client => client.send(`/exchange/${this.config.get('mq').exchange}/${topic}`, options, content))
+    }
+
+    getRabbitManager() {
+        if (!this.rabbitManager) {
+            this.rabbitManager = new RabbitManager(this.config.get('mq'))
+        }
+        return this.rabbitManager
     }
 }
 

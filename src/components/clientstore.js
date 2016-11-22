@@ -1,4 +1,3 @@
-require('whatwg-fetch')
 const redis = require('webdismay')
 
 module.exports = class Store {

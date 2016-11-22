@@ -6,6 +6,7 @@ const _ = require('lodash')
 const CELIOAbstract = require('./CELIOAbstract')
 const Hotspot = require('./components/hotspot')
 const Store = require('./components/store')
+const RabbitManager = require('./components/rabbitmanager')
 
 /**
  * Callback for sending replies back to the caller. Can only be used once in a RPC handler.
@@ -49,21 +50,38 @@ class CELIO extends CELIOAbstract {
 
         nconf.required(['mq:url', 'mq:username', 'mq:password', 'store:url'])
 
-        this._exchange = nconf.get('mq:exchange') ? nconf.get('mq:exchange') : 'amq.topic'
+        if (!nconf.get('mq:exchange')) {
+            nconf.set('mq:exchange', 'amq.topic')
+        }
+
+        const url = nconf.get('mq:url')
+        const sepPos = url.lastIndexOf('/')
+        if (sepPos > -1) {
+            nconf.set('mq:vhost', url.substring(sepPos + 1))
+            nconf.set('mq:hostname', url.substring(0, sepPos))
+        } else {
+            nconf.set('mq:vhost', '/')
+            nconf.set('mq:hostname', url)
+        }
 
         const ca = nconf.get('mq:ca')
-        const auth = nconf.get('mq:username') + ':' + nconf.get('mq:password') + '@'
+        const auth = nconf.get('mq:username') + ':' + nconf.get('mq:password')
 
+        let pconn = null
         if (ca) {
-            this.pconn = amqp.connect(`amqps://${auth}${nconf.get('mq:url')}`, {
+            pconn = amqp.connect(`amqps://${auth}@${url}`, {
                 ca: [fs.readFileSync(ca)]
             })
         } else {
-            this.pconn = amqp.connect(`amqp://${auth}${nconf.get('mq:url')}`)
+            pconn = amqp.connect(`amqp://${auth}@${url}`)
         }
 
         // Make a shared channel for publishing and subscribe
-        this.pch = this.pconn.then(conn => conn.createChannel())
+        /**
+         * The premade channel promise. Use this to make your own rabbitmq subscriptions
+         * @type {Promise}
+         */
+        this.pch = pconn.then(conn => conn.createChannel())
 
         /**
          * The singleton config object.
@@ -127,38 +145,43 @@ class CELIO extends CELIOAbstract {
      * @return {Promise} A promise that resolves to the reply content.
      */
     call(queue, content, options = {}) {
+        let consumerTag = null
         return new Promise((resolve, reject) => {
-            this.pconn.then(conn => conn.createChannel()
-                .then(ch => ch.assertQueue('', { exclusive: true })
-                    .then(q => {
-                        options.correlationId = this.generateUUID()
-                        options.replyTo = q.queue
-                        if (!options.expiration) {
-                            options.expiration = 3000 // default to 3 sec;
-                        }
-                        let timeoutID
-                        // Time out the response when the caller has been waiting for too long
-                        if (typeof options.expiration === 'number') {
-                            timeoutID = setTimeout(() => {
-                                reject(new Error(`Request timed out after ${options.expiration} ms.`))
-                                ch.close()
-                            }, options.expiration + 500)
-                        }
+            this.pch.then(ch => ch.assertQueue('', { exclusive: true, autoDelete: true })
+                .then(q => {
+                    options.correlationId = this.generateUUID()
+                    options.replyTo = q.queue
+                    if (!options.expiration) {
+                        options.expiration = 3000 // default to 3 sec;
+                    }
+                    let timeoutID
+                    // Time out the response when the caller has been waiting for too long
+                    if (typeof options.expiration === 'number') {
+                        timeoutID = setTimeout(() => {
+                            reject(new Error(`Request timed out after ${options.expiration} ms.`))
+                            if (consumerTag) {
+                                ch.cancel(consumerTag)
+                            }
+                        }, options.expiration + 100)
+                    }
 
-                        ch.consume(q.queue, msg => {
-                            if (msg.properties.correlationId === options.correlationId) {
-                                if (msg.properties.headers.error) {
-                                    reject(new Error(msg.properties.headers.error))
-                                } else {
-                                    resolve({content: msg.content, headers: _.merge(msg.fields, msg.properties)})
-                                }
+                    ch.consume(q.queue, msg => {
+                        if (msg.properties.correlationId === options.correlationId) {
+                            if (msg.properties.headers.error) {
+                                reject(new Error(msg.properties.headers.error))
+                            } else {
+                                resolve({content: msg.content, headers: _.merge(msg.fields, msg.properties)})
+                            }
+                            clearTimeout(timeoutID)
+                            if (consumerTag) {
+                                ch.cancel(consumerTag)
+                            }
+                        };
+                    }, { noAck: true })
+                    .then(reply => { consumerTag = reply.consumerTag })
 
-                                clearTimeout(timeoutID)
-                                ch.close()
-                            };
-                        }, { noAck: true })
-                        ch.sendToQueue(queue, Buffer.isBuffer(content) ? content : new Buffer(content), options)
-                    }))).catch(reject)
+                    ch.sendToQueue(queue, Buffer.isBuffer(content) ? content : new Buffer(content), options)
+                })).catch(reject)
         })
     }
 
@@ -172,7 +195,7 @@ class CELIO extends CELIOAbstract {
     doCall(queue, handler, noAck = true, exclusive = true) {
         this.pch.then(ch => {
             ch.prefetch(1)
-            ch.assertQueue(queue, { exclusive }).then(q => ch.consume(q.queue, request => {
+            ch.assertQueue(queue, { exclusive, autoDelete: true }).then(q => ch.consume(q.queue, request => {
                 let replyCount = 0
                 function reply(response) {
                     if (replyCount >= 1) {
@@ -202,8 +225,8 @@ class CELIO extends CELIOAbstract {
      * @param  {subscriptionCallback} handler - The callback function to process the messages from the topic.
      */
     onTopic(topic, handler) {
-        this.pch.then(ch => ch.assertQueue('', { exclusive: true })
-            .then(q => ch.bindQueue(q.queue, this._exchange, topic)
+        this.pch.then(ch => ch.assertQueue('', { exclusive: true, autoDelete: true })
+            .then(q => ch.bindQueue(q.queue, this.config.get('mq:exchange'), topic)
                 .then(() => ch.consume(q.queue, msg =>
                     handler(msg.content, _.merge(msg.fields, msg.properties)), { noAck: true }))))
     }
@@ -214,8 +237,19 @@ class CELIO extends CELIOAbstract {
      * @param  {Object} [options] - Publishing options. Leaving it undefined is fine.
      */
     publishTopic(topic, content, options) {
-        this.pch.then(ch => ch.publish(this._exchange, topic,
+        this.pch.then(ch => ch.publish(this.config.get('mq:exchange'), topic,
             Buffer.isBuffer(content) ? content : new Buffer(content), options))
+    }
+
+    /**
+     * Create a singleton RabbitManager, which allows you to monitor queue events
+     * @return {RabbitManager}
+     */
+    getRabbitManager() {
+        if (!this.rabbitManager) {
+            this.rabbitManager = new RabbitManager(this.config.get('mq'))
+        }
+        return this.rabbitManager
     }
 }
 

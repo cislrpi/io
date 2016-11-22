@@ -10,7 +10,7 @@ sudo apt-get update
 
 sudo apt-get install rabbitmq-server
 
-sudo rabbitmq-plugins enable rabbitmq_management rabbitmq_web_stomp
+sudo rabbitmq-plugins enable rabbitmq_management rabbitmq_web_stomp rabbitmq_event_exchange
 
 sudo rabbitmqctl add_user <username> <password>
 sudo rabbitmqctl set_user_tags <username> administrator

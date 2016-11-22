@@ -36,6 +36,13 @@ describe('node', function () {
         shared.store()
     })
 
+    describe('Rabbit Manager', function () {
+        beforeEach(function () {
+            this.io = new CELIO('test/cog.json')
+        })
+        shared.rabbitManager()
+    })
+
     describe('Speaker (require speaker-worker to be running)', function () {
         beforeEach(function () {
             this.io = new CELIO('test/cog.json')

@@ -19,6 +19,13 @@ describe('browser', function () {
         shared.store()
     })
 
+    describe.skip('Rabbit Manager', function () {
+        beforeEach(function () {
+            this.io = new CELIO(config)
+        })
+        shared.rabbitManager()
+    })
+
     describe('Speaker (require speaker-worker to be running)', function () {
         beforeEach(function () {
             this.io = new CELIO(config)

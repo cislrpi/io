@@ -6,9 +6,8 @@ const assert = chai.assert
 
 exports.celio = function () {
     it('should have all the core fields and methods', function () {
-        assert.isObject(this.io.config, 'config')
+        assert.ok(this.io.config, 'config')
         // for some reason, the promise doesn't pass object test
-        assert.ok(this.io.pconn, 'pconn')
         assert.isObject(this.io.speaker, 'speaker')
         assert.isObject(this.io.transcript, 'transcript')
         assert.isObject(this.io.displayContext, 'displayContext')
@@ -150,11 +149,11 @@ exports.store = function () {
     it('should subscribe to changes', function (done) {
         setTimeout(() => {
             this.io.store.setState(key, value)
-        }, 100)
+        }, 200)
 
         setTimeout(() => {
             this.io.store.setState(key2, value)
-        }, 200)
+        }, 300)
 
         let observed = false
 
@@ -280,3 +279,32 @@ exports.transcript = function () {
     })
 }
 
+exports.rabbitManager = function () {
+    it('should allow getting queues', function () {
+        const rm = this.io.getRabbitManager()
+        return assert.isFulfilled(rm.getQueues())
+    })
+
+    it('should subscribe to queue creation and deletion events', function (done) {
+        this.timeout(3000)
+        const rm = this.io.getRabbitManager()
+
+        let tempQueue = null
+        let fired = false
+        rm.onQueueCreated(queue => {
+            if (!fired) tempQueue = queue.name
+        })
+
+        rm.onQueueDeleted(queue => {
+            if (!fired) {
+                assert.equal(tempQueue, queue.name, 'delete queue name is not test')
+                done()
+                fired = true
+            }
+        })
+
+        setTimeout(() => {
+            this.io.call('test', 'hello', {expiration: 100}).catch(e => {})
+        }, 200)
+    })
+}

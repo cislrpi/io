@@ -158,23 +158,23 @@ class CELIO extends CELIOAbstract {
                     // Time out the response when the caller has been waiting for too long
                     if (typeof options.expiration === 'number') {
                         timeoutID = setTimeout(() => {
-                            reject(new Error(`Request timed out after ${options.expiration} ms.`))
                             if (consumerTag) {
                                 ch.cancel(consumerTag)
                             }
+                            reject(new Error(`Request timed out after ${options.expiration} ms.`))
                         }, options.expiration + 100)
                     }
 
                     ch.consume(q.queue, msg => {
                         if (msg.properties.correlationId === options.correlationId) {
+                            clearTimeout(timeoutID)
+                            if (consumerTag) {
+                                ch.cancel(consumerTag)
+                            }
                             if (msg.properties.headers.error) {
                                 reject(new Error(msg.properties.headers.error))
                             } else {
                                 resolve({content: msg.content, headers: _.merge(msg.fields, msg.properties)})
-                            }
-                            clearTimeout(timeoutID)
-                            if (consumerTag) {
-                                ch.cancel(consumerTag)
                             }
                         };
                     }, { noAck: true })
@@ -223,13 +223,20 @@ class CELIO extends CELIOAbstract {
      * @param  {string} topic - The topic to subscribe to. Should be of a form 'tag1.tag2...'. Supports wildcard.
      * For more information, refer to the [Rabbitmq tutorial](https://www.rabbitmq.com/tutorials/tutorial-five-javascript.html).
      * @param  {subscriptionCallback} handler - The callback function to process the messages from the topic.
+     * @return {Promise} A subscription object which can be used to unscribe by calling
+     * promise.then(subscription=>subscription.unsubscribe())
      */
     onTopic(topic, handler) {
-        this.pch.then(ch => ch.assertQueue('', { exclusive: true, autoDelete: true })
+        return this.pch.then(ch => ch.assertQueue('', { exclusive: true, autoDelete: true })
             .then(q => ch.bindQueue(q.queue, this.config.get('mq:exchange'), topic)
                 .then(() => ch.consume(q.queue, msg =>
-                    handler(msg.content, _.merge(msg.fields, msg.properties)), { noAck: true }))))
+                    handler(msg.content, _.merge(msg.fields, msg.properties)), { noAck: true })
+                    .then(subscription => {
+                        subscription.unsubscribe = () => ch.cancel(subscription.consumerTag)
+                        return subscription
+                    }))))
     }
+
     /**
      * Publish a message to the specified topic.
      * @param  {string} topic - The routing key for the message.

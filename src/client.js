@@ -103,6 +103,10 @@ class CELIOWeb extends CELIOAbstract {
                     }, options.expiration + 500)
                 }
 
+                // Based on https://github.com/rabbitmq/rabbitmq-web-stomp-examples/blob/master/priv/temp-queue.html
+                // We cannot subscribe to temp-queues, so we have to use onreceive here.
+                // My fear is that if we use the same client to issue multiple rpc calls, their onreceive function
+                // will be overriden, so I decided to create one client per call.
                 rpcClient.onreceive = msg => {
                     if (msg.headers['correlation-id'] === options['correlation-id']) {
                         if (msg.headers.error) {
@@ -155,7 +159,7 @@ class CELIOWeb extends CELIOAbstract {
      *
      */
     onTopic(topic, handler) {
-        this.pconn.then(client => client.subscribe(`/exchange/${this.config.get('mq').exchange}/${topic}`, msg => {
+        return this.pconn.then(client => client.subscribe(`/exchange/${this.config.get('mq').exchange}/${topic}`, msg => {
             handler(msg.body, msg.headers)
         }, { durable: false, 'auto-delete': true }))
     }

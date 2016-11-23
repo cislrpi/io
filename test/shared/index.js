@@ -304,7 +304,9 @@ exports.rabbitManager = function () {
         })
 
         setTimeout(() => {
-            this.io.call('test', 'hello', {expiration: 100}).catch(e => {})
+            this.io.onTopic('test').then(subscription => {
+                subscription.unsubscribe()
+            })
         }, 200)
     })
 }

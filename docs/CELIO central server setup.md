@@ -1,7 +1,7 @@
 # CELIO central server setup
 
 ## Install rabbitmq
-```
+```bash
 echo 'deb http://www.rabbitmq.com/debian/ testing main' |
         sudo tee /etc/apt/sources.list.d/rabbitmq.list
 wget -O- https://www.rabbitmq.com/rabbitmq-release-signing-key.asc |
@@ -15,7 +15,9 @@ sudo rabbitmq-plugins enable rabbitmq_management rabbitmq_web_stomp rabbitmq_eve
 sudo rabbitmqctl add_user <username> <password>
 sudo rabbitmqctl set_user_tags <username> administrator
 
-# vhost is optional. If not using it, ignore the section in bracket
+# First grant your user access to the root vhost because the rabbitmq_event_exchange uses the root vhost
+sudo rabbitmqctl set_permissions <username> ".*" ".*" ".*"
+# Do the following if you're using another vhost other than the root to send messages
 sudo rabbitmqctl set_permissions [-p </vhost>] <username> ".*" ".*" ".*"
 ```
 

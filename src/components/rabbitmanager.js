@@ -33,6 +33,10 @@ class RabbitManager {
             pconn = amqp.connect(`amqp://${auth}@${mq.hostname}`)
         }
 
+        pconn.catch(e => {
+            throw new Error(`Connection to the rabbitmq root vhost failed. Please make sure that your user ${mq.username} can access the root vhost`)
+        })
+
         // Make a shared channel for publishing and subscribe
         this.pch = pconn.then(conn => conn.createChannel())
     }

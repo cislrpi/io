@@ -81,7 +81,9 @@ class CELIO extends CELIOAbstract {
          * The premade channel promise. Use this to make your own rabbitmq subscriptions
          * @type {Promise}
          */
-        this.pch = pconn.then(conn => conn.createChannel())
+        this.pch = pconn.then(conn => conn.createChannel()).catch(e => {
+            throw new Error(`Connection to the ${nconf.get('mq:vhost')} vhost failed. Please make sure that you provided the correct rabbitmq connection parameters.`)
+        })
 
         /**
          * The singleton config object.

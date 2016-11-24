@@ -11,6 +11,15 @@ const _ = require('lodash')
  */
 
 /**
+ * Callback for handling displayContextClosed event subscriptions.
+ * @callback displayWorkerQuitHandler
+ * @param {Object} message - The message content parsed into a javascript object.
+ * @param {String} message.closedDisplay - displayName
+ * @param {Array} message.closedWindows - List of window names
+ * @param {Array} message.closedViewObjects - List of viewObject ids
+ */
+
+/**
  * @typedef {Object} viewobject_options
  * @property {String} url - url starting with http:// or https://; or local file on display-worker starting with file://<absolute path>
  * @property {String} left - left position in pixels or em
@@ -489,6 +498,10 @@ class DisplayContext {
         })
     }
 
+    /**
+     * DisplayWorkerQuit Event
+     * @param {displayWorkerQuitHandler} handler
+     */
     onDisplayWorkerQuit(handler) {
         this.displayWorkerQuitHandler = handler
     }

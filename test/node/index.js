@@ -7,7 +7,7 @@ const CELIO = require('../../src/index')
 const shared = require('../shared/')
 
 describe('node', function () {
-    describe('CELIO', function () {
+    describe.skip('CELIO', function () {
         beforeEach(function () {
             this.io = new CELIO('test/cog.json')
         })
@@ -28,7 +28,7 @@ describe('node', function () {
         })
     })
 
-    describe('Store', function () {
+    describe.skip('Store', function () {
         beforeEach(function () {
             this.io = new CELIO('test/cog.json')
         })
@@ -36,14 +36,14 @@ describe('node', function () {
         shared.store()
     })
 
-    describe('Rabbit Manager', function () {
+    describe.skip('Rabbit Manager', function () {
         beforeEach(function () {
             this.io = new CELIO('test/cog.json')
         })
         shared.rabbitManager()
     })
 
-    describe('Speaker (require speaker-worker to be running)', function () {
+    describe.skip('Speaker (require speaker-worker to be running)', function () {
         beforeEach(function () {
             this.io = new CELIO('test/cog.json')
         })
@@ -51,7 +51,7 @@ describe('node', function () {
         shared.speaker()
     })
 
-    describe('Transcript (require transcript-worker to be running and >>>>you talking<<<', function () {
+    describe.skip('Transcript (require transcript-worker to be running and >>>>you talking<<<', function () {
         beforeEach(function () {
             this.io = new CELIO('test/cog.json')
         })
@@ -66,7 +66,7 @@ describe('node', function () {
         shared.display.display()
     })
 
-    describe('Multiple Display Worker (requires two or more display-workers to be running)', function () {
+    describe.skip('Multiple Display Worker (requires two or more display-workers to be running)', function () {
         beforeEach(function () {
             this.io = new CELIO('test/cog.json')
         })

@@ -439,7 +439,7 @@ class DisplayContextFactory {
     }
 
     /**
-     * Display worker removed event
+     * Display worker removed event. Use <displayContextInstance>.onDisplayWorkerQuit instead if you want to listen to displayworker unexpected quit event.
      * @param {displayEventCallback} handler
      */
     onDisplayWorkerRemoved(handler) {

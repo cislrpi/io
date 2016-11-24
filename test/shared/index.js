@@ -292,11 +292,13 @@ exports.rabbitManager = function () {
         let tempQueue = null
         let fired = false
         rm.onQueueCreated(queue => {
+            console.log('queue created')
             if (!fired) tempQueue = queue.name
         })
 
         rm.onQueueDeleted(queue => {
             if (!fired) {
+                console.log('queue deleted')
                 assert.equal(tempQueue, queue.name, 'delete queue name is not test')
                 done()
                 fired = true

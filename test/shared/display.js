@@ -90,7 +90,7 @@ exports.display = function () {
     })
 
     it('should capture screenshot', function (done) {
-        return display_context.getDisplayWindowSync('main').capture().then(img => {
+        display_context.getDisplayWindowSync('main').capture().then(img => {
             fs.writeFileSync('temp.jpg', img)
             done()
         }).catch(e => {
@@ -112,7 +112,7 @@ exports.display = function () {
         })
     })
 
-    it('should open new display context - mars  and test content sliding', function () {
+    it('should open new display context - mars', function () {
         return this.io.displayContext.create('mars', settings.single_window_setting).then(m => {
             display_context = m
             return display_context.createViewObject({
@@ -130,35 +130,57 @@ exports.display = function () {
                 }
             })
         }).then(m => {
-            return display_context.createViewObject({
-                'url': 'https://www.google.com',
-                'position': {
-                    'grid-top': 1,
-                    'grid-left': 2
-                },
-                'width': '400px',
-                'height': '500px',
-                'uiDraggable': true,
-                'slide': {
-                    'cascade': true,
-                    'direction': 'down'
-                }
-            })
+            return assert.isTrue(m instanceof ViewObject)
+        })
+    })
+
+    it('wait for few seconds before sliding', function (done) {
+        this.timeout(2000)
+        setTimeout(function () {
+            done()
+        }, 1000)
+    })
+
+    it(' test content sliding 1 ', function () {
+        return display_context.createViewObject({
+            'url': 'https://www.google.com',
+            'position': {
+                'grid-top': 1,
+                'grid-left': 2
+            },
+            'width': '400px',
+            'height': '500px',
+            'uiDraggable': true,
+            'slide': {
+                'cascade': true,
+                'direction': 'down'
+            }
         }).then(m => {
-            return display_context.createViewObject({
-                'url': 'https://www.google.com',
-                'position': {
-                    'grid-top': 1,
-                    'grid-left': 2
-                },
-                'width': '400px',
-                'height': '500px',
-                'uiDraggable': true,
-                'slide': {
-                    'cascade': true,
-                    'direction': 'left'
-                }
-            })
+            return assert.isTrue(m instanceof ViewObject)
+        })
+    })
+
+    it('wait for few seconds before sliding', function (done) {
+        this.timeout(2000)
+        setTimeout(function () {
+            done()
+        }, 1000)
+    })
+
+    it(' test content sliding 2 ', function () {
+        return display_context.createViewObject({
+            'url': 'https://www.google.com',
+            'position': {
+                'grid-top': 1,
+                'grid-left': 2
+            },
+            'width': '400px',
+            'height': '500px',
+            'uiDraggable': true,
+            'slide': {
+                'cascade': true,
+                'direction': 'left'
+            }
         }).then(m => {
             return assert.isTrue(m instanceof ViewObject)
         })

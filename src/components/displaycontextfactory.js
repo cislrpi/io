@@ -112,12 +112,30 @@ class DisplayContextFactory {
     * @returns {Promise} A ES2015 Map object with displayNames as keys and bounds as values.
     */
     getDisplays() {
-        return this.io.store.getHash('display:displays').then(m => {
-            let map = new Map()
-            for (var k of Object.keys(m)) {
-                map.set(k, JSON.parse(m[k]))
+        return this.io.getRabbitManager().getQueues().then(qs => {
+            let availableDisplayNames = []
+            qs.forEach(queue => {
+                if (queue.state === 'running' && queue.name.indexOf('rpc-display-') > -1) {
+                    availableDisplayNames.push(queue.name)
+                }
+            })
+            // get existing context state from display workers
+            let cmd = {
+                command: 'get-display-bounds'
             }
-            return map
+            let _ps = []
+            availableDisplayNames.forEach(dm => {
+                _ps.push(this.io.call(dm, JSON.stringify(cmd)).then(msg => {
+                    return JSON.parse(msg.content.toString())
+                }))
+            })
+            return Promise.all(_ps)
+        }).then(bounds => {
+            let boundMap = new Map()
+            for (let x = 0; x < bounds.length; x++) {
+                boundMap.set(bounds[x].displayName, bounds[x].bounds)
+            }
+            return boundMap
         })
     }
 
@@ -126,7 +144,31 @@ class DisplayContextFactory {
     * @returns {Promise} An array of String containing display context names.
     */
     list() {
-        return this.io.store.getSet('display:displayContexts')
+        return this.io.getRabbitManager().getQueues().then(qs => {
+            let availableDisplayNames = []
+            qs.forEach(queue => {
+                if (queue.state === 'running' && queue.name.indexOf('rpc-display-') > -1) {
+                    availableDisplayNames.push(queue.name)
+                }
+            })
+            // get existing context state from display workers
+            let cmd = {
+                command: 'get-context-list'
+            }
+            let _ps = []
+            availableDisplayNames.forEach(dm => {
+                _ps.push(this.io.call(dm, JSON.stringify(cmd)).then(msg => {
+                    return JSON.parse(msg.content.toString())
+                }))
+            })
+            return Promise.all(_ps)
+        }).then(lists => {
+            let contextList = []
+            for (let x = 0; x < lists.length; x++) {
+                contextList = contextList.concat(lists[x])
+            }
+            return [...new Set(contextList)]
+        })
     }
 
     /**
@@ -137,7 +179,7 @@ class DisplayContextFactory {
         return this.io.store.getState('display:activeDisplayContext').then(m => {
             if (m) {
                 let _dc = new DisplayContext(m, {}, this.io)
-                return _dc.restoreFromStore().then(m => { return _dc })
+                return _dc.restoreFromDisplayWorkerStates().then(m => { return _dc })
             } else {
                 return new Promise((resolve, reject) => reject(new Error('No display context is active')))
             }
@@ -155,7 +197,7 @@ class DisplayContextFactory {
         // calling this function within multiple display workers ensures this function is executed only once.
         return this.io.store.setState('display:activeDisplayContext', display_ctx_name).then(name => {
             if (name !== display_ctx_name) {
-                return (new DisplayContext(display_ctx_name, {}, this.io)).restoreFromStore(reset).then(m => {
+                return (new DisplayContext(display_ctx_name, {}, this.io)).restoreFromDisplayWorkerStates(reset).then(m => {
                     this.io.publishTopic('display.displayContext.changed', JSON.stringify({
                         'type': 'displayContextChanged',
                         'details': {
@@ -165,15 +207,6 @@ class DisplayContextFactory {
                     }))
                     return m
                 })
-                /*
-                    io.publishTopic("display.displayContext.changed", JSON.stringify({
-                        type : "displayContextChanged",
-                        details : {
-                            displayContext : this.activeDisplayContext,
-                            lastDisplayContext : lastContext
-                        }
-                    }))
-                */
             } else {
                 // return false when the context is already active
                 return false
@@ -235,7 +268,7 @@ class DisplayContextFactory {
     */
     create(display_ctx_name, window_settings = {}) {
         let _dc = new DisplayContext(display_ctx_name, window_settings, this.io)
-        return _dc.restoreFromStore().then(m => {
+        return _dc.restoreFromDisplayWorkerStates().then(m => {
             this.io.publishTopic('display.displayContext.created', JSON.stringify({
                 type: 'displayContextCreated',
                 details: {

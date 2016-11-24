@@ -48,58 +48,47 @@ class DisplayContext {
         this.name = name
         this.displayWindows = new Map()
         this.viewObjects = new Map()
-
         if (!_.isEmpty(window_settings)) {
-            // storing window setting
-            this.io.store.addToHash('display:windowBounds', name, JSON.stringify(window_settings))
+            this.window_settings = window_settings
+            for (let k of Object.keys(this.window_settings)) {
+                this.window_settings[k].windowName = k
+            }
         }
 
-        this.io.store.addToSet('display:displayContexts', name)
-
-        this.eventHandlers = new Map()
         this.io.onTopic('display.removed', m => {
-            // clean up objects
             let closedDisplay = m.toString()
-            this.displayWindows.delete(closedDisplay)
-            let toRemove = []
-            for (let [k, v] of this.viewObjects) {
-                if (v.displayName === closedDisplay) { toRemove.push(k) }
-            }
-
-            for (let k = 0; k < toRemove.length; k++) {
-                this.viewObjects.delete(toRemove[k])
-            }
-
-            // clear up the store
-            this.io.store.getHash('display:dc:' + this.name).then(m => {
-                if (!_.isEmpty(m)) {
-                    let mobj = m.displayWinObjMap ? JSON.parse(m.displayWinObjMap) : null
-                    if (mobj) {
-                        delete mobj[closedDisplay]
-                        mobj = Object.keys(mobj).length > 0 ? mobj : null
-                    }
-                    if (mobj) {
-                        this.io.store.addToHash('display:dc:' + this.name, 'displayWinObjMap', JSON.stringify(mobj))
-                    } else {
-                        this.io.store.removeFromHash('display:dc:' + this.name, 'displayWinObjMap')
-                    }
-
-                    let vobj = m.viewObjDisplayMap ? JSON.parse(m.viewObjDisplayMap) : null
-
-                    if (vobj) {
-                        for (let k = 0; k < toRemove.length; k++) {
-                            delete vobj[toRemove[k]]
-                        }
-                        vobj = Object.keys(vobj).length > 0 ? vobj : null
-                    }
-                    if (vobj) {
-                        this.io.store.addToHash('display:dc:' + this.name, 'viewObjDisplayMap', JSON.stringify(vobj))
-                    } else {
-                        this.io.store.removeFromHash('display:dc:' + this.name, 'viewObjDisplayMap')
-                    }
-                }
-            })
+            this._clean(closedDisplay)
         })
+        this.io.getRabbitManager().onQueueDeleted((queue, headers) => {
+            if (queue.name.indexOf('rpc-display-') > -1) {
+                let closedDisplay = queue.name.replace('rpc-display-', '')
+                this._clean(closedDisplay)
+            }
+        })
+    }
+
+    _clean(closedDisplay) {
+        let closedWindows = []
+        for (let [k, v] of this.displayWindows) {
+            if (v.displayName === closedDisplay) {
+                closedWindows.push(k)
+            }
+        }
+        closedWindows.forEach(w => this.displayWindows.delete(w))
+        let vboToRemove = []
+        for (let [k, v] of this.viewObjects) {
+            if (v.displayName === closedDisplay) { vboToRemove.push(k) }
+        }
+        vboToRemove.forEach(v => this.viewObjects.delete(v))
+
+        if (this.displayWorkerQuitHandler) {
+            let obj = {
+                closedDisplay: closedDisplay,
+                closedWindows: closedWindows,
+                closedViewObjects: vboToRemove
+            }
+            this.displayWorkerQuitHandler(obj)
+        }
     }
 
     _on(topic, handler) {
@@ -114,34 +103,44 @@ class DisplayContext {
         })
     }
 
-    restoreFromStore(reset = false) {
-        // getting state display:dc:<context_name>
-        return this.io.store.getHash('display:dc:' + this.name).then(m => {
-            // check if state is empty
-            if (_.isEmpty(m)) {
-                // initialize display context from options
-                return this.getWindowBounds().then(bounds => {
-                    return this.initialize(bounds)
-                })
-            } else {
-                // restoring display context from store
-                this.displayWindows.clear()
-                this.viewObjects.clear()
-
-                if (m.displayWinObjMap) {
-                    let mobj = JSON.parse(m.displayWinObjMap)
-                    // create WindowObjects based on  windowName , window_id
-
-                    for (let k of Object.keys(mobj)) {
-                        let opts = mobj[k]
+    restoreFromDisplayWorkerStates(reset = false) {
+        // check for available display workers
+        return this.io.getRabbitManager().getQueues().then(qs => {
+            let availableDisplayNames = []
+            qs.forEach(queue => {
+                if (queue.state === 'running' && queue.name.indexOf('rpc-display-') > -1) {
+                    availableDisplayNames.push(queue.name.replace('rpc-display-', ''))
+                }
+            })
+            // get existing context state from display workers
+            let cmd = {
+                command: 'get-dw-context-windows-vbo',
+                options: {
+                    context: this.name
+                }
+            }
+            let _ps = []
+            availableDisplayNames.forEach(dm => {
+                _ps.push(this._postRequest(dm, cmd))
+            })
+            return Promise.all(_ps)
+        }).then(states => {
+             // restoring display context from display workers
+            this.displayWindows.clear()
+            this.viewObjects.clear()
+            let windowCount = 0
+            states.forEach(state => {
+                if (state.windows) {
+                    for (let k of Object.keys(state.windows)) {
+                        let opts = state.windows[k]
+                        windowCount++
                         this.displayWindows.set(k, new DisplayWindow(this.io, opts))
                     }
-
-                    // create viewObjects based on view_id, windowName
-                    if (m.viewObjDisplayMap) {
-                        let vobj = JSON.parse(m.viewObjDisplayMap)
-                        for (let k of Object.keys(vobj)) {
-                            let wn = mobj[vobj[k]]
+                }
+                if (state.viewObjects) {
+                    for (let k of Object.keys(state.viewObjects)) {
+                        let wn = this.displayWindows.get(state.viewObjects[k])
+                        if (wn) {
                             let opts = {
                                 'view_id': k,
                                 'window_id': wn.window_id,
@@ -153,18 +152,22 @@ class DisplayContext {
                         }
                     }
                 }
-
-                if (reset) {
-                    // making it active and reloading
-                    return this.show().then(m => {
-                        return this.reloadAll()
-                    }).then(m => {
-                        return m
-                    })
-                } else {
-                    // making it active and not reloading
-                    return this.show()
-                }
+            })
+            if (windowCount === 0) {
+                // initialize display context from options
+                return this.getWindowBounds().then(bounds => {
+                    return this.initialize(bounds)
+                })
+            } else if (reset) {
+                // making it active and reloading
+                return this.show().then(m => {
+                    return this.reloadAll()
+                }).then(m => {
+                    return m
+                })
+            } else {
+                // making it active and not reloading
+                return this.show()
             }
         })
     }
@@ -174,30 +177,41 @@ class DisplayContext {
      * @returns {Promise.<Object>} A map of windowNames with bounds
      */
     getWindowBounds() {
-        return this.io.store.getHashField('display:windowBounds', this.name).then(m => {
-            // get display:windowBounds
-            if (m === null) {
-                // using display:displays for windowBounds when it is not defined in the store
-                return this.io.store.getHash('display:displays').then(x => {
-                    for (let k of Object.keys(x)) {
-                        x[k] = JSON.parse(x[k])
-                        if (x[k].displayName === undefined) { x[k].displayName = k }
-                        x[k].windowName = k
-                        x[k].displayContext = this.name
+        if (this.window_settings) {
+            return Promise.resolve(this.window_settings)
+        } else {
+            return this.io.getRabbitManager().getQueues().then(qs => {
+                let availableDisplayNames = []
+                qs.forEach(queue => {
+                    if (queue.state === 'running' && queue.name.indexOf('rpc-display-') > -1) {
+                        availableDisplayNames.push(queue.name)
                     }
-                    return x
                 })
-            } else {
-                // use  windowBounds from store
-                let x = JSON.parse(m)
-                for (let k of Object.keys(x)) {
-                    if (x[k].displayName === undefined) { x[k].displayName = k }
-                    x[k].windowName = k
-                    x[k].displayContext = this.name
+                // get existing context state from display workers
+                let cmd = {
+                    command: 'get-window-bounds',
+                    options: {
+                        context: this.name
+                    }
                 }
-                return x
-            }
-        })
+                let _ps = []
+                availableDisplayNames.forEach(dm => {
+                    _ps.push(this.io.call(dm, JSON.stringify(cmd)).then(msg => {
+                        return JSON.parse(msg.content.toString())
+                    }))
+                })
+                return Promise.all(_ps)
+            }).then(bounds => {
+                let boundMap = {}
+                for (let x = 0; x < bounds.length; x++) {
+                    for (let k of Object.keys(bounds[x])) {
+                        boundMap[k] = bounds[x][k]
+                    }
+                }
+                this.window_settings = boundMap
+                return boundMap
+            })
+        }
     }
 
     /**
@@ -207,19 +221,6 @@ class DisplayContext {
      */
     getDisplayWindowSync(windowName) {
         return this.displayWindows.get(windowName)
-    }
-
-    /**
-     * gets a window object by window id
-     * @param {Number} window_id window id
-     * @param {String} displayName display's name
-     * @returns {DisplayWindow} returns an instance of DisplayWindow
-     */
-    getDisplayWindowByIdSync(window_id, displayName) {
-        for (let [k, v] of this.displayWindows) {
-            if (v.window_id === window_id && v.displayName === displayName) { return v }
-        }
-        return new Error(`Window id ${window_id} is not present`)
     }
 
     /**
@@ -320,9 +321,6 @@ class DisplayContext {
             if (!isHidden) {
                 this.displayWindows.clear()
                 this.viewObjects.clear()
-                this.io.store.del('display:dc:' + this.name)
-                this.io.store.removeFromSet('display:displayContexts', this.name)
-                this.io.store.removeFromHash('display:windowBounds', this.name)
                 this.io.store.getState('display:activeDisplayContext').then(x => {
                     if (x === this.name) {
                         // clearing up active display context in store
@@ -371,7 +369,6 @@ class DisplayContext {
                 map[res.windowName] = res
                 this.displayWindows.set(res.windowName, new DisplayWindow(this.io, res))
             }
-            this.io.store.addToHash('display:dc:' + this.name, 'displayWinObjMap', JSON.stringify(map))
             return map
         })
     }
@@ -428,7 +425,6 @@ class DisplayContext {
                 for (let [k, v] of this.viewObjects) {
                     map[k] = v.windowName
                 }
-                this.io.store.addToHash('display:dc:' + this.name, 'viewObjDisplayMap', JSON.stringify(map))
                 return vo
             })
         } else {
@@ -491,6 +487,10 @@ class DisplayContext {
                 }
             }
         })
+    }
+
+    onDisplayWorkerQuit(handler) {
+        this.displayWorkerQuitHandler = handler
     }
 }
 

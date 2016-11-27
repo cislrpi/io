@@ -2,7 +2,6 @@ const Stomp = require('stompjs/lib/stomp').Stomp
 
 module.exports = class RabbitManager {
     constructor(mq) {
-        this.mgmturl = `http://${mq.hostname}:15672/api`
         this.config = mq
         this.config.vhost = mq.vhost === '/' ? '%2f' : mq.vhost
 
@@ -10,14 +9,16 @@ module.exports = class RabbitManager {
         let port = 15674
 
         if (mq.tls) {
-            console.log('Making a secure websocket connection.')
             protocol = 'wss'
             port = 15671
+            this.mgmturl = `https://${mq.hostname}:15672/api`
+        } else {
+            this.mgmturl = `http://${mq.hostname}:15672/api`
         }
 
         this.brokerURL = `${protocol}://${mq.hostname}:${port}/ws`
         const client = Stomp.over(new WebSocket(this.brokerURL))
-        // client.debug = null
+        client.debug = null
         this.pconn = new Promise((resolve, reject) => {
             client.connect(mq.username, mq.password, () => resolve(client),
                 err => { console.error(err); reject(err) })

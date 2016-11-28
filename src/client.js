@@ -63,6 +63,26 @@ class CELIOWeb extends CELIOAbstract {
         this.brokerURL = `${protocol}://${config.mq.hostname}:${port}/ws`
         const client = Stomp.over(new WebSocket(this.brokerURL))
         client.debug = null
+
+        this.rpcInfo = new Map()
+
+        client.onreceive = msg => {
+            const callID = msg.headers['correlation-id']
+            if (callID) {
+                const rpc = this.rpcInfo.get(callID)
+                if (rpc) {
+                    if (msg.headers.error) {
+                        rpc.reject(new Error(msg.headers.error))
+                    } else {
+                        rpc.resolve({content: msg.body, headers: msg.headers})
+                    }
+
+                    clearTimeout(rpc.timeoutID)
+                    this.rpcInfo.delete(callID)
+                }
+            }
+        }
+
         this.pconn = new Promise(function (resolve, reject) {
             client.connect(config.mq.username, config.mq.password, () => resolve(client),
                 err => { console.error(err); reject(err) }, config.mq.vhost)
@@ -83,13 +103,10 @@ class CELIOWeb extends CELIOAbstract {
      * @return {Promise} A promise that resolves to the reply content.
      */
     call(queue, content, options = {}) {
-        const mq = this.config.get('mq')
         return new Promise((resolve, reject) => {
-            const rpcClient = Stomp.over(new WebSocket(this.brokerURL))
-            rpcClient.debug = null
-            rpcClient.connect(mq.username, mq.password, () => {
+            this.pconn.then(client => {
                 options['correlation-id'] = this.generateUUID()
-                options['reply-to'] = '/temp-queue/result'
+                options['reply-to'] = '/temp-queue/rpc-result'
                 if (!options.expiration) {
                     options.expiration = 3000 // default to 3 sec;
                 }
@@ -97,30 +114,14 @@ class CELIOWeb extends CELIOAbstract {
                 // Time out the response when the caller has been waiting for too long
                 if (typeof options.expiration === 'number') {
                     timeoutID = setTimeout(() => {
-                        rpcClient.onreceive = null
+                        this.rpcInfo.delete(options['correlation-id'])
                         reject(new Error(`Request timed out after ${options.expiration} ms.`))
-                        rpcClient.disconnect()
-                    }, options.expiration + 500)
+                    }, options.expiration + 100)
+                    this.rpcInfo.set(options['correlation-id'], {resolve, reject, timeoutID})
                 }
 
-                // Based on https://github.com/rabbitmq/rabbitmq-web-stomp-examples/blob/master/priv/temp-queue.html
-                // We cannot subscribe to temp-queues, so we have to use onreceive here.
-                // My fear is that if we use the same client to issue multiple rpc calls, their onreceive function
-                // will be overriden, so I decided to create one client per call.
-                rpcClient.onreceive = msg => {
-                    if (msg.headers['correlation-id'] === options['correlation-id']) {
-                        if (msg.headers.error) {
-                            reject(new Error(msg.headers.error))
-                        } else {
-                            resolve({content: msg.body, headers: msg.headers})
-                        }
-
-                        clearTimeout(timeoutID)
-                        rpcClient.disconnect()
-                    };
-                }
-                rpcClient.send(`/amq/queue/${queue}`, options, content)
-            }, reject, mq.vhost)
+                client.send(`/amq/queue/${queue}`, options, content)
+            })
         })
     }
 

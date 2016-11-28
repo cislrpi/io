@@ -152,7 +152,6 @@ class DisplayContext {
                         if (wn) {
                             let opts = {
                                 'view_id': k,
-                                'window_id': wn.window_id,
                                 'displayName': wn.displayName,
                                 'displayContext': this.name,
                                 'windowName': wn.windowName

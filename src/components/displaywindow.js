@@ -6,7 +6,6 @@ const ViewObject = require('./viewobject')
 class DisplayWindow {
     constructor(io, options) {
         this.io = io
-        this.window_id = options.window_id
         this.windowName = options.windowName
         this.displayName = options.displayName
         this.displayContext = options.displayContext
@@ -22,7 +21,7 @@ class DisplayWindow {
     }
 
     id() {
-        return this.window_id
+        return this.windowName
     }
 
     /**
@@ -33,7 +32,7 @@ class DisplayWindow {
         let cmd = {
             command: 'clear-grid',
             options: {
-                window_id: this.window_id
+                windowName: this.windowName
             }
         }
         return this._postRequest(cmd)
@@ -47,7 +46,7 @@ class DisplayWindow {
         let cmd = {
             command: 'clear-contents',
             options: {
-                window_id: this.window_id
+                windowName: this.windowName
             }
         }
         return this._postRequest(cmd)
@@ -97,7 +96,7 @@ class DisplayWindow {
      * @returns {display_rpc_result}
      */
     createUniformGrid(options) {
-        options.window_id = this.window_id
+        options.windowName = this.windowName
         let cmd = {
             command: 'create-grid',
             options: options
@@ -116,7 +115,7 @@ class DisplayWindow {
         let cmd = {
             command: 'add-to-grid',
             options: {
-                window_id: this.window_id,
+                windowName: this.windowName,
                 label: label,
                 bounds: bounds,
                 style: backgroundStyle
@@ -134,7 +133,7 @@ class DisplayWindow {
         let cmd = {
             command: 'remove-from-grid',
             options: {
-                window_id: this.window_id,
+                windowName: this.windowName,
                 label: label
             }
         }
@@ -153,7 +152,7 @@ class DisplayWindow {
         let cmd = {
             command: 'get-grid',
             options: {
-                window_id: this.window_id
+                windowName: this.windowName
             }
         }
         return this._postRequest(cmd)
@@ -167,7 +166,7 @@ class DisplayWindow {
         let cmd = {
             command: 'uniform-grid-cell-size',
             options: {
-                window_id: this.window_id
+                windowName: this.windowName
             }
         }
         return this._postRequest(cmd)
@@ -186,7 +185,7 @@ class DisplayWindow {
         let cmd = {
             command: 'cell-style',
             options: {
-                window_id: this.window_id,
+                windowName: this.windowName,
                 label: label,
                 style: js_css_style
             }
@@ -207,7 +206,7 @@ class DisplayWindow {
         let cmd = {
             command: 'set-displaywindow-font-size',
             options: {
-                window_id: this.window_id,
+                windowName: this.windowName,
                 fontSize: px_string
             }
         }
@@ -222,7 +221,7 @@ class DisplayWindow {
         let cmd = {
             command: 'hide-window',
             options: {
-                window_id: this.window_id
+                windowName: this.windowName
             }
         }
         return this._postRequest(cmd)
@@ -237,7 +236,7 @@ class DisplayWindow {
         let cmd = {
             command: 'show-window',
             options: {
-                window_id: this.window_id
+                windowName: this.windowName
             }
         }
         return this._postRequest(cmd)
@@ -251,7 +250,7 @@ class DisplayWindow {
         let cmd = {
             command: 'close-window',
             options: {
-                window_id: this.window_id
+                windowName: this.windowName
             }
         }
         return this._postRequest(cmd).then(m => {
@@ -274,7 +273,7 @@ class DisplayWindow {
         let cmd = {
             command: 'window-dev-tools',
             options: {
-                window_id: this.window_id,
+                windowName: this.windowName,
                 devTools: true
             }
         }
@@ -289,7 +288,7 @@ class DisplayWindow {
         let cmd = {
             command: 'window-dev-tools',
             options: {
-                window_id: this.window_id,
+                windowName: this.windowName,
                 devTools: false
             }
         }
@@ -304,7 +303,7 @@ class DisplayWindow {
         let cmd = {
             command: 'capture-window',
             options: {
-                window_id: this.window_id
+                windowName: this.windowName
             }
         }
         return this.io.call('rpc-display-' + this.displayName, JSON.stringify(cmd)).then(m => m.content)
@@ -338,7 +337,7 @@ class DisplayWindow {
      * @returns {ViewObject}
      */
     createViewObject(options) {
-        options.window_id = this.window_id
+        options.windowName = this.windowName
         options.displayContext = this.displayContext
         options.displayName = this.displayName
         options.windowName = this.windowName

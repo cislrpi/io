@@ -8,7 +8,6 @@ class ViewObject {
         this.io = io
         this.view_id = options.view_id
         this.displayName = options.displayName
-        this.window_id = options.window_id
         this.windowName = options.windowName
         this.displayContext = options.displayContext
     }

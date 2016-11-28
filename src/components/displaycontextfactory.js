@@ -3,14 +3,14 @@ const DisplayContext = require('./displaycontext')
 /**
  * @typedef {Object} focus_window
  * @property {string} status success or rejects with an Error message
- * @property {number} window_id Window Id, when status is success
+ * @property {string} windowName Window Name, when status is success
  * @property {string} command The command name
  * @property {string} displayName Display Name
  * @property {string} displayContext DisplayContext Name
  * @example
  * { "command" : "get-focus-window",
  *   "status" : "success",
- *   "window_id" : 23,
+ *   "windowName" : "winA",
  *   "displayName" : "main",
  *   "displayContext" : "creative"
  *  }

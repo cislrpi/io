@@ -5,7 +5,7 @@
 
 # Example
 ```js
-var CELIO = require('celio');
+var CELIO = require('@cel/celio');
 var io = new CELIO();
 io.transcript.onFinal(function(msg, headers) {
     // Do your thing here
@@ -18,16 +18,18 @@ io.transcript.onFinal(function(msg, headers) {
 
 # Installation
 The first time you use this package on a machine, you need to configure your npm to use our private registry. 
-```
-npm config set registry https://cel-npm-registry.mybluemix.net/
-npm login
+```bash
+# Run the next line only if you followed our previous instruction to set registry globally
+# npm config set registry https://registry.npmjs.org/
+npm login --registry=https://cel-npm-registry.mybluemix.net/ --scope=@cel
 # username is cel
 # password is npmregistry
+# email can be any valid email address
 ```
 
 After configuration, do:
 ```
-npm install celio
+npm install @cel/celio
 ```
 
 # Usage
@@ -54,13 +56,13 @@ Your applications can only communicate with each other if they use the same conf
 
 To use it in nodejs:
 ```js
-var CELIO = require('celio');
+var CELIO = require('@cel/celio');
 var io = new CELIO();
 ```
 
 To use it in the browser with webpack or browserify:
 ```js
-var CELIO = require('celio/lib/client');
+var CELIO = require('@cel/celio/lib/client');
 var config = require('path/to/cog.json');
 
 var io = new CELIO(config);

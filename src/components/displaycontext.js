@@ -61,6 +61,8 @@ class DisplayContext {
             this.window_settings = window_settings
             for (let k of Object.keys(this.window_settings)) {
                 this.window_settings[k].windowName = k
+                if(this.window_settings[k].displayName)
+                    this.window_settings[k].displayName = k
             }
         }
 

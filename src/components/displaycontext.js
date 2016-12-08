@@ -116,26 +116,13 @@ class DisplayContext {
 
     restoreFromDisplayWorkerStates(reset = false) {
         // check for available display workers
-        return this.io.getRabbitManager().getQueues().then(qs => {
-            let availableDisplayNames = []
-            qs.forEach(queue => {
-                if (queue.state === 'running' && queue.name.indexOf('rpc-display-') > -1) {
-                    availableDisplayNames.push(queue.name.replace('rpc-display-', ''))
-                }
-            })
-            // get existing context state from display workers
-            let cmd = {
-                command: 'get-dw-context-windows-vbo',
-                options: {
-                    context: this.name
-                }
+        let cmd = {
+            command: 'get-dw-context-windows-vbo',
+            options: {
+                context: this.name
             }
-            let _ps = []
-            availableDisplayNames.forEach(dm => {
-                _ps.push(this._postRequest(dm, cmd))
-            })
-            return Promise.all(_ps)
-        }).then(states => {
+        }
+        return this._executeInAvailableDisplays(cmd).then(states => {
              // restoring display context from display workers
             this.displayWindows.clear()
             this.viewObjects.clear()
@@ -182,36 +169,48 @@ class DisplayContext {
         })
     }
 
+    _executeInAvailableDisplays(cmd){
+        return this.io.getRabbitManager().getQueues().then(qs => {
+            let availableDisplayNames = []
+            qs.forEach(queue => {
+                if (queue.state === 'running' && queue.name.indexOf('rpc-display-') > -1) {
+                    availableDisplayNames.push(queue.name)
+                }
+            })
+            
+            let _ps = []
+            availableDisplayNames.forEach(dm => {
+                _ps.push(this.io.call(dm, JSON.stringify(cmd)).then(msg => {
+                    return JSON.parse(msg.content.toString())
+                }))
+            })
+            if(_ps.length > 0){
+                return Promise.all(_ps)
+            } else {
+                return new Promise((resolve, reject) => {
+                    reject( new Error("No display-worker found while executing : " + JSON.stringify(cmd)))
+                })
+            }
+
+        })
+    }
+
     /**
      * gets a map of windowName with bounds
      * @returns {Promise.<Object>} A map of windowNames with bounds
      */
     getWindowBounds() {
-        if (this.window_settings) {
+        if (this.window_settings && !_.isEmpty(this.window_settings)) {
             return Promise.resolve(this.window_settings)
         } else {
-            return this.io.getRabbitManager().getQueues().then(qs => {
-                let availableDisplayNames = []
-                qs.forEach(queue => {
-                    if (queue.state === 'running' && queue.name.indexOf('rpc-display-') > -1) {
-                        availableDisplayNames.push(queue.name)
-                    }
-                })
-                // get existing context state from display workers
-                let cmd = {
-                    command: 'get-window-bounds',
-                    options: {
-                        context: this.name
-                    }
+            // get existing context state from display workers
+            let cmd = {
+                command: 'get-window-bounds',
+                options: {
+                    context: this.name
                 }
-                let _ps = []
-                availableDisplayNames.forEach(dm => {
-                    _ps.push(this.io.call(dm, JSON.stringify(cmd)).then(msg => {
-                        return JSON.parse(msg.content.toString())
-                    }))
-                })
-                return Promise.all(_ps)
-            }).then(bounds => {
+            }
+            return this._executeInAvailableDisplays(cmd).then(bounds => {
                 let boundMap = {}
                 for (let x = 0; x < bounds.length; x++) {
                     for (let k of Object.keys(bounds[x])) {
@@ -252,18 +251,7 @@ class DisplayContext {
                 context: this.name
             }
         }
-
-        return this.getWindowBounds().then(m => {
-            let disps = new Set()
-            for (let k of Object.keys(m)) {
-                disps.add(m[k].displayName)
-            }
-            let _ps = []
-            for (let k of disps) {
-                _ps.push(this._postRequest(k, cmd))
-            }
-            return Promise.all(_ps)
-        }).then(m => {
+        return this._executeInAvailableDisplays(cmd).then(m => {
             this.io.store.setState('display:activeDisplayContext', this.name)
             return m
         })
@@ -280,19 +268,7 @@ class DisplayContext {
                 context: this.name
             }
         }
-        return this.getWindowBounds().then(m => {
-            let disps = new Set()
-            for (let k of Object.keys(m)) {
-                disps.add(m[k].displayName)
-            }
-            let _ps = []
-            for (let k of disps) {
-                _ps.push(this._postRequest(k, cmd))
-            }
-            return Promise.all(_ps)
-        }).then(m => {
-            return m
-        })
+        return this._executeInAvailableDisplays(cmd)
     }
 
     /**
@@ -306,21 +282,7 @@ class DisplayContext {
                 context: this.name
             }
         }
-        return this.getWindowBounds().then(m => {
-            if (m) {
-                let disps = new Set()
-                for (let k of Object.keys(m)) {
-                    disps.add(m[k].displayName)
-                }
-                let _ps = []
-                for (let k of disps) {
-                    _ps.push(this._postRequest(k, cmd))
-                }
-                return Promise.all(_ps)
-            } else {
-                return []
-            }
-        }).then(m => {
+        return this._executeInAvailableDisplays(cmd).then(m => {
             let map = []
             let isHidden = false
             for (var i = 0; i < m.length; i++) {
@@ -360,27 +322,33 @@ class DisplayContext {
     }
 
     initialize(options) {
-        return this.show().then(() => {
-            let _ps = []
-            // creating displaywindows
-            for (let k of Object.keys(options)) {
-                options[k].template = 'index.html'
-                let cmd = {
-                    command: 'create-window',
-                    options: options[k]
+        if(_.isEmpty(options)){
+            return new Promise((resolve, reject) => {
+                reject( new Error("Cannot initialize display context without proper window_settings."))
+            })
+        }else{
+            return this.show().then(() => {
+                let _ps = []
+                // creating displaywindows
+                for (let k of Object.keys(options)) {
+                    options[k].template = 'index.html'
+                    let cmd = {
+                        command: 'create-window',
+                        options: options[k]
+                    }
+                    _ps.push(this._postRequest(options[k].displayName, cmd))
                 }
-                _ps.push(this._postRequest(options[k].displayName, cmd))
-            }
-            return Promise.all(_ps)
-        }).then(m => {
-            let map = {}
-            for (var i = 0; i < m.length; i++) {
-                let res = m[i]
-                map[res.windowName] = res
-                this.displayWindows.set(res.windowName, new DisplayWindow(this.io, res))
-            }
-            return map
-        })
+                return Promise.all(_ps)
+            }).then(m => {
+                let map = {}
+                for (var i = 0; i < m.length; i++) {
+                    let res = m[i]
+                    map[res.windowName] = res
+                    this.displayWindows.set(res.windowName, new DisplayWindow(this.io, res))
+                }
+                return map
+            })
+        }
     }
 
     /**
@@ -439,15 +407,24 @@ class DisplayContext {
             })
         } else {
             return this.getWindowBounds().then(bounds => {
+                let windowNameCheck = false
                 for (let k of Object.keys(bounds)) {
                     if (bounds[k].displayName === undefined) {
                         bounds[k].displayName = k
                     }
+                    if(windowName === k)
+                        windowNameCheck = true
                     bounds[k].windowName = k
                     bounds[k].template = 'index.html'
                     bounds[k].displayContext = this.name
                 }
-                return this.initialize(bounds)
+                return new Promise( (resolve, reject) => {
+                    if(windowNameCheck){
+                        this.initialize(bounds)
+                    } else {
+                        reject( new Error("windowName : " + windowName + " is not defined by the user. Inferencing based on existing display-workers also failed") )
+                    }
+                })
             }).then(m => {
                 return this.createViewObject(options, windowName)
             })

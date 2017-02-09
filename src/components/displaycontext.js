@@ -33,7 +33,7 @@ const _ = require('lodash')
  * @property {Number} [position.grid-top] - row position
  * @property {Object} [slide] - Specifies sliding content in grid mode. Requires position object
  * @property {String} [direction] - values : 'left', 'right', 'down', 'up'
- * @property {boolean} [nodeintegration] - specifies if the guest page needs to use Electron resources
+ * @property {boolean} [nodeIntegration] - specifies if the guest page needs to use Electron resources
  * @property {Object} [deviceEmulation] - Specifies device emulation parametes. ( For all parameter options refer http://electron.atom.io/docs/api/web-contents/#contentsenabledeviceemulationparameters)
  * @property {Number} deviceEmulation.scale - Scale of emulated view inside available space (not in fit to view mode) (default: 1)
  * @property {Object} deviceEmulation.offset - Offset of the emulated view inside available space (not in fit to view mode) (default: {x: 0, y: 0})

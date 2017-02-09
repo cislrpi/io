@@ -299,14 +299,16 @@ class ViewObject {
     }
 
     /**
-     * Sets the current time of the video if the source url is video file
+     * Sets the current time in seconds of the video if the source url is video file
+     * @param {int} time
      * @returns {display_rpc_result}
      */
-    setCurrentVideoTime() {
+    setCurrentVideoTime(time) {
         let cmd = {
             command: 'set-current-video-time',
             options: {
-                view_id: this.view_id
+                view_id: this.view_id,
+                time: time
             }
         }
         return this._postRequest(cmd)

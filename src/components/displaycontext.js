@@ -40,14 +40,16 @@ const _ = require('lodash')
  * @property {Number} deviceEmulation.offset.x - Set the x axis offset from top left corner
  * @property {Number} deviceEmulation.offset.y - Set the y axis offset from top left corner
  * @property {boolean} deviceEmulation.fitToView -  Whether emulated view should be scaled down if necessary to fit into available space (default: false)
- * @property {Object} [videoOptions] - Specifies video options for url specified with local file and extension .mp4.
- * @property {String} [videoOptions.group] - Specify group name of video view objects that should maintain synchronicity (default: 'none')
+ * @property {Object} [videoOptions] - Specifies video options for url specified with local file:/// and extension .mp4.
+ * @property {String} [videoOptions.group] - Specify group name of video view objects that should maintain synchronicity
+ * @property {String} [videoOptions.groupSize] - Specify the number of video view objects that should maintain synchronicity
  * @property {boolean} [videoOptions.controls] - Specify video UI controls be present. (default: true)
  * @property {boolean} [videoOptions.content] - Specify content should play (true) or paused (false) (default: true)
  * @property {boolean} [videoOptions.muted] - Specify whether sound is muted or not (default: false)
  * @property {Number} [videoOptions.currentTime] - Specify the video play position in seconds(default 0.0)
  * @property {Number} [videoOptions.volume] - Specify the current volume from (0.0 - muted) to (1.0 - full volume) (default: 1.0)
- */
+ * @property {Number} [videoOptions.preload] - Specify the current video preload ('auto' | 'metadata' | 'none') (default: 'auto')
+*/
 
 /**
  * Class representing the DisplayContext object.

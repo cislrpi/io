@@ -227,7 +227,7 @@ class DisplayContext {
                     }
                 }
                 this.window_settings = boundMap
-                return boundMap
+                return Promise.resolve(boundMap)
             })
         }
     }

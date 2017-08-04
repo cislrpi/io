@@ -41,7 +41,8 @@ You need to have a cog.json file in your program directory, with the following f
     "url": "rabbitmq host",
     "username": "username",
     "password": "password",
-    "exchange": "optional"
+    "exchange": "optional",
+    "ca": "optional. If you use SSL connection, use this to specify where the certificate file is."
   },
   "store": {
     "url": "redis host",

@@ -147,7 +147,7 @@ class DisplayContextFactory {
         return this.io.getRabbitManager().getQueues().then(qs => {
             let availableDisplayNames = []
             qs.forEach(queue => {
-                if (queue.state === 'running' && queue.name.indexOf('rpc-display-') > -1) {
+                if ((queue.state === 'running' || queue.state === 'live') && queue.name.indexOf('rpc-display-') > -1) {
                     availableDisplayNames.push(queue.name)
                 }
             })

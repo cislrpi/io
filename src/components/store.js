@@ -23,7 +23,6 @@ class Store {
          * @type node-redis
          */
         this.client = redis.createClient(options)
-        this.subscriber = this.client.duplicate()
     }
 
     /**
@@ -130,15 +129,21 @@ class Store {
      * Subscribe to changes on a key.
      * @param  {string} key - The key.
      * @param  {} handler - Handler for the change event
+     * 
+     * @returns {any} - The subscriber. Use subsriber.unsubscribe((err, result)=>{}) to unsubscribe.
      */
     onChange(key, handler) {
         const keyChannel = `__keyspace@${this.database}__:${key}`
-        this.subscriber.subscribe(keyChannel)
-        this.subscriber.on('message', (channel, event) => {
+
+        const subscriber = this.client.duplicate()
+        subscriber.subscribe(keyChannel)
+        subscriber.on('message', (channel, event) => {
             if (channel === keyChannel) {
                 handler(event)
             }
         })
+
+        return subscriber
     }
 }
 

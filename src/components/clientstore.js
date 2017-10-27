@@ -75,6 +75,7 @@ module.exports = class Store {
         return this.client.key(key).del()
     }
 
+    // not supporting unsubscribe yet
     onChange(key, handler) {
         const xhr = new XMLHttpRequest()
         let previous_response_length = 0

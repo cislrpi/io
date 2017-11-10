@@ -1,6 +1,6 @@
 {
-  "name": "@cel/celio",
-  "version": "2.12.0",
+  "name": "@cisl/celio",
+  "version": "2.13.0",
   "description": "A framework for building distributed, multimodal applications",
   "main": "lib/index.js",
   "scripts": {

@@ -42,60 +42,79 @@ const RabbitManager = require('./components/rabbitmanager')
 class CELIO extends CELIOAbstract {
     /**
      * Create the CELIO object, and establish connections to the central message broker and store
-     * @param  {string} [configFile='cog.json'] - The file path of the cog.json file.
+     * @param  {string|object} [config] - string pointing to a file to use or an object containing settings
+     *                                    to override the default loaded file
      */
-    constructor(configFile = 'cog.json') {
+    constructor(config) {
         super()
+        configFile = 'cog.json'
+        if (!config) {
+            if (typeof config === 'object') {
+                nconf.override(config)
+            }
+            else {
+                configFile = config
+            }
+        }
+
         nconf.argv().file({ file: configFile }).env('_')
+        if (!nconf.get('mq')) {
+            nconf.required(['mq:url', 'mq:username', 'mq:password'])
+            if (!nconf.get('mq:exchange')) {
+                nconf.set('mq:exchange', 'amq.topic')
+            }
+            const url = nconf.get('mq:url')
+            const sepPos = url.lastIndexOf('/')
+            if (sepPos > -1) {
+                nconf.set('mq:vhost', url.substring(sepPos + 1))
+                nconf.set('mq:hostname', url.substring(0, sepPos))
+            } else {
+                nconf.set('mq:vhost', '/')
+                nconf.set('mq:hostname', url)
+            }
+            const ca = nconf.get('mq:ca')
+            const auth = nconf.get('mq:username') + ':' + nconf.get('mq:password')
+    
+            let pconn = null
+            if (ca) {
+                pconn = amqp.connect(`amqps://${auth}@${url}`, {
+                    ca: [fs.readFileSync(ca)]
+                })
+            } else {
+                pconn = amqp.connect(`amqp://${auth}@${url}`)
+            }
 
-        nconf.required(['mq:url', 'mq:username', 'mq:password', 'store:url'])
-
-        if (!nconf.get('mq:exchange')) {
-            nconf.set('mq:exchange', 'amq.topic')
-        }
-
-        const url = nconf.get('mq:url')
-        const sepPos = url.lastIndexOf('/')
-        if (sepPos > -1) {
-            nconf.set('mq:vhost', url.substring(sepPos + 1))
-            nconf.set('mq:hostname', url.substring(0, sepPos))
-        } else {
-            nconf.set('mq:vhost', '/')
-            nconf.set('mq:hostname', url)
-        }
-
-        const ca = nconf.get('mq:ca')
-        const auth = nconf.get('mq:username') + ':' + nconf.get('mq:password')
-
-        let pconn = null
-        if (ca) {
-            pconn = amqp.connect(`amqps://${auth}@${url}`, {
-                ca: [fs.readFileSync(ca)]
+            // Make a shared channel for publishing and subscribe
+            /**
+             * The premade channel promise. Use this to make your own rabbitmq subscriptions
+             * @type {Promise}
+             */
+            this.pch = pconn.then(conn => conn.createChannel()).catch(e => {
+                throw new Error(`Connection to the ${nconf.get('mq:vhost')} vhost failed. 
+                Please make sure that you provided the correct rabbitmq connection parameters.`)
             })
-        } else {
-            pconn = amqp.connect(`amqp://${auth}@${url}`)
+        }
+        else {
+            this.pch = null;
         }
 
-        // Make a shared channel for publishing and subscribe
-        /**
-         * The premade channel promise. Use this to make your own rabbitmq subscriptions
-         * @type {Promise}
-         */
-        this.pch = pconn.then(conn => conn.createChannel()).catch(e => {
-            throw new Error(`Connection to the ${nconf.get('mq:vhost')} vhost failed. Please make sure that you provided the correct rabbitmq connection parameters.`)
-        })
+        if (!nconf.get('store')) {
+            nconf.required(['store:url'])
+            /**
+             * The singleton store object.
+             * @type {Store}
+             */
+            this.store = new Store(nconf.get('store'))
+        }
+        else {
+            this.store = null;
+        }
 
         /**
          * The singleton config object.
          * @type {nconf}
          */
         this.config = nconf
-
-        /**
-         * The singleton store object.
-         * @type {Store}
-         */
-        this.store = new Store(nconf.get('store'))
     }
 
     /**
@@ -148,6 +167,9 @@ class CELIO extends CELIOAbstract {
      */
     call(queue, content, options = {}) {
         let consumerTag = null
+        if (!this.pch) {
+            return new Error('You must specify rabbitmq details in cog.json to use it');
+        }
         return new Promise((resolve, reject) => {
             this.pch.then(ch => ch.assertQueue('', { exclusive: true, autoDelete: true })
                 .then(q => {
@@ -195,6 +217,9 @@ class CELIO extends CELIOAbstract {
      * @param  {bool} [exclusive=true] - Whether to declare an exclusive queue. If set to false, multiple clients can share the same the workload.
      */
     doCall(queue, handler, noAck = true, exclusive = true) {
+        if (!this.pch) {
+            return new Error('You must specify rabbitmq details in cog.json to use it');
+        }
         this.pch.then(ch => {
             ch.prefetch(1)
             ch.assertQueue(queue, { exclusive, autoDelete: true }).then(q => ch.consume(q.queue, request => {
@@ -229,6 +254,9 @@ class CELIO extends CELIOAbstract {
      * promise.then(subscription=>subscription.unsubscribe())
      */
     onTopic(topic, handler) {
+        if (!this.pch) {
+            return new Error('You must specify rabbitmq details in cog.json to use it');
+        }
         return this.pch.then(ch => ch.assertQueue('', { exclusive: true, autoDelete: true })
             .then(q => ch.bindQueue(q.queue, this.config.get('mq:exchange'), topic)
                 .then(() => ch.consume(q.queue, msg =>
@@ -246,6 +274,9 @@ class CELIO extends CELIOAbstract {
      * @param  {Object} [options] - Publishing options. Leaving it undefined is fine.
      */
     publishTopic(topic, content, options) {
+        if (!this.pch) {
+            return new Error('You must specify rabbitmq details in cog.json to use it');
+        }
         this.pch.then(ch => ch.publish(this.config.get('mq:exchange'), topic,
             Buffer.isBuffer(content) ? content : new Buffer(content), options))
     }

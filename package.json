@@ -1,14 +1,12 @@
 {
   "name": "@cisl/celio",
-  "version": "2.13.0",
+  "version": "2.13.1",
   "description": "A framework for building distributed, multimodal applications",
-  "main": "lib/index.js",
+  "main": "src/index.js",
   "scripts": {
     "start": "npm install && npm prune",
     "lint": "eslint src/",
     "docs": "jsdoc -c .jsdoc",
-    "compile": "babel src/ --out-dir lib/",
-    "prepublish": "npm run compile",
     "version": "git add package.json",
     "pretest-browser": "browserify test/browser/index.js -t babelify -o test/browser/page/tests-bundle.js",
     "test-browser": "testem",
@@ -21,9 +19,13 @@
     "release-major": "npm version major"
   },
   "engines": {
-    "node": ">=4.0.0"
+    "node": ">=6.0.0"
   },
   "contributors": [
+    {
+      "name": "Matthew Peveler",
+      "email": "pevelm@rpi.edu"
+    },
     {
       "name": "Yedendra Shrinivasan",
       "email": "yshrini@us.ibm.com"
@@ -35,10 +37,10 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.ibm.com/celio/CELIO.git"
+    "url": "https://internal.cisl.rpi.edu/code/libraries/CELIO"
   },
   "publishConfig": {
-    "registry": "https://cel-npm-registry.mybluemix.net/"
+    "registry": "https://internal.cisl.rpi.edu/npm/"
   },
   "license": "UNLICENSED",
   "dependencies": {
@@ -55,9 +57,6 @@
     "whatwg-fetch": "^2.0.0"
   },
   "devDependencies": {
-    "babel-polyfill": "^6.16.0",
-    "babel-preset-es2015": "^6.18.0",
-    "babelify": "^7.3.0",
     "browserify": "^13.1.1",
     "chai": "^3.5.0",
     "chai-as-promised": "^6.0.0",

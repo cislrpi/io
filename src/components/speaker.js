@@ -1,4 +1,4 @@
-const maxSpeakDuration = 1000 * 20 // 20 seconds
+const maxSpeakDuration = 1000 * 20; // 20 seconds
 
 /**
  * Callback for handling speak event subscriptions.

@@ -2,7 +2,7 @@ const _ = require('lodash');
 const fs = require('fs');
 const nconf = require('nconf');
 const amqp = require('amqplib');
-const uuid = require('uuid');
+const uuid = require('uuid/v1');
 
 const Hotspot = require('./components/hotspot');
 const Store = require('./components/store');
@@ -73,7 +73,7 @@ class CELIO {
     this.rabbitManager = null;
 
     let configFile = 'cog.json';
-    if (!config) {
+    if (config) {
       if (typeof config === 'object') {
         nconf.override(config);
       }
@@ -83,7 +83,7 @@ class CELIO {
     }
 
     nconf.argv().file({ file: configFile }).env('_');
-    if (!nconf.get('mq')) {
+    if (nconf.get('mq')) {
       nconf.required(['mq:url', 'mq:username', 'mq:password']);
       if (!nconf.get('mq:exchange')) {
         nconf.set('mq:exchange', 'amq.topic');
@@ -125,7 +125,7 @@ class CELIO {
       this.pch = null;
     }
 
-    if (!nconf.get('store')) {
+    if (nconf.get('store')) {
       nconf.required(['store:url']);
       /**
        * The singleton store object.
@@ -302,7 +302,7 @@ class CELIO {
    * @returns {string} The unique ID.
    */
   generateUUID() {
-    return uuid.v1();
+    return uuid();
   }
 }
 

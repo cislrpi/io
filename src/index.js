@@ -1,77 +1,19 @@
 const _ = require('lodash');
 const fs = require('fs');
+const path = require('path');
 const nconf = require('nconf');
 const amqp = require('amqplib');
-const uuid = require('uuid/v1');
-
-const Hotspot = require('./components/hotspot');
-const Store = require('./components/store');
-const RabbitManager = require('./components/rabbitmanager');
-const Transcript = require('./components/transcript');
-const Speaker = require('./components/speaker');
-const DisplayContextFactory = require('./components/displaycontextfactory');
-
-/**
- * Callback for sending replies back to the caller. Can only be used once in a RPC handler.
- * @callback replyCallback
- * @param {(Buffer | Error)} response - A reply message.
- */
-
-/**
- * Send acknowledgement back to signal the caller that the call is handled.
- * @callback ackCallback
- */
-
-/**
- * Callback for handling the subscription.
- * @callback subscriptionCallback
- * @param {Buffer} content - The message content.
- * @param {Object} headers - The message headers.
- */
-
-/**
- * Callback for handling the call.
- * @callback rpcCallback
- * @param {Object} msg - A message to trigger the call.
- * @param {Buffer} msg.content - The message content.
- * @param {Object} msg.headers - The message headers.
- * @param {replyCallback} reply - The function used to send replies back to the caller.
- * @param {ackCallback} [ack] - The function used to send acknowledgement. This is only available if noAck is set to false.
- */
 
 /**
  * Class representing the CELIO object.
  */
 class CELIO {
   /**
-   * The singleton speaker object.
-   * @name CELIO#speaker
-   * @type {Speaker}
-   */
-
-  /**
-   * The singleton transcript object.
-   * @name CELIO#transcript
-   * @type {Transcript}
-   */
-
-  /**
-   * The displayContext factory.
-   * @name CELIO#displayContext
-   * @type {DisplayContextFactory}
-   */
-
-  /**
    * Create the CELIO object, and establish connections to the central message broker and store
    * @param  {string|object} [config] - string pointing to a file to use or an object containing settings
    *                  to override the default loaded file
    */
   constructor(config) {
-    this.speaker = new Speaker(this);
-    this.transcript = new Transcript(this);
-    this.displayContext = new DisplayContextFactory(this);
-    this.rabbitManager = null;
-
     let configFile = 'cog.json';
     if (config) {
       if (typeof config === 'object') {
@@ -81,82 +23,30 @@ class CELIO {
         configFile = config;
       }
     }
-
     nconf.argv().file({ file: configFile }).env('_');
-    if (nconf.get('mq')) {
-      nconf.required(['mq:url', 'mq:username', 'mq:password']);
-      if (!nconf.get('mq:exchange')) {
-        nconf.set('mq:exchange', 'amq.topic');
-      }
-      const url = nconf.get('mq:url');
-      const sepPos = url.lastIndexOf('/');
-      if (sepPos > -1) {
-        nconf.set('mq:vhost', url.substring(sepPos + 1));
-        nconf.set('mq:hostname', url.substring(0, sepPos));
-      }
-      else {
-        nconf.set('mq:vhost', '/');
-        nconf.set('mq:hostname', url);
-      }
-      const ca = nconf.get('mq:ca');
-      const auth = nconf.get('mq:username') + ':' + nconf.get('mq:password');
-
-      let pconn = null;
-      if (ca) {
-        pconn = amqp.connect(`amqps://${auth}@${url}`, {
-          ca: [fs.readFileSync(ca)]
-        });
-      }
-      else {
-        pconn = amqp.connect(`amqp://${auth}@${url}`);
-      }
-
-      // Make a shared channel for publishing and subscribe
-      /**
-       * The premade channel promise. Use this to make your own rabbitmq subscriptions
-       * @type {Promise}
-       */
-      this.pch = pconn.then(conn => conn.createChannel()).catch(e => {
-        throw new Error(`Connection to the ${nconf.get('mq:vhost')} vhost failed. 
-        Please make sure that you provided the correct rabbitmq connection parameters.`);
-      });
-    }
-    else {
-      this.pch = null;
-    }
-
-    if (nconf.get('store')) {
-      nconf.required(['store:url']);
-      /**
-       * The singleton store object.
-       * @type {Store}
-       */
-      this.store = new Store(nconf.get('store'));
-    }
-    else {
-      this.store = null;
-    }
-
-    /**
-     * The singleton config object.
-     * @type {nconf}
-     */
     this.config = nconf;
-  }
 
-  /**
-   * Create a rectangular hotspot region that observes pointer movements and clicks.
-   * @param  {Object} region - The hotspot region.
-   * @param  {number[]} region.normal - The normal unit vector ([x, y, z]) of the region.
-   * @param  {number[]} region.over - The horizontal unit vector ([x, y, z]) of the region.
-   * @param  {number[]} region.center - The center point ([x, y, z]) of the region.
-   * @param  {number} region.width - Width in mm.
-   * @param  {number} region.height - Height in mm.
-   * @param  {bool} [excludeEventsOutsideRegion=true] - whether to exclude events outside the region.
-   * @returns {Hotspot} The hotspot object.
-   */
-  createHotspot(region, excludeEventsOutsideRegion = true) {
-    return new Hotspot(this, region, excludeEventsOutsideRegion);
+    // TODO: dynamically pick up non-index.js files in this directory to include
+    // automatically
+    let preinstalled = [
+      './rabbitmq'
+    ];
+
+    if (__dirname.lastIndexOf('node_modules') > -1) {
+      let substring = __dirname.substring(0, __dirname.lastIndexOf('node_modules'));
+      let package_json = JSON.parse(fs.readFileSync(path.join(substring, 'package.json')));
+      let dependencies = Object.keys(package_json['dependencies'] || {}).concat(Object.keys(package_json['devDependencies'] || {}));
+      dependencies = dependencies.concat(preinstalled);
+      const pattern = /^(@.*\/)?celio-.+/;
+      for (let dependency of dependencies) {
+        if (pattern.test(dependency) && require.resolve(dependency)) {
+          let loaded = require(dependency);
+          if (nconf.get(loaded.config)) {
+            this[loaded.variable] = new loaded.class(this.config);
+          }
+        }
+      }
+    }
   }
 
   /**
@@ -219,10 +109,11 @@ class CELIO {
    * @param  {rpcCallback} handler - The actual function handling the call.
    * @param  {bool} [noAck=true] - Whether to acknowledge the call automatically. If set to false, the handler has to acknowledge the call manually.
    * @param  {bool} [exclusive=true] - Whether to declare an exclusive queue. If set to false, multiple clients can share the same the workload.
+   * @return {void}
    */
   doCall(queue, handler, noAck = true, exclusive = true) {
     if (!this.pch) {
-      return new Error('You must specify rabbitmq details in cog.json to use it');
+      throw new Error('You must specify rabbitmq details in cog.json to use it');
     }
     this.pch.then(ch => {
       ch.prefetch(1);
@@ -250,14 +141,6 @@ class CELIO {
     });
   }
 
-  /**
-   * Subscribe to a topic.
-   * @param  {string} topic - The topic to subscribe to. Should be of a form 'tag1.tag2...'. Supports wildcard.
-   * For more information, refer to the [Rabbitmq tutorial](https://www.rabbitmq.com/tutorials/tutorial-five-javascript.html).
-   * @param  {subscriptionCallback} handler - The callback function to process the messages from the topic.
-   * @return {Promise} A subscription object which can be used to unscribe by calling
-   * promise.then(subscription=>subscription.unsubscribe())
-   */
   onTopic(topic, handler) {
     if (!this.pch) {
       return new Error('You must specify rabbitmq details in cog.json to use it');
@@ -272,37 +155,20 @@ class CELIO {
           }))));
   }
 
-  /**
-   * Publish a message to the specified topic.
-   * @param  {string} topic - The routing key for the message.
-   * @param  {(Buffer | String | Array)} content - The message to publish.
-   * @param  {Object} [options] - Publishing options. Leaving it undefined is fine.
-   */
+
   publishTopic(topic, content, options) {
     if (!this.pch) {
-      return new Error('You must specify rabbitmq details in cog.json to use it');
+      throw new Error('You must specify rabbitmq details in cog.json to use it');
     }
-    this.pch.then(ch => ch.publish(this.config.get('mq:exchange'), topic,
-      Buffer.isBuffer(content) ? content : new Buffer(content), options));
-  }
 
-  /**
-   * Create a singleton RabbitManager, which allows you to monitor queue events
-   * @return {RabbitManager}
-   */
-  getRabbitManager() {
-    if (!this.rabbitManager) {
-      this.rabbitManager = new RabbitManager(this.config.get('mq'));
-    }
-    return this.rabbitManager;
-  }
+    this.pch.then()
 
-  /**
-   * Generate UUID.
-   * @returns {string} The unique ID.
-   */
-  generateUUID() {
-    return uuid();
+    /*
+    this.pch.then(ch => {
+      content = Buffer.isBuffer(content) ? content : new Buffer(content);
+      ch.publish(this.config.get('mq:exchange'), topic, options);
+    });
+    */
   }
 }
 

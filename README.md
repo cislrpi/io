@@ -5,8 +5,11 @@
 
 # Example
 ```js
-var CELIO = require('@cel/celio');
+var CELIO = require('@cisl/celio');
 var io = new CELIO();
+io.rabbitmq.onTopic('topic.name', (msg) => {
+  console.log(msg);
+});
 io.transcript.onFinal(function(msg, headers) {
     // Do your thing here
     var sentence = msg.result.alternatives[0].transcript;

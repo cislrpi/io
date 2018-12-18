@@ -6,16 +6,12 @@
   "scripts": {
     "start": "npm install && npm prune",
     "lint": "eslint src/",
-    "docs": "jsdoc -c .jsdoc",
+    "docs": "jsdoc -c .jsdoc"
   },
   "engines": {
     "node": ">=6.0.0"
   },
   "contributors": [
-    {
-      "name": "Matthew Peveler",
-      "email": "pevelm@rpi.edu"
-    },
     {
       "name": "Yedendra Shrinivasan",
       "email": "yshrini@us.ibm.com"
@@ -23,6 +19,10 @@
     {
       "name": "Yunfeng Zhang",
       "email": "zhangyun@us.ibm.com"
+    },
+    {
+      "name": "Matthew Peveler",
+      "email": "pevelm@rpi.edu"
     }
   ],
   "repository": {
@@ -34,10 +34,12 @@
   },
   "license": "MIT",
   "dependencies": {
-    "amqplib": "^0.5.1",
+    "amqplib": "^0.5.2",
     "lodash": "^4.17.11",
     "nconf": "^0.10.0",
-    "request": "^2.88.0"
+    "request": "^2.88.0",
+    "redis": "^2.8.0",
+    "bluebird": "^3.5.2"
   },
   "devDependencies": {
     "jsdoc": "^3.4.3"

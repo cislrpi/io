@@ -111,12 +111,12 @@ class RabbitMQ {
    * @return {void}
    */
   publishTopic(topic, content, options) {
-    if (typeof content === 'object') {
+    if (typeof content === 'object' && !Buffer.isBuffer(content)) {
       content = JSON.stringify(content);
     }
+    content = Buffer.isBuffer(content) ? content : new Buffer(content);
     this.pch.then(ch => {
-      content = Buffer.isBuffer(content) ? content : new Buffer(content);
-      ch.publish(this.config.get('mq:exchange'), topic, options);
+      ch.publish(this.config.get('mq:exchange'), topic, content, options);
     });
   }
 

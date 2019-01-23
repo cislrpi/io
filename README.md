@@ -1,129 +1,25 @@
-<h1 class="title"> CELIO </h1>
-<h2 class="site-subtitle">A framework for building distributed, multimodal applications</h2>
+CelIO
+=====
 
-# [Full API Documentation](https://pages.github.ibm.com/celio/CELIO/CELIO.html)
+A framework for building distributed, multimodal applications
 
-# Example
+## Installation
+```bash
+npm install @cisl/celio
+```
+
+## Usage
 ```js
-var CELIO = require('@cisl/celio');
-var io = new CELIO();
-io.rabbitmq.onTopic('topic.name', (msg) => {
+var CelIO = require('@cisl/celio');
+var io = new CelIO();
+io.mq.onTopic('topic.name', (msg) => {
   console.log(msg);
 });
-io.transcript.onFinal(function(msg, headers) {
-    // Do your thing here
-    var sentence = msg.result.alternatives[0].transcript;
-    if (sentence.indexOf('hello') > -1) {
-      io.speaker.speak('world');
-    }
-});
+io.mq.publishTopic('topic.name', msg);
 ```
 
-# Installation
-The first time you use this package on a machine, you need to configure your npm to use our private registry. 
-```bash
-# Run the next line only if you followed our previous instruction to set registry globally
-# npm config set registry https://registry.npmjs.org/
-npm login --registry=https://cel-npm-registry.mybluemix.net/ --scope=@cel
-# username is cel
-# password is npmregistry
-# email can be any valid email address
-```
+### Config
 
-After configuration, do:
-```
-npm install @cel/celio
-```
-
-# Usage
-## Rabbitmq and redis configuration
-You need to have a cog.json file in your program directory, with the following fields:
-```json
-{
-  "mq": {
-    "url": "rabbitmq host",
-    "username": "username",
-    "password": "password",
-    "exchange": "optional",
-    "ca": "optional. If you use SSL connection, use this to specify where the certificate file is."
-  },
-  "store": {
-    "url": "redis host",
-    "username": "optional",
-    "password": "optional"
-  }
-}
-```
-This configuration object has username and password in it, 
-so please don't share it with others and don't commit it to your repository.
-Your applications can only communicate with each other if they use the same configuration.
-
-To use it in nodejs:
-```js
-var CELIO = require('@cel/celio');
-var io = new CELIO();
-```
-
-To use it in the browser with webpack or browserify:
-```js
-var CELIO = require('@cel/celio/lib/client');
-var config = require('path/to/cog.json');
-
-var io = new CELIO(config);
-```
-
-
-# Overview
-
-## Publish and Subscribe
-The following functions are provided to publish and subscribe messages.
-### Publish
-```js
-io.publishTopic(topic, content, options);
-```
-### Subscribe
-```js
-io.onTopic(topic, function(content, headers){
-  // handle messages
-  var msg = JSON.parse(content.toString());
-});
-```
-In `publishTopic`, you can use options to specify a header for the message.
-See [amqp.node](http://www.squaremobius.net/amqp.node/channel_api.html#channel_publish) for how to use the header.
-
-The topic should have the following format `subType.minorType.majorType`.
-Our convention is to use the topic to declare the message type, and the type should be from more specific to less specific, 
-e.g., `close.final.transcript` and `wand.absolute.pointing`.
-
-To subscribe events, you can include in topic name wildcards `*` and `#`.
-`*` substitues one word, and `#` substitues multiple words.
-For example, `*.absolute.pointing` subscribes to `wand.absolute.pointing` and `lighthouse.absolute.pointing`,
-whereas `#.pointing` also subscribes to them plus other pointing events like `mouse.relative.pointing`.
-
-In `publishTopic`, the content can be of type string, Buffer, or Array. We recommand that you use JSON strings.
-
-## Remote procedural call (RPC)
-RPC is different from pub-sub.
-While pub-sub is good for event broadcasting and subscription,
-it isn't suited for request-reply patterns such as geting the webpages shown on monitor.
-For request-reply, we implemented [`io.call`](https://pages.github.ibm.com/celio/CELIO/CELIO.html#call) for sending a request,
-and [`io.doCall`](https://pages.github.ibm.com/celio/CELIO/CELIO.html#doCall) for responding to a request.
-Please check the API documentation to see their usage.
-
-## [Display](https://github.ibm.com/celio/CELIO/blob/master/docs/Display.md)
-[Display Basics](https://github.ibm.com/celio/CELIO/blob/master/docs/Display.md)
-- [DisplayContext Factory APIs](https://pages.github.ibm.com/celio/CELIO/DisplayContextFactory.html)
-- [DisplayContext APIs](https://pages.github.ibm.com/celio/CELIO/DisplayContext.html)
-- [DisplayWindow APIs](https://pages.github.ibm.com/celio/CELIO/DisplayWindow.html)
-- [ViewObject APIs](https://pages.github.ibm.com/celio/CELIO/ViewObject.html)
-
-## [Transcript](https://pages.github.ibm.com/celio/CELIO/Transcript.html)
-
-## [Speaker](https://pages.github.ibm.com/celio/CELIO/Speaker.html)
-
-## [Store](https://pages.github.ibm.com/celio/CELIO/Store.html)
-
-## Config
 The `cog.json` file is parsed and saved as a `io.config` object, so that you can query any configurations with the following function:
 ```js
 io.config.get('rootKey:nestedKey');
@@ -133,6 +29,71 @@ For environment variables, replace ":" with "_".
 You can use command line arguments to override settings in the cog.json file to temporarily switch exchanges for example.
 
 We use the [nconf](https://github.com/indexzero/nconf) to do this.
-For more information about the config object, you can read the nconf documentation. 
+For more information about the config object, you can read the nconf documentation.
 
-## [Setting up a CELIO server](https://github.ibm.com/celio/CELIO/blob/master/docs/CELIO%20central%20server%20setup.md)
+### RabbitMQ
+You need to have a cog.json file in your program directory, with the following fields:
+```json
+{
+  "mq": {
+    "url": "rabbitmq host",
+    "username": "username",
+    "password": "password",
+    "exchange": "optional",
+    "ca": "optional. If you use SSL connection, use this to specify where the certificate file is."
+  }
+}
+```
+This configuration object has username and password in it, 
+so please don't share it with others and don't commit it to your repository.
+Your applications can only communicate with each other if they use the same configuration.
+
+You can access the RabbitMQ CelIO object by doing `io.mq`.
+
+#### Usage
+Publish:
+```js
+io.mq.publishTopic(topic, content, options);
+```
+Subscribe:
+```js
+io.mq.onTopic(topic, function(content, headers){
+  // handle message
+});
+```
+In `publishTopic`, you can use options to specify a header for the message.
+See [amqp.node](http://www.squaremobius.net/amqp.node/channel_api.html#channel_publish) for how to use the header.
+
+The topic should have the following format `major_type.minor_type.command` or `major_type.command`.
+An example of this is `transcript.result.final` and `transcript.command`, where the fisrt part
+designates the module (transcript), and then the next part indicates what it's doing.
+
+When subscribing to events, you can include in topic name wildcards `*` and `#`.
+`*` substitues one word, and `#` substitues multiple words. For example, `transcript.result.*`
+subscribes to `transcript.result.final` and `transcript.result.interim`, whereas `transcript.#` subscribes
+to `transcript.result.final`, `transcript.result.interim`, and `transcript.command`.
+
+In `publishTopic`, the content can be of type string, Buffer, or Array. If the system detects an object,
+it will attempt to run `JSON.stringify` on it before sending it to RabbitMQ.
+
+In `onTopic`, we first attempt to `JSON.parse` the incoming message and return that to the user if possible,
+else we just return the message as is.
+
+#### Remote procedural call (RPC)
+RPC is different from pub-sub.
+While pub-sub is good for event broadcasting and subscription,
+it isn't suited for request-reply patterns such as geting the webpages shown on monitor.
+For request-reply, we implemented [`io.mq.call`](https://pages.github.ibm.com/celio/CELIO/CELIO.html#call) for sending a request,
+and [`io.mq.doCall`](https://pages.github.ibm.com/celio/CELIO/CELIO.html#doCall) for responding to a request.
+Please check the API documentation to see their usage.
+
+### Redis
+```json
+{
+  "store": {
+    "url": "localhost",
+    "username": "username",
+    "password": "password"
+  }
+}
+```

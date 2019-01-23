@@ -11,11 +11,10 @@ class Redis {
    */
   constructor(celio) {
     let options = celio.config.get('store');
-    let required = [];
     const components = options.url.split('/');
     this.database = (components.length > 1) ? components[1] : 0;
     // Append default port if one is not on url
-    if (!/\:[0-9]{1,5}$/.test(url)) {
+    if (!/\:[0-9]{1,5}$/.test(options.url)) {
       options.url = `${options.url}:6379`;
     }
 
@@ -154,7 +153,7 @@ class Redis {
 }
 
 module.exports = {
-    config: 'store',
-    variable: 'redis',
-    class: Redis
-  };
+  config: 'store',
+  variable: 'redis',
+  class: Redis
+};

@@ -45,7 +45,8 @@ class RabbitMQ {
 
     pconn = amqp.connect(`amqp://${auth}@${url}`, options);
     pconn.catch(e => {
-      throw new Error(`Connection to the rabbitmq root vhost failed. Please make sure that your user ${config.get('mq:username')} can access the root vhost`);
+      console.error(`Connection to the rabbitmq root vhost failed. Please make sure that your user ${config.get('mq:username')} can access the root vhost!`);
+      process.exit();
     });
 
     this.config = config;

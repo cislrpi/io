@@ -26,21 +26,23 @@ class CelIO {
     this.config = nconf;
 
     let preinstalled = [
-      './rabbitmq'
+      './rabbitmq',
+      './redis'
     ];
 
+    let dependencies = [];
     if (__dirname.lastIndexOf('node_modules') > -1) {
       let substring = __dirname.substring(0, __dirname.lastIndexOf('node_modules'));
       let package_json = JSON.parse(fs.readFileSync(path.join(substring, 'package.json')));
-      let dependencies = Object.keys(package_json['dependencies'] || {}).concat(Object.keys(package_json['devDependencies'] || {}));
-      dependencies = dependencies.concat(preinstalled);
-      const pattern = /^(@.*\/)?celio-.+/;
-      for (let dependency of dependencies) {
-        if (pattern.test(dependency) && require.resolve(dependency)) {
-          let loaded = require(dependency);
-          if (nconf.get(loaded.config)) {
-            this[loaded.variable] = new loaded.Class(this.config);
-          }
+      dependencies = Object.keys(package_json['dependencies'] || {}).concat(Object.keys(package_json['devDependencies'] || {}));
+    }
+    dependencies = dependencies.concat(preinstalled);
+    const pattern = /^(@.*\/)?celio-.+/;
+    for (let dependency of dependencies) {
+      if ((pattern.test(dependency) || preinstalled.includes(dependency)) && require.resolve(dependency)) {
+        let loaded = require(dependency);
+        if (nconf.get(loaded.config)) {
+          this[loaded.variable] = new loaded.Class(this);
         }
       }
     }

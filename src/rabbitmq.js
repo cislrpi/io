@@ -9,16 +9,11 @@ const amqp = require('amqplib');
 class RabbitMQ {
   constructor(celio) {
     let config = celio.config;
-    if (config.get('mq') === true) {
-      config.defaults({
-        'mq:url': 'localhost',
-        'mq:username': 'guest',
-        'mq:password': 'guest'
-      });
-    }
-    else {
-      config.required(['mq:url', 'mq:username', 'mq:password']);
-    }
+    config.defaults({
+      'mq:url': 'localhost',
+      'mq:username': 'guest',
+      'mq:password': 'guest'
+    });
 
     if (!config.get('mq:exchange')) {
       config.set('mq:exchange', 'amq.topic');
@@ -161,6 +156,5 @@ class RabbitMQ {
 
 module.exports = {
   config: 'mq',
-  variable: 'mq',
   Class: RabbitMQ
 };

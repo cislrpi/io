@@ -27,7 +27,8 @@ class CelIO {
 
     let preinstalled = [
       './rabbitmq',
-      './redis'
+      './redis',
+      './mongo'
     ];
 
     let dependencies = [];
@@ -42,7 +43,10 @@ class CelIO {
       if ((pattern.test(dependency) || preinstalled.includes(dependency)) && require.resolve(dependency)) {
         let loaded = require(dependency);
         if (nconf.get(loaded.config)) {
-          this[loaded.variable] = new loaded.Class(this);
+          this[loaded.config] = new loaded.Class(this);
+          if (loaded.variable) {
+            this[loaded.variable] = this[loaded.config];
+          }
         }
       }
     }
@@ -57,4 +61,4 @@ class CelIO {
   }
 }
 
-module.exports = CelIO;
+module.exports = new CelIO();

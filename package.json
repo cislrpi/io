@@ -40,6 +40,7 @@
     "request": "^2.88.0",
     "redis": "^2.8.0",
     "bluebird": "^3.5.2",
+    "mongoose": "^5.4.6",
     "uuid": "^3.3.2"
   },
   "devDependencies": {

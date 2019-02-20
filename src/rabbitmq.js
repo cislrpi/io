@@ -9,10 +9,15 @@ const amqp = require('amqplib');
 class RabbitMQ {
   constructor(celio) {
     let config = celio.config;
+    if (config.get('mq') === true) {
+      config.set('mq', {});
+    }
     config.defaults({
-      'mq:url': 'localhost',
-      'mq:username': 'guest',
-      'mq:password': 'guest'
+      'mq': {
+        'url': 'localhost',
+        'username': 'guest',
+        'password': 'guest'
+      }
     });
 
     if (!config.get('mq:exchange')) {
@@ -69,6 +74,7 @@ class RabbitMQ {
    * promise.then(subscription=>subscription.unsubscribe())
    */
   onTopic(topic, handler, options) {
+    options = options || {};
     if (!options.exchange) {
       topic = this.resolveTopicName(topic);
     }
@@ -109,7 +115,7 @@ class RabbitMQ {
     if (typeof content === 'object' && !Buffer.isBuffer(content)) {
       content = JSON.stringify(content);
     }
-    content = Buffer.isBuffer(content) ? content : new Buffer(content);
+    content = Buffer.isBuffer(content) ? content : Buffer.from(content);
     this.pch.then(ch => {
       ch.publish(this.config.get('mq:exchange'), topic, content, options);
     });

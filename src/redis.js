@@ -21,7 +21,7 @@ class Redis {
     if (!options.url.startsWith('redis://')) {
       options.url = `redis://${options.url}`;
     }
-    
+
     /**
      * The node-redis client object. Only use this if you want to use advanced redis commands.
      * @type node-redis

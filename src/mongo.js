@@ -3,9 +3,11 @@ const mongoose = require('mongoose');
 class MongoDB {
   constructor(celio) {
     celio.config.defaults({
-      'mongo:host': 'localhost',
-      'mongo:port': '27017',
-      'mongo:dbname': 'cais'
+      'mongo': {
+        'host': 'localhost',
+        'port': 27017,
+        'dbname': 'cais'
+      }
     });
 
     let conn_string = `mongodb://`;

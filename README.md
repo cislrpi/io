@@ -10,8 +10,7 @@ npm install @cisl/celio
 
 ## Usage
 ```js
-var CelIO = require('@cisl/celio');
-var io = new CelIO();
+const io = require('@cisl/celio');
 io.mq.onTopic('topic.name', (msg) => {
   console.log(msg);
 });

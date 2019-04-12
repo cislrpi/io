@@ -155,5 +155,5 @@ class Redis {
 module.exports = {
   config: 'store',
   variable: 'redis',
-  class: Redis
+  Class: Redis
 };

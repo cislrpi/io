@@ -42,9 +42,9 @@ class CelIO {
     for (let dependency of dependencies) {
       if ((pattern.test(dependency) || preinstalled.includes(dependency)) && require.resolve(dependency)) {
         let loaded = require(dependency);
-        if (nconf.get(loaded.config)) {
-          this[loaded.config] = new loaded.Class(this);
-          if (loaded.variable) {
+        if ((loaded.config === undefined && loaded.variable) || nconf.get(loaded.config)) {
+          this[loaded.config || loaded.variable] = new loaded.Class(this);
+          if (loaded.config && loaded.variable) {
             this[loaded.variable] = this[loaded.config];
           }
         }

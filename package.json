@@ -1,6 +1,6 @@
 {
   "name": "@cisl/celio",
-  "version": "3.0.0",
+  "version": "3.0.3",
   "description": "A framework for building distributed, multimodal applications",
   "main": "src/index.js",
   "scripts": {
@@ -42,8 +42,5 @@
     "bluebird": "^3.5.2",
     "mongoose": "^5.4.6",
     "uuid": "^3.3.2"
-  },
-  "devDependencies": {
-    "jsdoc": "^3.4.3"
   }
 }

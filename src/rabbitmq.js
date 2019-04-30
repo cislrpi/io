@@ -55,6 +55,7 @@ class RabbitMQ {
     this.mgmturl = `http://${auth}@${config.get('mq:hostname')}:15672/api`;
     this.vhost = config.get('mq:vhost') === '/' ? '%2f' : config.get('mq:vhost');
     this.prefix = config.get('mq:prefix');
+    this.io = celio;
   }
 
   resolveTopicName(topic_name) {
@@ -136,43 +137,52 @@ class RabbitMQ {
     }
     return new Promise((resolve, reject) => {
       this.pch.then(ch => {
-        return ch.assertQueue('', { exclusive: true, autoDelete: true })
-          .then(q => {
-            options.correlationId = this.generateUUID();
-            options.replyTo = q.queue;
-            if (!options.expiration) {
-              // default to 3 sec
-              options.expiration = 3000;
-            }
-            let timeoutID;
-            // Time out the response when the caller has been waiting for too long
-            if (typeof options.expiration === 'number') {
-              timeoutID = setTimeout(() => {
-                if (consumerTag) {
-                  ch.cancel(consumerTag);
-                }
-                reject(new Error(`Request timed out after ${options.expiration} ms.`));
-              }, options.expiration + 100);
-            }
+        return ch.assertQueue('', {
+          exclusive: true, autoDelete: true
+        }).then(q => {
+          options.correlationId = this.io.generateUUID();
+          options.replyTo = q.queue;
+          if (!options.expiration) {
+            // default to 3 sec
+            options.expiration = 3000;
+          }
+          let timeoutID;
+          // Time out the response when the caller has been waiting for too long
+          if (typeof options.expiration === 'number') {
+            timeoutID = setTimeout(() => {
+              if (consumerTag) {
+                ch.cancel(consumerTag);
+              }
+              reject(new Error(`Request timed out after ${options.expiration} ms.`));
+            }, options.expiration + 100);
+          }
 
-            ch.consume(q.queue, msg => {
-              if (msg.properties.correlationId === options.correlationId) {
-                clearTimeout(timeoutID);
-                if (consumerTag) {
-                  ch.cancel(consumerTag);
-                }
-                if (msg.properties.headers.error) {
-                  reject(new Error(msg.properties.headers.error));
-                }
-                else {
-                  resolve({content: msg.content, headers: _.merge(msg.fields, msg.properties)});
-                }
-              };
-            }, { noAck: true })
-              .then(reply => { consumerTag = reply.consumerTag; });
-
-            ch.sendToQueue(queue, Buffer.isBuffer(content) ? content : new Buffer(content), options);
+          ch.consume(q.queue, msg => {
+            if (msg.properties.correlationId === options.correlationId) {
+              clearTimeout(timeoutID);
+              if (consumerTag) {
+                ch.cancel(consumerTag);
+              }
+              if (msg.properties.headers.error) {
+                reject(new Error(msg.properties.headers.error));
+              }
+              else {
+                resolve({content: msg.content, headers: _.merge(msg.fields, msg.properties)});
+              }
+            };
+          },
+          {
+            noAck: true
+          }).then(reply => {
+            consumerTag = reply.consumerTag;
+          }).catch(err => {
+            console.error(err);
           });
+
+          ch.sendToQueue(queue, Buffer.isBuffer(content) ? content : Buffer.from(content), options);
+        }).catch(err => {
+          console.error(err);
+        });
       }).catch(reject);
     });
   }
@@ -201,7 +211,7 @@ class RabbitMQ {
             if (response instanceof Error) {
               ch.sendToQueue(
                 request.properties.replyTo,
-                new Buffer(''),
+                Buffer.from(''),
                 {
                   correlationId: request.properties.correlationId,
                   headers: { error: response.message }
@@ -211,7 +221,7 @@ class RabbitMQ {
             else {
               ch.sendToQueue(
                 request.properties.replyTo,
-                Buffer.isBuffer(response) ? response : new Buffer(response),
+                Buffer.isBuffer(response) ? response : Buffer.from(response),
                 {
                   correlationId: request.properties.correlationId
                 }
@@ -234,7 +244,6 @@ class RabbitMQ {
       });
     });
   }
-
 
   /**
    * Get a list of queues declared in the rabbitmq server.

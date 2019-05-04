@@ -13,10 +13,12 @@ class RabbitMQ {
       config.set('mq', {});
     }
     config.defaults({
-      'mq': {
-        'url': 'localhost',
-        'username': 'guest',
-        'password': 'guest'
+      store: {
+        mq: {
+          url: 'localhost',
+          username: 'guest',
+          password: 'guest'
+        }
       }
     });
 
@@ -272,7 +274,9 @@ class RabbitMQ {
    * @param  {queueEventCallback} handler - Callback to handle the event.
    */
   onQueueDeleted(handler) {
-    this.onTopic('queue.deleted', handler, {exchange: 'amq.rabbitmq.event'});
+    this.onTopic('queue.deleted', (_, fields) => {
+      handler(fields.headers, fields);
+    });
   }
 
   /**
@@ -280,7 +284,9 @@ class RabbitMQ {
    * @param  {queueEventCallback} handler - Callback to handle the event.
    */
   onQueueCreated(handler) {
-    this.onTopic('queue.created', handler, {exchange: 'amq.rabbitmq.event'});
+    this.onTopic('queue.deleted', (_, fields) => {
+      handler(fields.headers, fields);
+    });
   }
 }
 

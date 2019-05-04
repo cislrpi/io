@@ -2,11 +2,16 @@ const mongoose = require('mongoose');
 
 class MongoDB {
   constructor(celio) {
+    if (celio.config.get('mongo') === true) {
+      celio.config.set('mongo', {});
+    }
     celio.config.defaults({
-      'mongo': {
-        'host': 'localhost',
-        'port': 27017,
-        'dbname': 'cais'
+      store: {
+        mongo: {
+          host: 'localhost',
+          port: 27017,
+          dbname: 'cais'
+        }
       }
     });
 

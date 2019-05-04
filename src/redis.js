@@ -10,11 +10,24 @@ class Redis {
    * @param {object} options Options to configure Redis
    */
   constructor(celio) {
-    let options = celio.config.get('store');
-    const components = options.url.split('/');
+    let config = celio.config;
+    if (config.get('store') === true) {
+      config.set('store', {});
+    }
+    config.defaults({
+      store: {
+        store: {
+          url: 'redis://localhost:6379'
+        }
+      }
+    });
+
+    let options = config.get('store');
+    let start = options.url.startsWith('redis://') ? 8 : 0;
+    const components = options.url.substring(start).split('/');
     this.database = (components.length > 1) ? components[1] : 0;
     // Append default port if one is not on url
-    if (!/\:[0-9]{1,5}$/.test(options.url)) {
+    if (!/:[0-9]{1,5}/.test(options.url)) {
       options.url = `${options.url}:6379`;
     }
 

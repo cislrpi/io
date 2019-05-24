@@ -284,7 +284,7 @@ class RabbitMQ {
    * @param  {queueEventCallback} handler - Callback to handle the event.
    */
   onQueueCreated(handler) {
-    this.onTopic('queue.deleted', (_, fields) => {
+    this.onTopic('queue.created', (_, fields) => {
       handler(fields.headers, fields);
     });
   }

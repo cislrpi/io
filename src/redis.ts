@@ -1,16 +1,30 @@
-const redis = require('redis');
-const bluebird = require('bluebird');
-bluebird.promisifyAll(redis);
+import * as redis from 'redis';
+import Bluebird from 'bluebird';
+import { Io } from './index';
 
-/**
- * Class representing the Store object.
- */
-class Redis {
-  /**
-   * @param {object} options Options to configure Redis
-   */
-  constructor(celio) {
-    let config = celio.config;
+// Declare the types we need from the result of doing 
+// Bluebird.promisfyAll on the redis.RedisClient
+declare module 'redis' {
+  export interface RedisClient extends NodeJS.EventEmitter {
+    hsetAsync(key: string, field: string, value: any): Promise<number>;
+    hgetallAsync(key: string): Promise<any>;
+    hgetAsync(key: string, field: string): Promise<any>;
+    hdelAsync(key: string, field: string): Promise<number>;
+    saddAsync(key: string, values: string[]): Promise<number>;
+    smembersAsync(key: string): Promise<string[]>;
+    sremAsync(key: string, value: any): Promise<number>;
+    getsetAsync(key: string, value: any): Promise<any>;
+    getAsync(key: string): Promise<any | null>;
+    delAsync(key: string): Promise<any>;
+  }
+}
+
+export class Redis {
+  public database: string | number;
+  public client: redis.RedisClient;
+
+  public constructor(io: Io) {
+    let config = io.config;
     if (config.get('store') === true) {
       config.set('store', {});
     }
@@ -39,8 +53,9 @@ class Redis {
      * The node-redis client object. Only use this if you want to use advanced redis commands.
      * @type node-redis
      */
-    this.client = redis.createClient(options);
-    this.client.on('error', (err) => {
+    const oldClient = redis.createClient(options);
+    this.client = Bluebird.promisifyAll(oldClient) as redis.RedisClient;
+    this.client.on('error', (err: string): void => {
       throw new Error(err);
     });
     this.client.select(this.database);
@@ -53,7 +68,7 @@ class Redis {
    * @param  {any} value - The value to set.
    * @returns {Promise} The promise that resolves to 1 or 0.
    */
-  addToHash(key, field, value) {
+  public addToHash(key: string, field: string, value: any): Promise<number> {
     return this.client.hsetAsync(key, field, value);
   }
 
@@ -62,8 +77,8 @@ class Redis {
    * @param  {string} key - The hash key.
    * @returns {Promise} Empty object if the key doesn't exist or the hash object.
    */
-  getHash(key) {
-    return this.client.hgetallAsync(key).then(r => {
+  public getHash(key: string): Promise<any> {
+    return this.client.hgetallAsync(key).then((r: any): any => {
       return (r === null) ? {} : r;
     });
   }
@@ -74,7 +89,7 @@ class Redis {
    * @param  {string} field - The field to retrieve.
    * @returns {Promise} The field value.
    */
-  getHashField(key, field) {
+  public getHashField(key: string, field: string): Promise<any> {
     return this.client.hgetAsync(key, field);
   }
 
@@ -84,7 +99,7 @@ class Redis {
    * @param  {string} field - The field to remove.
    * @returns {Promise} Resolves to 1 if succeed.
    */
-  removeFromHash(key, field) {
+  public removeFromHash(key: string, field: string): Promise<number> {
     return this.client.hdelAsync(key, field);
   }
 
@@ -94,7 +109,7 @@ class Redis {
    * @param  {...string} values - The values to add.
    * @returns {Promise} Resolves to the number of values added.
    */
-  addToSet(key, ...values) {
+  public addToSet(key: string, ...values: string[]): Promise<number> {
     return this.client.saddAsync(key, values);
   }
 
@@ -103,7 +118,7 @@ class Redis {
    * @param  {string} key - The set key.
    * @returns {Promise} Resolves to an array of values.
    */
-  getSet(key) {
+  public getSet(key: string): Promise<string[]> {
     return this.client.smembersAsync(key);
   }
 
@@ -113,7 +128,7 @@ class Redis {
    * @param  {any} val - The value to remove.
    * @returns {Promise} Resolves to 1 if succeed.
    */
-  removeFromSet(key, val) {
+  public removeFromSet(key: string, val: any): Promise<number> {
     return this.client.sremAsync(key, val);
   }
 
@@ -123,7 +138,7 @@ class Redis {
    * @param  {any} value - The value.
    * @returns {Promise} - returns the old value of the key
    */
-  setState(key, value) {
+  public setState(key: string, value: any): Promise<any> {
     return this.client.getsetAsync(key, value);
   }
 
@@ -132,7 +147,7 @@ class Redis {
    * @param  {string} key - The key.
    * @returns {Promise} Resolves to the value or null if non exists.
    */
-  getState(key) {
+  public getState(key: string): Promise<any | null> {
     return this.client.getAsync(key);
   }
 
@@ -141,7 +156,7 @@ class Redis {
    * @param  {string} key - The key.
    * @returns {Promise} Resolves to 1 if succeed.
    */
-  del(key) {
+  public del(key: string): Promise<number> {
     return this.client.delAsync(key);
   }
 
@@ -151,12 +166,12 @@ class Redis {
    * @param  {function} handler - Callback function to handle the change event
    * @returns {any} - The subscriber. Use subsriber.unsubscribe((err, result)=>{}) to unsubscribe.
    */
-  onChange(key, handler) {
+  public onChange(key: string, handler: Function): any {
     const keyChannel = `__keyspace@${this.database}__:${key}`;
 
     const subscriber = this.client.duplicate();
     subscriber.subscribe(keyChannel);
-    subscriber.on('message', (channel, event) => {
+    subscriber.on('message', (channel: string, event): void => {
       if (channel === keyChannel) {
         handler(event);
       }
@@ -164,9 +179,3 @@ class Redis {
     return subscriber;
   }
 }
-
-module.exports = {
-  config: 'store',
-  variable: 'redis',
-  Class: Redis
-};

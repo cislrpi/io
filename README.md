@@ -1,7 +1,7 @@
-CelIO
+@cisl/io
 =====
 
-A framework for building distributed, multimodal applications
+A framework for building distributed applications and the coolest of Jupiter's moons.
 
 ## Installation
 ```bash
@@ -9,15 +9,21 @@ npm install @cisl/celio
 ```
 
 ## Usage
+NodeJS
 ```js
-const io = require('@cisl/celio');
-io.mq.onTopic('topic.name', (msg) => {
-  console.log(msg);
-});
-io.mq.publishTopic('topic.name', msg);
+const io = require('@cisl/io').io;
+// or
+const Io = require('@cisl/io').Io;
+const io = new Io();
 ```
 
-### Config
+TypeScript:
+```typescript
+import { io, Io } from '@cisl/io';
+const otherIo = new Io();
+```
+
+### Configuration
 
 The `cog.json` file is parsed and saved as a `io.config` object, so that you can query any configurations with the following function:
 ```js
@@ -31,15 +37,15 @@ We use the [nconf](https://github.com/indexzero/nconf) to do this.
 For more information about the config object, you can read the nconf documentation.
 
 ### RabbitMQ
-You need to have a cog.json file in your program directory, with the following fields:
+RabbitMQ requires the `mq` value to be set, where `true` will use the defaults below. Any field not set will use these defaults:
 ```json
 {
   "mq": {
-    "url": "rabbitmq host",
-    "username": "username",
-    "password": "password",
-    "exchange": "optional",
-    "ca": "optional. If you use SSL connection, use this to specify where the certificate file is."
+    "url": "localhost",
+    "username": "guest",
+    "password": "guest",
+    "exchange": "amq.topic",
+    "ca": null
   }
 }
 ```
@@ -47,7 +53,7 @@ This configuration object has username and password in it,
 so please don't share it with others and don't commit it to your repository.
 Your applications can only communicate with each other if they use the same configuration.
 
-You can access the RabbitMQ CelIO object by doing `io.mq`.
+You can access the RabbitMQ CelIO object by using `io.mq`.
 
 #### Usage
 Publish:
@@ -93,6 +99,15 @@ Please check the API documentation to see their usage.
     "url": "localhost",
     "username": "username",
     "password": "password"
+  }
+}
+```
+
+### Mongo
+```json
+{
+  "mongo": {
+    "host": ""
   }
 }
 ```

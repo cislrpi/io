@@ -1,12 +1,13 @@
 {
-  "name": "@cisl/celio",
-  "version": "3.0.4",
+  "name": "@cisl/io",
+  "version": "1.0.0-dev1",
   "description": "A framework for building distributed, multimodal applications",
-  "main": "src/index.js",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
-    "start": "npm install && npm prune",
     "lint": "eslint src/",
-    "docs": "jsdoc -c .jsdoc"
+    "build": "tsc",
+    "watch": "tsc -w"
   },
   "engines": {
     "node": ">=6.0.0"
@@ -27,7 +28,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://internal.cisl.rpi.edu/code/libraries/CELIO"
+    "url": "https://internal.cisl.rpi.edu/code/libraries/node/cisl/io"
   },
   "publishConfig": {
     "registry": "https://internal.cisl.rpi.edu/npm/"
@@ -35,13 +36,27 @@
   "license": "MIT",
   "dependencies": {
     "amqplib": "^0.5.2",
-    "lodash": "^4.17.11",
-    "nconf": "^0.10.0",
-    "request": "^2.88.0",
-    "redis": "^2.8.0",
     "bluebird": "^3.5.2",
+    "lodash": "^4.17.11",
     "mongoose": "^5.4.6",
+    "nconf": "^0.10.0",
+    "redis": "^2.8.0",
+    "request": "^2.88.0",
     "uuid": "^3.3.2"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "@types/amqplib": "^0.5.12",
+    "@types/bluebird": "^3.5.27",
+    "@types/lodash": "^4.14.132",
+    "@types/mongoose": "^5.5.3",
+    "@types/nconf": "^0.10.0",
+    "@types/node": "^12.0.3",
+    "@types/redis": "^2.8.13",
+    "@types/request": "^2.48.1",
+    "@types/uuid": "^3.4.4",
+    "@typescript-eslint/eslint-plugin": "^1.9.0",
+    "@typescript-eslint/parser": "^1.9.0",
+    "eslint": "^5.16.0",
+    "typescript": "^3.5.1"
+  }
 }

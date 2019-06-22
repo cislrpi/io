@@ -69,7 +69,8 @@ export class RabbitMQ {
     }
 
     pconn = amqplib.connect(`amqp://${auth}@${url}`, options);
-    pconn.catch((_): void => {
+    pconn.catch((err): void => {
+      console.error(`RabbitMQ error: ${err}`);
       console.error(`Connection to the rabbitmq root vhost failed. Please make sure that your user ${config.get('mq:username')} can access the root vhost!`);
       process.exit(1);
     });
@@ -83,7 +84,7 @@ export class RabbitMQ {
     this.io = io;
   }
 
-  public resolveTopicName(topic_name: string): string {
+  private resolveTopicName(topic_name: string): string {
     if (this.prefix) {
       topic_name = `${this.prefix}.${topic_name}`;
     }
@@ -175,7 +176,7 @@ export class RabbitMQ {
    * @param  {number} options.expiration=3000 - The timeout duration of the call.
    * @return {Promise} A promise that resolves to the reply content.
    */
-  public call(queue: string, content: Buffer | string, options: any = {}): Promise<any> {
+  public publishRpc(queue: string, content: Buffer | string, options: any = {}): Promise<any> {
     let consumerTag: string | null = null;
     return new Promise((resolve, reject): void => {
       this.pch.then((ch: amqplib.Channel): Promise<void> => {
@@ -238,8 +239,8 @@ export class RabbitMQ {
     });
   }
 
-  public callJson(queue: string, content: any, options: any = {}): Promise<any> {
-    return this.call(queue, JSON.stringify(content), options);
+  public publishRpcJson(queue: string, content: any, options: any = {}): Promise<any> {
+    return this.publishRpc(queue, JSON.stringify(content), options);
   }
   
   /**
@@ -248,7 +249,7 @@ export class RabbitMQ {
    * @param  {rpcCallback} handler - The actual function handling the call.
    * @param  {bool} [exclusive=true] - Whether to declare an exclusive queue. If set to false, multiple clients can share the same the workload.
    */
-  public doCall(queue: string, handler: DoCallCallback, exclusive: boolean = true): void {
+  public onRpc(queue: string, handler: DoCallCallback, exclusive: boolean = true): void {
     this.pch.then((ch: amqplib.Channel): void => {
       ch.prefetch(1);
       ch.assertQueue(queue, { exclusive, autoDelete: true }).then((q: amqplib.Replies.AssertQueue): Promise<amqplib.Replies.Consume> => {
@@ -299,8 +300,8 @@ export class RabbitMQ {
     });
   }
 
-  public doCallString(queue: string, handler: DoCallStringCallback, exclusive: boolean = true): void {
-    this.doCall(
+  public onRpcString(queue: string, handler: DoCallStringCallback, exclusive: boolean = true): void {
+    this.onRpc(
       queue,
       (content, headers, reply, msg): void => {
         handler(
@@ -316,8 +317,8 @@ export class RabbitMQ {
     );
   }
 
-  public doCallJson(queue: string, handler: DoCallJsonCallback, exclusive: boolean = true): void {
-    this.doCall(
+  public onRpcJson(queue: string, handler: DoCallJsonCallback, exclusive: boolean = true): void {
+    this.onRpc(
       queue,
       (content, headers, reply, msg): void => {
         handler(
@@ -359,8 +360,8 @@ export class RabbitMQ {
    * Subscribe to queue deletion events
    * @param  {queueEventCallback} handler - Callback to handle the event.
    */
-  public onQueueDeleted(handler: Function): void {
-    this.onTopic('queue.deleted', (_: any, fields: any): void => {
+  public onQueueDeleted(handler: (headers: amqplib.MessagePropertyHeaders, fields: FieldsAndProperties) => void): void {
+    this.onTopic('queue.deleted', (_, fields): void => {
       handler(fields.headers, fields);
     });
   }
@@ -369,8 +370,8 @@ export class RabbitMQ {
    * Subscribe to queue creation events
    * @param  {queueEventCallback} handler - Callback to handle the event.
    */
-  public onQueueCreated(handler: Function): void {
-    this.onTopic('queue.created', (_: any, fields: any): void => {
+  public onQueueCreated(handler: (headers: amqplib.MessagePropertyHeaders, fields: FieldsAndProperties) => void): void {
+    this.onTopic('queue.created', (_, fields): void => {
       handler(fields.headers, fields);
     });
   }

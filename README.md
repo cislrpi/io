@@ -1,7 +1,8 @@
-@cisl/io
-=====
+<div style="text-align:center"><img src="img/moon.svg" style="width: 200px" /></div>
 
-A framework for building distributed applications and the coolest of Jupiter's moons.
+# @cisl/io
+
+A framework for building distributed applications and the coolest of Jupiter's moons. What the heck
 
 ## Installation
 ```bash
@@ -56,16 +57,54 @@ Your applications can only communicate with each other if they use the same conf
 You can access the RabbitMQ CelIO object by using `io.mq`.
 
 #### Usage
-Publish:
-```js
-io.mq.publishTopic(topic, content, options);
+```typescript
+type FieldsAndProperties = amqplib.ConsumeMessageFields & amqplib.MessageProperties;
+
+type OnTopicCallback = (content: Buffer, headers: FieldsAndProperties, msg: amqplib.ConsumeMessage) => void;
+type OnTopicStringCallback = (content: string, headers: FieldsAndProperties, msg: amqplib.ConsumeMessage) => void;
+type OnTopicJsonCallback = (content: any, headers: FieldsAndProperties, msg: amqplib.ConsumeMessage) => void;
+
+type ReplyCallback = (content: Buffer) => void;
+type ReplyStringCallback = (content: string) => void;
+type ReplyJsonCallback = (content: any) => void;
+
+type DoCallCallback = (content: Buffer, headers: FieldsAndProperties, reply: ReplyCallback, msg: amqplib.ConsumeMessage) => void;
+type DoCallStringCallback = (content: string, headers: FieldsAndProperties, reply: ReplyStringCallback, msg: amqplib.ConsumeMessage) => void;
+type DoCallJsonCallback = (content: any, headers: FieldsAndProperties, reply: ReplyJsonCallback, msg: amqplib.ConsumeMessage) => void;
+
+// Publish to a RabbitMQ topic on the configured exchange
+io.mq.publishTopic(topic: string, content: Buffer | string, options?: any): void
+// Puglish to a RabbitMQ topic on the configured exchange. Any content is run through JSON.stringify.
+io.mq.publishTopicJson(topic: string, content: any, options: any): void
+
+// Listen to a topic for any new content, returned as Buffer
+io.mq.onTopic(topic: string, handler: OnTopicCallback, options: any = {}): Promise<any>
+// Listen to a topic for any new content, returned as a string
+io.mq.onTopicString(topic: string, handler: OnTopicStringCallback, options: any = {}): Promise<any>
+// Listen to a topic for any new content, returned as a JSON object
+io.mq.onTopicJson(topic: string, handler: OnTopicJsonCallback, options: any = {}): Promise<any>
+
+// Publish to a RPC queue, expecting a callback through the promise
+io.mq.publishRpc(queue: string, content: Buffer | string, options: any = {}): Promise<any>
+// Publish to a RPC queue, expecting a callback through the promise. The content is run through JSON.stringify
+io.mq.publishRpcJson(queue: string, content: any, options: any = {}): Promise<any>
+
+// Listen on a RPC queue, sending Buffer content back through handler
+io.mq.onRpc(queue: string, handler: DoCallCallback, exclusive: boolean = true): void
+// Listen on a RPC queue, sending string content back through handler
+io.mq.onRpcString(queue: string, handler: DoCallStringCallback, exclusive: boolean = true): void
+// Listen on a RPC queue, sending JSON.parsed content back through handler
+io.mq.onRpcJson(queue: string, handler: DoCallJsonCallback, exclusive: boolean = true): void
+
+// Get a list of all queues
+io.mq.getQueues(): Promise<any>
+
+// Listen for any queue creations
+io.mq.onQueueCreated(handler: (headers: amqplib.MessagePropertyHeaders, fields: FieldsAndProperties) => void): void
+// Listen for any queue deletions
+io.mq.onQueueDeleted(handler: (headers: amqplib.MessagePropertyHeaders, fields: FieldsAndProperties) => void): void
 ```
-Subscribe:
-```js
-io.mq.onTopic(topic, function(content, headers){
-  // handle message
-});
-```
+
 In `publishTopic`, you can use options to specify a header for the message.
 See [amqp.node](http://www.squaremobius.net/amqp.node/channel_api.html#channel_publish) for how to use the header.
 
@@ -78,36 +117,50 @@ When subscribing to events, you can include in topic name wildcards `*` and `#`.
 subscribes to `transcript.result.final` and `transcript.result.interim`, whereas `transcript.#` subscribes
 to `transcript.result.final`, `transcript.result.interim`, and `transcript.command`.
 
-In `publishTopic`, the content can be of type string, Buffer, or Array. If the system detects an object,
-it will attempt to run `JSON.stringify` on it before sending it to RabbitMQ.
-
-In `onTopic`, we first attempt to `JSON.parse` the incoming message and return that to the user if possible,
-else we just return the message as is.
-
-#### Remote procedural call (RPC)
-RPC is different from pub-sub.
-While pub-sub is good for event broadcasting and subscription,
-it isn't suited for request-reply patterns such as geting the webpages shown on monitor.
-For request-reply, we implemented [`io.mq.call`](https://pages.github.ibm.com/celio/CELIO/CELIO.html#call) for sending a request,
-and [`io.mq.doCall`](https://pages.github.ibm.com/celio/CELIO/CELIO.html#doCall) for responding to a request.
-Please check the API documentation to see their usage.
-
 ### Redis
 ```json
 {
   "store": {
-    "url": "localhost",
-    "username": "username",
-    "password": "password"
+    "url": "redis://localhost:6379"
   }
 }
 ```
+Note: If you specify a URL without a port, the default port of `6379` is appended
+Note: If you specify a URL without `redis://`, it is added as a prefix
 
+#### Usage
+```typescript
+io.store.database: string | number;
+io.store.client: redis.RedisClient;
+io.store.hsetAsync(key: string, field: string, value: any): Promise<number>;
+io.store.hgetallAsync(key: string): Promise<any>;
+io.store.hgetAsync(key: string, field: string): Promise<any>;
+io.store.hdelAsync(key: string, field: string): Promise<number>;
+io.store.saddAsync(key: string, values: string[]): Promise<number>;
+io.store.smembersAsync(key: string): Promise<string[]>;
+io.store.sremAsync(key: string, value: any): Promise<number>;
+io.store.getsetAsync(key: string, value: any): Promise<any>;
+io.store.getAsync(key: string): Promise<any | null>;
+io.store.delAsync(key: string): Promise<any>;
+```
 ### Mongo
 ```json
 {
   "mongo": {
-    "host": ""
+    "host": "localhost",
+    "port": 27017,
+    "dbname": "cais"
   }
 }
 ```
+
+#### Usage
+```typescript
+io.mongo.mongoose: mongoose.Mongoose;
+```
+
+## License
+[MIT License](LICENSE)
+
+## Icon Attribution
+[Moon](https://thenounproject.com/search/?q=moon&i=139166) by MarkieAnn Packer from the Noun Project

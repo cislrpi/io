@@ -1,24 +1,19 @@
-import _ from 'lodash';
 import fs from 'fs';
 import request from 'request';
-import amqplib, { Replies } from 'amqplib';
+import amqplib from 'amqplib';
 import { Provider } from 'nconf';
 
-import { Io } from './index';
+import Io from './io';
 
-export type FieldsAndProperties = amqplib.ConsumeMessageFields & amqplib.MessageProperties;
+type PublishCallback = (content: Buffer | any, message: amqplib.ConsumeMessage) => void;
 
-type OnTopicCallback = (content: Buffer, headers: FieldsAndProperties, msg: amqplib.ConsumeMessage) => void;
-type OnTopicStringCallback = (content: string, headers: FieldsAndProperties, msg: amqplib.ConsumeMessage) => void;
-type OnTopicJsonCallback = (content: any, headers: FieldsAndProperties, msg: amqplib.ConsumeMessage) => void;
+type ReplyCallback = (content: Error | Buffer | any) => void;
+type RpcReplyCallback = (content: Buffer | any, reply: ReplyCallback, message: amqplib.ConsumeMessage) => void;
 
-type ReplyCallback = (content: Buffer) => void;
-type ReplyStringCallback = (content: string) => void;
-type ReplyJsonCallback = (content: any) => void;
-
-type DoCallCallback = (content: Buffer, headers: FieldsAndProperties, reply: ReplyCallback, msg: amqplib.ConsumeMessage) => void;
-type DoCallStringCallback = (content: string, headers: FieldsAndProperties, reply: ReplyStringCallback, msg: amqplib.ConsumeMessage) => void;
-type DoCallJsonCallback = (content: any, headers: FieldsAndProperties, reply: ReplyJsonCallback, msg: amqplib.ConsumeMessage) => void;
+interface RpcResponse {
+  content: Buffer | any;
+  message: amqplib.ConsumeMessage;
+}
 
 /**
  * Class representing the RabbitManager object.
@@ -41,7 +36,8 @@ export class RabbitMQ {
         mq: {
           url: 'localhost',
           username: 'guest',
-          password: 'guest'
+          password: 'guest',
+          exchange: 'amq.topic'
         }
       }
     });
@@ -92,6 +88,36 @@ export class RabbitMQ {
   }
 
   /**
+   * Publish a message to the specified topic.
+   * @param  {string} topic - The routing key for the message.
+   * @param  {Buffer | String} content - The message to publish.
+   * @param  {Object} [options] - Publishing options. Leaving it undefined is fine.
+   * @return {void}
+   */
+  public publishTopic(topic: string, content: Buffer | any, options: amqplib.Options.Publish = {}): void {
+    if (!Buffer.isBuffer(content)) {
+      if (!options.contentType) {
+        if (typeof content === 'string' || content instanceof String) {
+          options.contentType = 'text/string';
+        }
+        else if (typeof content === 'number') {
+          options.contentType = 'text/number';
+          content = content.toString();
+        }
+        else {
+          content = JSON.stringify(content);
+          options.contentType = 'application/json';
+        }
+      }
+      content = Buffer.from(content);
+    }
+
+    this.pch.then((ch): boolean => {
+      return ch.publish(this.config.get('mq:exchange'), topic, content, options);
+    });
+  }
+
+  /**
    * Subscribe to a topic.
    * @param  {string} topic - The topic to subscribe to. Should be of a form 'tag1.tag2...'. Supports wildcard.
    * For more information, refer to the [Rabbitmq tutorial](https://www.rabbitmq.com/tutorials/tutorial-five-javascript.html).
@@ -100,20 +126,28 @@ export class RabbitMQ {
    * @return {Promise} A subscription object which can be used to unsubscribe by calling
    * promise.then(subscription=>subscription.unsubscribe())
    */
-  public onTopic(topic: string, handler: OnTopicCallback, options: any = {}): Promise<any> {
-    options = options || {};
-    if (!options.exchange) {
-      topic = this.resolveTopicName(topic);
-    }
+  public onTopic(topic: string, handler: PublishCallback, exchange?: string): Promise<any> {
+    topic = this.resolveTopicName(topic);
 
     let channel_options = {exclusive: true, autoDelete: true};
     return this.pch.then((channel): Promise<amqplib.Replies.Consume> => {
       return channel.assertQueue('', channel_options).then((queue): Promise<amqplib.Replies.Empty> => {
-        let exchange = (options.exchange) ? options.exchange : this.config.get('mq:exchange');
-        return channel.bindQueue(queue.queue, exchange, topic).then((): Promise<amqplib.Replies.Consume> => {
+        return channel.bindQueue(queue.queue, exchange || this.config.get('mq:exchange'), topic).then((): Promise<amqplib.Replies.Consume> => {
           return channel.consume(queue.queue, (msg): void => {
             if (msg !== null && handler) {
-              handler(msg.content, _.merge(msg.fields, msg.properties), msg);
+              let content = msg.content;
+              
+              let final_content: any = content;
+              if (msg.properties.contentType === 'application/json') {
+                final_content = JSON.parse(content.toString());
+              }
+              else if (msg.properties.contentType === 'text/string') {
+                final_content = content.toString();
+              }
+              else if (msg.properties.contentType === 'text/number') {
+                final_content = parseFloat(content.toString());
+              }
+              handler(final_content, msg);
             }
           }, {noAck: true}).then((subscription: amqplib.Replies.Consume): amqplib.Replies.Consume => {
             (subscription as any).unsubscribe = (): Promise<amqplib.Replies.Empty> => {
@@ -126,48 +160,6 @@ export class RabbitMQ {
     });
   }
 
-  public onTopicString(topic: string, handler: OnTopicStringCallback, options: any = {}): Promise<any> {
-    return this.onTopic(
-      topic, 
-      (content: Buffer, headers: FieldsAndProperties, msg: amqplib.ConsumeMessage): void => {
-        handler(content.toString(), headers, msg);
-      }, 
-      options
-    );
-  }
-
-  public onTopicJson(topic: string, handler: OnTopicJsonCallback, options: any = {}): Promise<any> {
-    return this.onTopic(
-      topic, 
-      (content: Buffer, headers: FieldsAndProperties, msg: amqplib.ConsumeMessage): void => {
-        handler(JSON.parse(content.toString()), headers, msg);
-      }, 
-      options      
-    );
-  }
-
-  /**
-   * Publish a message to the specified topic.
-   * @param  {string} topic - The routing key for the message.
-   * @param  {Buffer | String} content - The message to publish.
-   * @param  {Object} [options] - Publishing options. Leaving it undefined is fine.
-   * @return {void}
-   */
-  public publishTopic(topic: string, content: Buffer | string, options?: any): void {
-    this.pch.then((ch): boolean => {
-      return ch.publish(
-        this.config.get('mq:exchange'),
-        topic,
-        Buffer.isBuffer(content) ? content : Buffer.from(content),
-        options
-      );
-    });
-  }
-
-  public publishTopicJson(topic: string, content: any, options: any): void {
-    this.publishTopic(topic, JSON.stringify(content), options);
-  }
-
   /**
    * Make remote procedural call (RPC).
    * @param  {string} queue - The queue name to send the call to.
@@ -176,7 +168,7 @@ export class RabbitMQ {
    * @param  {number} options.expiration=3000 - The timeout duration of the call.
    * @return {Promise} A promise that resolves to the reply content.
    */
-  public publishRpc(queue: string, content: Buffer | string, options: any = {}): Promise<any> {
+  public publishRpc(queue: string, content: Buffer | any, options: amqplib.Options.Publish = {}): Promise<RpcResponse> {
     let consumerTag: string | null = null;
     return new Promise((resolve, reject): void => {
       this.pch.then((ch: amqplib.Channel): Promise<void> => {
@@ -211,7 +203,18 @@ export class RabbitMQ {
                   reject(new Error(msg.properties.headers.error));
                 }
                 else {
-                  resolve({content: msg.content, headers: _.merge(msg.fields, msg.properties)});
+                  let content = msg.content;
+                  let final_content: any = content;
+                  if (msg.properties.contentType === 'application/json') {
+                    final_content = JSON.parse(content.toString());
+                  }
+                  else if (msg.properties.contentType === 'text/string') {
+                    final_content = content.toString();
+                  }
+                  else if (msg.properties.contentType === 'text/number') {
+                    final_content = parseFloat(content.toString());
+                  }
+                  resolve({content: final_content, message: msg});
                 }
               }
               else {
@@ -227,11 +230,23 @@ export class RabbitMQ {
             console.error(err);
           });
 
-          ch.sendToQueue(
-            queue,
-            Buffer.isBuffer(content) ? content : Buffer.from(content),
-            options
-          );
+          if (!Buffer.isBuffer(content)) {
+            if (!options.contentType) {
+              if (typeof content === 'string' || content instanceof String) {
+                options.contentType = 'text/string';
+              }
+              else if (typeof content === 'number') {
+                options.contentType = 'text/number';
+                content = content.toString();
+              }
+              else {
+                options.contentType = 'application/json';
+                content = JSON.stringify(content);
+              }
+            }
+            content = Buffer.from(content);
+          }
+          ch.sendToQueue(queue, content, options);
         }).catch((err): void => {
           console.error(err);
         });
@@ -239,23 +254,19 @@ export class RabbitMQ {
     });
   }
 
-  public publishRpcJson(queue: string, content: any, options: any = {}): Promise<any> {
-    return this.publishRpc(queue, JSON.stringify(content), options);
-  }
-  
   /**
    * Receive RPCs from a queue and handle them.
    * @param  {string} queue - The queue name to listen to.
    * @param  {rpcCallback} handler - The actual function handling the call.
    * @param  {bool} [exclusive=true] - Whether to declare an exclusive queue. If set to false, multiple clients can share the same the workload.
    */
-  public onRpc(queue: string, handler: DoCallCallback, exclusive: boolean = true): void {
+  public onRpc(queue: string, handler: RpcReplyCallback, exclusive: boolean = true): void {
     this.pch.then((ch: amqplib.Channel): void => {
       ch.prefetch(1);
       ch.assertQueue(queue, { exclusive, autoDelete: true }).then((q: amqplib.Replies.AssertQueue): Promise<amqplib.Replies.Consume> => {
         return ch.consume(q.queue, (request: amqplib.ConsumeMessage | null): void => {
           let replyCount = 0;
-          function reply(response: Error | Buffer): void {
+          let reply: ReplyCallback = (response: Error | Buffer | any): void => {
             if (replyCount >= 1) {
               throw new Error('Replied more than once.');
             }
@@ -272,23 +283,48 @@ export class RabbitMQ {
                 );
               }
               else {
-                ch.sendToQueue(
-                  request.properties.replyTo,
-                  Buffer.isBuffer(response) ? response : Buffer.from(JSON.stringify(response)),
-                  {
-                    correlationId: request.properties.correlationId
+                let options: amqplib.Options.Publish = {
+                  correlationId: request.properties.correlationId
+                };
+                if (!Buffer.isBuffer(response)) {
+                  if (!options.contentType) {
+                    if (typeof response === 'string' || response instanceof String) {
+                      options.contentType = 'text/string';
+                    }
+                    else if (typeof response === 'number') {
+                      options.contentType = response.toString();
+                      response = response.toString();
+                    }
+                    else {
+                      options.contentType = 'application/json';
+                      response = JSON.stringify(response);
+                    }
                   }
-                );
+
+                  response = Buffer.from(response);
+                }
+                ch.sendToQueue(request.properties.replyTo, response, options);
               }
             }
-          }
+          };
 
           if (request === null) {
             throw new Error('Request for doCall was null');
           }
+
+          let content = request.content;
+          let final_content: any = content;
+          if (request.properties.contentType === 'application/json') {
+            final_content = JSON.parse(content.toString());
+          }
+          else if (request.properties.contentType === 'text/string') {
+            final_content = content.toString();
+          }
+          else if (request.properties.contentType === 'text/number') {
+            final_content = parseFloat(content.toString());
+          }
           handler(
-            request.content,
-            _.merge(request.fields, request.properties),
+            final_content,
             reply,
             request
           );
@@ -298,40 +334,6 @@ export class RabbitMQ {
         });
       });
     });
-  }
-
-  public onRpcString(queue: string, handler: DoCallStringCallback, exclusive: boolean = true): void {
-    this.onRpc(
-      queue,
-      (content, headers, reply, msg): void => {
-        handler(
-          content.toString(),
-          headers,
-          (str: string): void => {
-            reply(Buffer.from(str));
-          },
-          msg
-        );
-      },
-      exclusive
-    );
-  }
-
-  public onRpcJson(queue: string, handler: DoCallJsonCallback, exclusive: boolean = true): void {
-    this.onRpc(
-      queue,
-      (content, headers, reply, msg): void => {
-        handler(
-          JSON.parse(content.toString()),
-          headers,
-          (obj: any): void => {
-            reply(Buffer.from(JSON.stringify(obj)));
-          },
-          msg
-        );
-      },
-      exclusive
-    );
   }
 
   /**
@@ -357,22 +359,22 @@ export class RabbitMQ {
   }
 
   /**
-   * Subscribe to queue deletion events
+   * Subscribe to queue creation events
    * @param  {queueEventCallback} handler - Callback to handle the event.
    */
-  public onQueueDeleted(handler: (headers: amqplib.MessagePropertyHeaders, fields: FieldsAndProperties) => void): void {
-    this.onTopic('queue.deleted', (_, fields): void => {
-      handler(fields.headers, fields);
+  public onQueueCreated(handler: (properties: amqplib.MessageProperties) => void): void {
+    this.onTopic('queue.created', (_, msg): void => {
+      handler(msg.properties);
     });
   }
 
   /**
-   * Subscribe to queue creation events
+   * Subscribe to queue deletion events
    * @param  {queueEventCallback} handler - Callback to handle the event.
    */
-  public onQueueCreated(handler: (headers: amqplib.MessagePropertyHeaders, fields: FieldsAndProperties) => void): void {
-    this.onTopic('queue.created', (_, fields): void => {
-      handler(fields.headers, fields);
+  public onQueueDeleted(handler: (properties: amqplib.MessageProperties) => void): void {
+    this.onTopic('queue.deleted', (_, msg): void => {
+      handler(msg.properties);
     });
   }
 }

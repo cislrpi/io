@@ -1,6 +1,6 @@
 import * as redis from 'redis';
 import Bluebird from 'bluebird';
-import { Io } from './index';
+import Io from './io';
 
 // Declare the types we need from the result of doing 
 // Bluebird.promisfyAll on the redis.RedisClient

@@ -2,11 +2,11 @@
 
 # @cisl/io
 
-A framework for building distributed applications and the coolest of Jupiter's moons. What the heck
+A framework for building distributed applications and the coolest of Jupiter's moons.
 
 ## Installation
 ```bash
-npm install @cisl/celio
+npm install @cisl/io
 ```
 
 ## Usage
@@ -58,60 +58,49 @@ You can access the RabbitMQ CelIO object by using `io.mq`.
 
 #### Usage
 ```typescript
-type FieldsAndProperties = amqplib.ConsumeMessageFields & amqplib.MessageProperties;
+type PublishCallback = (content: Buffer | any, message: amqplib.ConsumeMessage) => void;
 
-type OnTopicCallback = (content: Buffer, headers: FieldsAndProperties, msg: amqplib.ConsumeMessage) => void;
-type OnTopicStringCallback = (content: string, headers: FieldsAndProperties, msg: amqplib.ConsumeMessage) => void;
-type OnTopicJsonCallback = (content: any, headers: FieldsAndProperties, msg: amqplib.ConsumeMessage) => void;
+type ReplyCallback = (content: Error | Buffer | any) => void;
+type RpcReplyCallback = (content: Buffer | any, reply: ReplyCallback, message: amqplib.ConsumeMessage) => void;
 
-type ReplyCallback = (content: Buffer) => void;
-type ReplyStringCallback = (content: string) => void;
-type ReplyJsonCallback = (content: any) => void;
-
-type DoCallCallback = (content: Buffer, headers: FieldsAndProperties, reply: ReplyCallback, msg: amqplib.ConsumeMessage) => void;
-type DoCallStringCallback = (content: string, headers: FieldsAndProperties, reply: ReplyStringCallback, msg: amqplib.ConsumeMessage) => void;
-type DoCallJsonCallback = (content: any, headers: FieldsAndProperties, reply: ReplyJsonCallback, msg: amqplib.ConsumeMessage) => void;
+interface RpcResponse {
+  content: Buffer | any;
+  message: amqplib.ConsumeMessage;
+}
 
 // Publish to a RabbitMQ topic on the configured exchange
-io.mq.publishTopic(topic: string, content: Buffer | string, options?: any): void
-// Puglish to a RabbitMQ topic on the configured exchange. Any content is run through JSON.stringify.
-io.mq.publishTopicJson(topic: string, content: any, options: any): void
+io.mq.publishTopic(topic: string, content: Buffer | any, options: amqplib.Options.Publish = {}): void
 
-// Listen to a topic for any new content, returned as Buffer
-io.mq.onTopic(topic: string, handler: OnTopicCallback, options: any = {}): Promise<any>
-// Listen to a topic for any new content, returned as a string
-io.mq.onTopicString(topic: string, handler: OnTopicStringCallback, options: any = {}): Promise<any>
-// Listen to a topic for any new content, returned as a JSON object
-io.mq.onTopicJson(topic: string, handler: OnTopicJsonCallback, options: any = {}): Promise<any>
+// Listen to a topic for any new content
+io.mq.onTopic(topic: string, handler: PublishCallback, exchange?: string): Promise<any>
 
 // Publish to a RPC queue, expecting a callback through the promise
-io.mq.publishRpc(queue: string, content: Buffer | string, options: any = {}): Promise<any>
-// Publish to a RPC queue, expecting a callback through the promise. The content is run through JSON.stringify
-io.mq.publishRpcJson(queue: string, content: any, options: any = {}): Promise<any>
+io.mq.publishRpc(queue: string, content: Buffer | string, options: amqplib.Options.Publish = {}): Promise<RpcResponse>
 
-// Listen on a RPC queue, sending Buffer content back through handler
-io.mq.onRpc(queue: string, handler: DoCallCallback, exclusive: boolean = true): void
-// Listen on a RPC queue, sending string content back through handler
-io.mq.onRpcString(queue: string, handler: DoCallStringCallback, exclusive: boolean = true): void
-// Listen on a RPC queue, sending JSON.parsed content back through handler
-io.mq.onRpcJson(queue: string, handler: DoCallJsonCallback, exclusive: boolean = true): void
+// Listen on a RPC queue, sending content back through handler
+io.mq.onRpc(queue: string, handler: RpcReplyCallback, exclusive: boolean = true): void
 
 // Get a list of all queues
 io.mq.getQueues(): Promise<any>
 
 // Listen for any queue creations
-io.mq.onQueueCreated(handler: (headers: amqplib.MessagePropertyHeaders, fields: FieldsAndProperties) => void): void
+io.mq.onQueueCreated(handler: (properties: amqplib.MessageProperties) => void): void
 // Listen for any queue deletions
-io.mq.onQueueDeleted(handler: (headers: amqplib.MessagePropertyHeaders, fields: FieldsAndProperties) => void): void
+io.mq.onQueueDeleted(handler: (properties: amqplib.MessageProperties) => void): void
 ```
 
-In `publishTopic`, you can use options to specify a header for the message.
-See [amqp.node](http://www.squaremobius.net/amqp.node/channel_api.html#channel_publish) for how to use the header.
+For `publishTopic` and `publishRpc`, see 
+[amqplib](http://www.squaremobius.net/amqp.node/channel_api.html#channel_publish) for acceptable
+values for the `options` argument.
 
-The topic should have the following format `major_type.minor_type.command` or `major_type.command`.
-An example of this is `transcript.result.final` and `transcript.command`, where the fisrt part
-designates the module (transcript), and then the next part indicates what it's doing.
+#### Content-Type
+For publishing content, if a content-type is not specified and the content is not a `Buffer`, then
+`Io` will assume that it can be run through `JSON.stringify` and will set the content-type to
+`application/json` automatically. On receving content, if the content-type is set to `application/json`,
+then `Io` will automatically run `JSON.parse` and return that content, else it will return the `Buffer`
+object for the user to manually deal with.
 
+#### Queue Names
 When subscribing to events, you can include in topic name wildcards `*` and `#`.
 `*` substitues one word, and `#` substitues multiple words. For example, `transcript.result.*`
 subscribes to `transcript.result.final` and `transcript.result.interim`, whereas `transcript.#` subscribes

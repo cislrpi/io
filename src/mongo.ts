@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import { Io } from './index';
+import Io from './io';
 
 export class MongoDB {
   public mongoose: mongoose.Mongoose;
@@ -27,7 +27,9 @@ export class MongoDB {
 
     this.mongoose = mongoose;
     let options: mongoose.ConnectionOptions = {
-      useNewUrlParser: true
+      useNewUrlParser: true,
+      useFindAndModify: false,
+      useCreateIndex: true
     };
     if (io.config.get('mongo:user')) {
       options.user = io.config.get('mongo:user');
@@ -43,5 +45,9 @@ export class MongoDB {
       console.error(err);
       process.exit(1);
     });
+  }
+
+  public model(name: string, schema: mongoose.Schema): void {
+    this.mongoose.model(name, schema);
   }
 }

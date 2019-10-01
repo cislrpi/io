@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+import mongoose, { Model, Document } from 'mongoose';
 import Io from './io';
 
 export class MongoDB {
@@ -13,7 +13,7 @@ export class MongoDB {
         mongo: {
           host: 'localhost',
           port: 27017,
-          dbname: 'cais'
+          db: 'cais'
         }
       }
     });
@@ -23,13 +23,14 @@ export class MongoDB {
     conn_string += `:`;
     conn_string += `${io.config.get('mongo:port')}`;
     conn_string += `/`;
-    conn_string += `${io.config.get('mongo:dbname')}`;
+    conn_string += `${io.config.get('mongo:db')}`;
 
     this.mongoose = mongoose;
-    let options: mongoose.ConnectionOptions = {
+    const options: mongoose.ConnectionOptions = {
       useNewUrlParser: true,
       useFindAndModify: false,
-      useCreateIndex: true
+      useCreateIndex: true,
+      useUnifiedTopology: true
     };
     if (io.config.get('mongo:user')) {
       options.user = io.config.get('mongo:user');
@@ -47,7 +48,11 @@ export class MongoDB {
     });
   }
 
-  public model(name: string, schema: mongoose.Schema): void {
-    this.mongoose.model(name, schema);
+  public model<T extends Document>(name: string, schema: mongoose.Schema): Model<T> {
+    return this.mongoose.model(name, schema);
+  }
+
+  public disconnect(): Promise<void> {
+    return this.mongoose.disconnect();
   }
 }

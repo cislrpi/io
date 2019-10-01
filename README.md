@@ -12,15 +12,15 @@ npm install @cisl/io
 ## Usage
 NodeJS
 ```js
-const io = require('@cisl/io').io;
-// or
-const Io = require('@cisl/io').Io;
-const io = new Io();
+const io = require('@cisl/io');
+// or through class
+const Io = require('@cisl/io/io');
+const io = Io();
 ```
 
 TypeScript:
 ```typescript
-import { io, Io } from '@cisl/io';
+import io from '@cisl/io';
 const otherIo = new Io();
 ```
 
@@ -31,7 +31,7 @@ The `cog.json` file is parsed and saved as a `io.config` object, so that you can
 io.config.get('rootKey:nestedKey');
 ```
 The config object also reads in command line arguments and environment variables.
-For environment variables, replace ":" with "_". 
+For environment variables, replace ":" with "_".
 You can use command line arguments to override settings in the cog.json file to temporarily switch exchanges for example.
 
 We use the [nconf](https://github.com/indexzero/nconf) to do this.
@@ -50,7 +50,7 @@ RabbitMQ requires the `mq` value to be set, where `true` will use the defaults b
   }
 }
 ```
-This configuration object has username and password in it, 
+This configuration object has username and password in it,
 so please don't share it with others and don't commit it to your repository.
 Your applications can only communicate with each other if they use the same configuration.
 
@@ -89,7 +89,7 @@ io.mq.onQueueCreated(handler: (properties: amqplib.MessageProperties) => void): 
 io.mq.onQueueDeleted(handler: (properties: amqplib.MessageProperties) => void): void
 ```
 
-For `publishTopic` and `publishRpc`, see 
+For `publishTopic` and `publishRpc`, see
 [amqplib](http://www.squaremobius.net/amqp.node/channel_api.html#channel_publish) for acceptable
 values for the `options` argument.
 
@@ -110,17 +110,39 @@ to `transcript.result.final`, `transcript.result.interim`, and `transcript.comma
 ```json
 {
   "store": {
-    "url": "redis://localhost:6379"
+    "host": "localhost",
+    "port": 6379,
+    "db": 0
   }
 }
 ```
-Note: If you specify a URL without a port, the default port of `6379` is appended
-Note: If you specify a URL without `redis://`, it is added as a prefix
+The above are the defaults if you do not define any of them.
 
 #### Usage
 ```typescript
 io.store.database: string | number;
-io.store.client: redis.RedisClient;
+io.redis: redis.RedisClient;
+
+```
+redis.set("foo", "bar");
+redis.get("foo", function(err, result) {
+  console.log(result);
+});
+redis.del("foo");
+
+// Or using a promise if the last argument isn't a function
+redis.get("foo").then(function(result) {
+  console.log(result);
+});
+
+// Arguments to commands are flattened, so the following are the same:
+redis.sadd("set", 1, 3, 5, 7);
+redis.sadd("set", [1, 3, 5, 7]);
+
+// All arguments are passed directly to the redis server:
+redis.set("key", 100, "EX", 10);
+```
+
 io.store.hsetAsync(key: string, field: string, value: any): Promise<number>;
 io.store.hgetallAsync(key: string): Promise<any>;
 io.store.hgetAsync(key: string, field: string): Promise<any>;

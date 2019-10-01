@@ -5,16 +5,18 @@ import { RabbitMQ } from './rabbitmq';
 import { Redis } from './redis';
 import { MongoDB } from './mongo';
 
-let pluginFunctions: Function[] = [];
+const pluginFunctions: Function[] = [];
 
 /**
  * Class representing the Io object.
  */
 class Io {
   public config: Provider;
-  public mq?: RabbitMQ;
-  public store?: Redis;
   public mongo?: MongoDB;
+  public rabbit?: RabbitMQ;
+  public mq?: RabbitMQ;
+  public redis?: Redis;
+  public store?: Redis;
 
   public plugins: {[key: string]: Plugin} = {};
 
@@ -24,29 +26,38 @@ class Io {
    *                  to override the default loaded file
    */
   public constructor() {
-    let configFile = 'cog.json';
     this.config = new Provider();
-    this.config.argv().file({ file: configFile }).env('_');
-
-    if (this.config.get('mq')) {
-      this.mq = new RabbitMQ(this);
-    }
+    this.config.argv().file({ file: 'cog.json' }).env('_');
 
     if (this.config.get('mongo')) {
       this.mongo = new MongoDB(this);
     }
 
-    if (this.config.get('store')) {
-      this.store = new Redis(this);
+    if (this.config.get('mq') && !this.config.get('rabbit')) {
+      this.config.set('rabbit', this.config.get('mq'));
     }
 
-    for (let pluginFunction of pluginFunctions) {
+    if (this.config.get('rabbit')) {
+      this.rabbit = new RabbitMQ(this);
+      this.mq = this.rabbit;
+    }
+
+    if (this.config.get('store') && !this.config.get('redis')) {
+      this.config.get('store');
+    }
+
+    if (this.config.get('redis')) {
+      this.redis = new Redis(this);
+      this.store = this.redis;
+    }
+
+    for (const pluginFunction of pluginFunctions) {
       pluginFunction(this);
     }
   }
 
   public registerPlugins(...registerFunctions: Function[]): void {
-    for (let registerFunction of registerFunctions) {
+    for (const registerFunction of registerFunctions) {
       registerFunction(this);
     }
     pluginFunctions.concat(registerFunctions);

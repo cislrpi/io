@@ -1,33 +1,36 @@
 import fs from 'fs';
 import request from 'request';
-import amqplib from 'amqplib';
+import amqplib, { Replies } from 'amqplib';
 import { Provider } from 'nconf';
 
 import Io from './io';
 
-type PublishCallback = (content: Buffer | any, message: amqplib.ConsumeMessage) => void;
-
-type ReplyCallback = (content: Error | Buffer | any) => void;
-type RpcReplyCallback = (content: Buffer | any, reply: ReplyCallback, message: amqplib.ConsumeMessage) => void;
-
-interface RpcResponse {
-  content: Buffer | any;
+interface Response {
+  content: Buffer | string | number | object;
   message: amqplib.ConsumeMessage;
 }
+
+interface Subscription extends amqplib.Replies.Consume {
+  unsubscribe: () => void;
+}
+
+type ReplyCallback = (content: Error | Buffer | string | number | object) => void;
+type RpcReplyCallback = (response: Response, reply: ReplyCallback) => void;
+type PublishCallback = (response: Response) => void;
 
 /**
  * Class representing the RabbitManager object.
  */
 export class RabbitMQ {
   private config: Provider;
-  private pch: Promise<amqplib.Channel>
+  private pch: Promise<amqplib.Channel>;
   private mgmturl: string;
   private vhost: string;
   private prefix?: string;
   private io: Io;
 
   public constructor(io: Io) {
-    let config = io.config;
+    const config = io.config;
     if (config.get('mq') === true) {
       config.set('mq', {});
     }
@@ -59,9 +62,11 @@ export class RabbitMQ {
     const auth = config.get('mq:username') + ':' + config.get('mq:password');
 
     let pconn = null;
-    let options: any = {};
+    let options;
     if (config.get('mq:ca')) {
-      options.ca = [fs.readFileSync(config.get('mq:ca'))];
+      options = {
+        ca: [fs.readFileSync(config.get('mq:ca'))]
+      };
     }
 
     pconn = amqplib.connect(`amqp://${auth}@${url}`, options);
@@ -87,6 +92,57 @@ export class RabbitMQ {
     return topic_name;
   }
 
+  private parseContent(content: Buffer, content_type: string): Buffer | string | number {
+    let final_content: Buffer | string | number = content;
+    if (content_type === 'application/json') {
+      final_content = JSON.parse(content.toString());
+    }
+    else if (content_type === 'text/string') {
+      final_content = content.toString();
+    }
+    else if (content_type === 'text/number') {
+      final_content = parseFloat(content.toString());
+    }
+    return final_content;
+  }
+
+  private getContentType(content: Buffer | string | number | object): string {
+    if (Buffer.isBuffer(content)) {
+      return 'application/octet-stream';
+    }
+    else if (typeof content === 'number') {
+      return 'text/number';
+    }
+    else if (typeof content === 'string') {
+      return 'text/string';
+    }
+    else {
+      return 'application/json';
+    }
+  }
+
+  private encodeContent(content: Buffer | string | number | object): Buffer {
+    let final: Buffer;
+    if (!Buffer.isBuffer(content)) {
+      let string_content = '';
+      if (typeof content === 'string') {
+        string_content = content;
+      }
+      else if (typeof content === 'number') {
+        string_content = content.toString();
+      }
+      else {
+        string_content = JSON.stringify(content);
+      }
+      final = Buffer.from(string_content);
+    }
+    else {
+      final = content;
+    }
+
+    return final;
+  }
+
   /**
    * Publish a message to the specified topic.
    * @param  {string} topic - The routing key for the message.
@@ -94,27 +150,12 @@ export class RabbitMQ {
    * @param  {Object} [options] - Publishing options. Leaving it undefined is fine.
    * @return {void}
    */
-  public publishTopic(topic: string, content: Buffer | any, options: amqplib.Options.Publish = {}): void {
-    if (!Buffer.isBuffer(content)) {
-      if (!options.contentType) {
-        if (typeof content === 'string' || content instanceof String) {
-          options.contentType = 'text/string';
-        }
-        else if (typeof content === 'number') {
-          options.contentType = 'text/number';
-          content = content.toString();
-        }
-        else {
-          content = JSON.stringify(content);
-          options.contentType = 'application/json';
-        }
-      }
-      content = Buffer.from(content);
-    }
-
-    this.pch.then((ch): boolean => {
-      return ch.publish(this.config.get('mq:exchange'), topic, content, options);
-    });
+  public async publishTopic(topic: string, content: Buffer | string | number | object, options: amqplib.Options.Publish = {}): Promise<boolean> {
+    const encodedContent = this.encodeContent(content);
+    options.contentType = options.contentType || this.getContentType(content);
+    const channel = await this.pch;
+    await channel.checkExchange(this.config.get('mq:exchange'));
+    return channel.publish(this.config.get('mq:exchange'), topic, encodedContent, options);
   }
 
   /**
@@ -126,221 +167,135 @@ export class RabbitMQ {
    * @return {Promise} A subscription object which can be used to unsubscribe by calling
    * promise.then(subscription=>subscription.unsubscribe())
    */
-  public onTopic(topic: string, handler: PublishCallback, exchange?: string): Promise<any> {
+  public async onTopic(topic: string, handler: PublishCallback, exchange?: string): Promise<Replies.Consume> {
     topic = this.resolveTopicName(topic);
 
-    let channel_options = {exclusive: true, autoDelete: true};
-    return this.pch.then((channel): Promise<amqplib.Replies.Consume> => {
-      return channel.assertQueue('', channel_options).then((queue): Promise<amqplib.Replies.Empty> => {
-        return channel.bindQueue(queue.queue, exchange || this.config.get('mq:exchange'), topic).then((): Promise<amqplib.Replies.Consume> => {
-          return channel.consume(queue.queue, (msg): void => {
-            if (msg !== null && handler) {
-              let content = msg.content;
-              
-              let final_content: any = content;
-              if (msg.properties.contentType === 'application/json') {
-                final_content = JSON.parse(content.toString());
-              }
-              else if (msg.properties.contentType === 'text/string') {
-                final_content = content.toString();
-              }
-              else if (msg.properties.contentType === 'text/number') {
-                final_content = parseFloat(content.toString());
-              }
-              handler(final_content, msg);
-            }
-          }, {noAck: true}).then((subscription: amqplib.Replies.Consume): amqplib.Replies.Consume => {
-            (subscription as any).unsubscribe = (): Promise<amqplib.Replies.Empty> => {
-              return channel.cancel(subscription.consumerTag);
-            };
-            return subscription;
-          });
+    const channel_options = {exclusive: true, autoDelete: true};
+    const channel = await this.pch;
+    await channel.checkExchange(this.config.get('mq:exchange'));
+    const queue = await channel.assertQueue('', channel_options);
+    await channel.bindQueue(queue.queue, exchange || this.config.get('mq:exchange'), topic);
+    return channel.consume(queue.queue, (msg): void => {
+      if (msg !== null) {
+        handler({
+          content: this.parseContent(msg.content, msg.properties.contentType),
+          message: msg
         });
-      });
+      }
+    }, {noAck: true}).then((consume: amqplib.Replies.Consume): Subscription => {
+      return Object.assign(
+        consume,
+        {
+          unsubscribe: () => {
+            return channel.cancel(consume.consumerTag);
+          }
+        }
+      );
     });
   }
 
   /**
    * Make remote procedural call (RPC).
-   * @param  {string} queue - The queue name to send the call to.
-   * @param  {(Buffer | String | Array)} content - The RPC parameters.
-   * @param  {Object} [options={}] - The calling options.
-   * @param  {number} options.expiration=3000 - The timeout duration of the call.
-   * @return {Promise} A promise that resolves to the reply content.
    */
-  public publishRpc(queue: string, content: Buffer | any, options: amqplib.Options.Publish = {}): Promise<RpcResponse> {
-    let consumerTag: string | null = null;
+  public async publishRpc(queue_name: string, content: Buffer | string | number | object, options: amqplib.Options.Publish = {}): Promise<Response> {
+    let consumerTag: string;
+    const channel = await this.pch;
+    const queue = await channel.assertQueue('', {exclusive: true, autoDelete: true});
     return new Promise((resolve, reject): void => {
-      this.pch.then((ch: amqplib.Channel): Promise<void> => {
-        return ch.assertQueue('', {
-          exclusive: true, autoDelete: true
-        }).then((q: amqplib.Replies.AssertQueue): void => {
-          options.correlationId = this.io.generateUUID();
-          options.replyTo = q.queue;
-          if (!options.expiration) {
-            // default to 3 sec
-            options.expiration = 3000;
-          }
-          let timeoutID: NodeJS.Timeout;
-          // Time out the response when the caller has been waiting for too long
-          if (typeof options.expiration === 'number') {
-            timeoutID = setTimeout((): void => {
-              if (consumerTag) {
-                ch.cancel(consumerTag);
-              }
-              reject(new Error(`Request timed out after ${options.expiration} ms.`));
-            }, options.expiration + 100);
-          }
+      options.correlationId = this.io.generateUUID();
+      options.replyTo = queue.queue;
+      options.expiration = options.expiration || 3000;
+      options.contentType = options.contentType || this.getContentType(content);
 
-          ch.consume(q.queue, (msg: amqplib.ConsumeMessage | null): void => {
-            if (msg !== null) {
-              if (msg.properties.correlationId === options.correlationId) {
-                clearTimeout(timeoutID);
-                if (consumerTag) {
-                  ch.cancel(consumerTag);
-                }
-                if (msg.properties.headers.error) {
-                  reject(new Error(msg.properties.headers.error));
-                }
-                else {
-                  let content = msg.content;
-                  let final_content: any = content;
-                  if (msg.properties.contentType === 'application/json') {
-                    final_content = JSON.parse(content.toString());
-                  }
-                  else if (msg.properties.contentType === 'text/string') {
-                    final_content = content.toString();
-                  }
-                  else if (msg.properties.contentType === 'text/number') {
-                    final_content = parseFloat(content.toString());
-                  }
-                  resolve({content: final_content, message: msg});
-                }
-              }
-              else {
-                reject(new Error('null response for call'));
-              }
-            };
-          },
-          {
-            noAck: true
-          }).then((reply: amqplib.Replies.Consume): void => {
-            consumerTag = reply.consumerTag;
-          }).catch((err): void => {
-            console.error(err);
-          });
+      let timeoutId: NodeJS.Timeout;
+      // Time out the response when the caller has been waiting for too long
+      if (typeof options.expiration === 'number') {
+        timeoutId = setTimeout((): void => {
+          if (consumerTag) {
+            channel.cancel(consumerTag);
+          }
+          reject(new Error(`Request timed out after ${options.expiration} ms.`));
+        }, options.expiration + 100);
+      }
 
-          if (!Buffer.isBuffer(content)) {
-            if (!options.contentType) {
-              if (typeof content === 'string' || content instanceof String) {
-                options.contentType = 'text/string';
-              }
-              else if (typeof content === 'number') {
-                options.contentType = 'text/number';
-                content = content.toString();
-              }
-              else {
-                options.contentType = 'application/json';
-                content = JSON.stringify(content);
-              }
+      channel.consume(queue.queue, (msg) => {
+        if (msg !== null) {
+          if (msg.properties.correlationId === options.correlationId) {
+            clearTimeout(timeoutId);
+            if (consumerTag) {
+              channel.cancel(consumerTag);
             }
-            content = Buffer.from(content);
+            if (msg.properties.headers.error) {
+              reject(new Error(msg.properties.headers.error));
+            }
+            else {
+              resolve({content: this.parseContent(msg.content, msg.properties.contentType), message: msg});
+            }
           }
-          ch.sendToQueue(queue, content, options);
-        }).catch((err): void => {
-          console.error(err);
-        });
-      }).catch(reject);
+          else {
+            reject(new Error('null response for call'));
+          }
+        }
+      }, { noAck: true}).then((reply) => {
+        consumerTag = reply.consumerTag;
+      });
+
+      channel.sendToQueue(queue_name, this.encodeContent(content), options);
     });
   }
 
   /**
    * Receive RPCs from a queue and handle them.
-   * @param  {string} queue - The queue name to listen to.
-   * @param  {rpcCallback} handler - The actual function handling the call.
-   * @param  {bool} [exclusive=true] - Whether to declare an exclusive queue. If set to false, multiple clients can share the same the workload.
    */
-  public onRpc(queue: string, handler: RpcReplyCallback, exclusive: boolean = true): void {
-    this.pch.then((ch: amqplib.Channel): void => {
-      ch.prefetch(1);
-      ch.assertQueue(queue, { exclusive, autoDelete: true }).then((q: amqplib.Replies.AssertQueue): Promise<amqplib.Replies.Consume> => {
-        return ch.consume(q.queue, (request: amqplib.ConsumeMessage | null): void => {
-          let replyCount = 0;
-          let reply: ReplyCallback = (response: Error | Buffer | any): void => {
-            if (replyCount >= 1) {
-              throw new Error('Replied more than once.');
-            }
-            replyCount++;
-            if (request !== null) {
-              if (response instanceof Error) {
-                ch.sendToQueue(
-                  request.properties.replyTo,
-                  Buffer.from(''),
-                  {
-                    correlationId: request.properties.correlationId,
-                    headers: { error: response.message }
-                  }
-                );
+  public async onRpc(queue_name: string, handler: RpcReplyCallback, exclusive = true): Promise<void> {
+    const channel = await this.pch;
+    channel.prefetch(1);
+    const queue = await channel.assertQueue(queue_name, {exclusive, autoDelete: true});
+    await channel.consume(queue.queue, (msg: amqplib.ConsumeMessage | null) => {
+      let replyCount = 0;
+      const reply: ReplyCallback = (response: Error | Buffer | string | number | object): void => {
+        if (replyCount >= 1) {
+          throw new Error('Replied more than once.');
+        }
+        replyCount++;
+        if (msg !== null) {
+          if (response instanceof Error) {
+            channel.sendToQueue(
+              msg.properties.replyTo,
+              Buffer.from(response.message),
+              {
+                correlationId: msg.properties.correlationId,
+                headers: { error: response.message }
               }
-              else {
-                let options: amqplib.Options.Publish = {
-                  correlationId: request.properties.correlationId
-                };
-                if (!Buffer.isBuffer(response)) {
-                  if (!options.contentType) {
-                    if (typeof response === 'string' || response instanceof String) {
-                      options.contentType = 'text/string';
-                    }
-                    else if (typeof response === 'number') {
-                      options.contentType = response.toString();
-                      response = response.toString();
-                    }
-                    else {
-                      options.contentType = 'application/json';
-                      response = JSON.stringify(response);
-                    }
-                  }
+            );
+          }
+          else {
+            const options: amqplib.Options.Publish = {
+              correlationId: msg.properties.correlationId
+            };
+            const encodedContent = this.encodeContent(response);
+            options.contentType = options.contentType || this.getContentType(response);
+            channel.sendToQueue(msg.properties.replyTo, encodedContent, options);
+          }
+        }
+      };
 
-                  response = Buffer.from(response);
-                }
-                ch.sendToQueue(request.properties.replyTo, response, options);
-              }
-            }
-          };
+      if (msg === null) {
+        throw new Error('Request for doCall was null');
+      }
 
-          if (request === null) {
-            throw new Error('Request for doCall was null');
-          }
-
-          let content = request.content;
-          let final_content: any = content;
-          if (request.properties.contentType === 'application/json') {
-            final_content = JSON.parse(content.toString());
-          }
-          else if (request.properties.contentType === 'text/string') {
-            final_content = content.toString();
-          }
-          else if (request.properties.contentType === 'text/number') {
-            final_content = parseFloat(content.toString());
-          }
-          handler(
-            final_content,
-            reply,
-            request
-          );
-        }, 
-        { 
-          noAck: true 
-        });
-      });
-    });
+      handler({
+        content: this.parseContent(msg.content, msg.properties.contentType),
+        message: msg
+      }, reply);
+    }, { noAck: true });
   }
 
   /**
    * Get a list of queues declared in the rabbitmq server.
    * @return {Promise}
    */
-  public getQueues(): Promise<any> {
+  public getQueues(): Promise<unknown> {
     return new Promise((resolve, reject): void => {
       request({url: `${this.mgmturl}/queues/${this.vhost}?columns=state,name`, json: true}, (err, resp, body): void => {
         if (!err && resp.statusCode === 200) {
@@ -363,8 +318,8 @@ export class RabbitMQ {
    * @param  {queueEventCallback} handler - Callback to handle the event.
    */
   public onQueueCreated(handler: (properties: amqplib.MessageProperties) => void): void {
-    this.onTopic('queue.created', (_, msg): void => {
-      handler(msg.properties);
+    this.onTopic('queue.created', (response): void => {
+      handler(response.message.properties);
     });
   }
 
@@ -373,8 +328,8 @@ export class RabbitMQ {
    * @param  {queueEventCallback} handler - Callback to handle the event.
    */
   public onQueueDeleted(handler: (properties: amqplib.MessageProperties) => void): void {
-    this.onTopic('queue.deleted', (_, msg): void => {
-      handler(msg.properties);
+    this.onTopic('queue.deleted', (response): void => {
+      handler(response.message.properties);
     });
   }
 }

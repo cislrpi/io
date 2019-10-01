@@ -1,7 +1,7 @@
 {
   "name": "@cisl/io",
-  "version": "1.0.0-dev5",
-  "description": "A framework for building distributed, multimodal applications",
+  "version": "1.0.0-dev6",
+  "description": "A framework for building distributed applications",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {

@@ -6,12 +6,12 @@ export class Redis extends RedisClient {
 
   public constructor(io: Io) {
     const config = io.config;
-    if (config.get('store') === true) {
-      config.set('store', {});
+    if (config.get('redis') === true) {
+      config.set('redis', {});
     }
     config.defaults({
       store: {
-        store: {
+        redis: {
           host: 'localhost',
           port: 6379,
           db: 0
@@ -19,8 +19,8 @@ export class Redis extends RedisClient {
       }
     });
 
-    super(config.get('store'));
-    this.options = config.get('store');
+    super(config.get('redis'));
+    this.options = config.get('redis');
   }
 
   /**

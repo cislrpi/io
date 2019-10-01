@@ -31,12 +31,12 @@ export class RabbitMQ {
 
   public constructor(io: Io) {
     const config = io.config;
-    if (config.get('mq') === true) {
-      config.set('mq', {});
+    if (config.get('rabbit') === true) {
+      config.set('rabbit', {});
     }
     config.defaults({
       store: {
-        mq: {
+        rabbit: {
           url: 'localhost',
           username: 'guest',
           password: 'guest',
@@ -45,43 +45,40 @@ export class RabbitMQ {
       }
     });
 
-    if (!config.get('mq:exchange')) {
-      config.set('mq:exchange', 'amq.topic');
-    }
-    const url = config.get('mq:url');
+    const url = config.get('rabbit:url');
     const sepPos = url.lastIndexOf('/');
     if (sepPos > -1) {
-      config.set('mq:vhost', url.substring(sepPos + 1));
-      config.set('mq:hostname', url.substring(0, sepPos));
+      config.set('rabbit:vhost', url.substring(sepPos + 1));
+      config.set('rabbit:hostname', url.substring(0, sepPos));
     }
     else {
-      config.set('mq:vhost', '/');
-      config.set('mq:hostname', url);
+      config.set('rabbit:vhost', '/');
+      config.set('rabbit:hostname', url);
     }
 
-    const auth = config.get('mq:username') + ':' + config.get('mq:password');
+    const auth = config.get('rabbit:username') + ':' + config.get('rabbit:password');
 
     let pconn = null;
     let options;
-    if (config.get('mq:ca')) {
+    if (config.get('rabbit:ca')) {
       options = {
-        ca: [fs.readFileSync(config.get('mq:ca'))]
+        ca: [fs.readFileSync(config.get('rabbit:ca'))]
       };
     }
 
     pconn = amqplib.connect(`amqp://${auth}@${url}`, options);
     pconn.catch((err): void => {
       console.error(`RabbitMQ error: ${err}`);
-      console.error(`Connection to the rabbitmq root vhost failed. Please make sure that your user ${config.get('mq:username')} can access the root vhost!`);
+      console.error(`Connection to the rabbitmq root vhost failed. Please make sure that your user ${config.get('rabbit:username')} can access the root vhost!`);
       process.exit(1);
     });
 
     this.config = config;
     // Make a shared channel for publishing and subscribe
     this.pch = pconn.then((conn: amqplib.Connection): Promise<amqplib.Channel> => conn.createChannel());
-    this.mgmturl = `http://${auth}@${config.get('mq:hostname')}:15672/api`;
-    this.vhost = config.get('mq:vhost') === '/' ? '%2f' : config.get('mq:vhost');
-    this.prefix = config.get('mq:prefix');
+    this.mgmturl = `http://${auth}@${config.get('rabbit:hostname')}:15672/api`;
+    this.vhost = config.get('rabbit:vhost') === '/' ? '%2f' : config.get('rabbit:vhost');
+    this.prefix = config.get('rabbit:prefix');
     this.io = io;
   }
 
@@ -154,8 +151,8 @@ export class RabbitMQ {
     const encodedContent = this.encodeContent(content);
     options.contentType = options.contentType || this.getContentType(content);
     const channel = await this.pch;
-    await channel.checkExchange(this.config.get('mq:exchange'));
-    return channel.publish(this.config.get('mq:exchange'), topic, encodedContent, options);
+    await channel.checkExchange(this.config.get('rabbit:exchange'));
+    return channel.publish(this.config.get('rabbit:exchange'), topic, encodedContent, options);
   }
 
   /**
@@ -172,9 +169,9 @@ export class RabbitMQ {
 
     const channel_options = {exclusive: true, autoDelete: true};
     const channel = await this.pch;
-    await channel.checkExchange(this.config.get('mq:exchange'));
+    await channel.checkExchange(this.config.get('rabbit:exchange'));
     const queue = await channel.assertQueue('', channel_options);
-    await channel.bindQueue(queue.queue, exchange || this.config.get('mq:exchange'), topic);
+    await channel.bindQueue(queue.queue, exchange || this.config.get('rabbit:exchange'), topic);
     return channel.consume(queue.queue, (msg): void => {
       if (msg !== null) {
         handler({

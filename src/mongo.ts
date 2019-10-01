@@ -1,29 +1,35 @@
 import mongoose, { Model, Document } from 'mongoose';
 import Io from './io';
 
-export class MongoDB {
+export interface MongoOptions {
+  host: string;
+  port: number;
+  db: string;
+  user?: string;
+  pass?: string;
+}
+
+export class Mongo {
   public mongoose: mongoose.Mongoose;
+  public options: MongoOptions;
 
   public constructor(io: Io) {
-    if (io.config.get('mongo') === true) {
-      io.config.set('mongo', {});
-    }
-    io.config.defaults({
-      store: {
-        mongo: {
-          host: 'localhost',
-          port: 27017,
-          db: 'cais'
-        }
-      }
-    });
+    this.options = Object.assign(
+      {
+        host: 'localhost',
+        port: 27017,
+        db: 'cais'
+      },
+      typeof io.config.mongo === 'boolean' ? {} : io.config.mongo
+    );
+    io.config.mongo = this.options;
 
     let conn_string = `mongodb://`;
-    conn_string += `${io.config.get('mongo:host')}`;
+    conn_string += `${this.options.host}`;
     conn_string += `:`;
-    conn_string += `${io.config.get('mongo:port')}`;
+    conn_string += `${this.options.port}`;
     conn_string += `/`;
-    conn_string += `${io.config.get('mongo:db')}`;
+    conn_string += `${this.options.db}`;
 
     this.mongoose = mongoose;
     const options: mongoose.ConnectionOptions = {
@@ -32,11 +38,11 @@ export class MongoDB {
       useCreateIndex: true,
       useUnifiedTopology: true
     };
-    if (io.config.get('mongo:user')) {
-      options.user = io.config.get('mongo:user');
+    if (this.options.user) {
+      options.user = this.options.user;
     }
-    if (io.config.get('mongo:pass')) {
-      options.pass = io.config.get('mongo:pass');
+    if (this.options.pass) {
+      options.pass = this.options.pass;
     }
 
     this.mongoose.connect(conn_string, options);

@@ -1,20 +1,30 @@
-import {Provider} from 'nconf';
 import {v1 as uuid} from 'uuid';
 
-import { RabbitMQ } from './rabbitmq';
-import { Redis } from './redis';
-import { MongoDB } from './mongo';
+import { readFileSync, existsSync } from 'fs';
+
+import { Rabbit, RabbitOptions } from './rabbitmq';
+import { Redis, RedisOptions } from './redis';
+import { Mongo, MongoOptions } from './mongo';
 
 const pluginFunctions: Function[] = [];
 
+interface Config {
+  mq: boolean | RabbitOptions;
+  rabbit: boolean | RabbitOptions;
+  mongo: boolean | MongoOptions;
+  redis: boolean | RedisOptions;
+  store: boolean | RedisOptions;
+
+  [key: string]: unknown;
+}
 /**
  * Class representing the Io object.
  */
 class Io {
-  public config: Provider;
-  public mongo?: MongoDB;
-  public rabbit?: RabbitMQ;
-  public mq?: RabbitMQ;
+  public config: Config;
+  public mongo?: Mongo;
+  public rabbit?: Rabbit;
+  public mq?: Rabbit;
   public redis?: Redis;
   public store?: Redis;
 
@@ -26,27 +36,31 @@ class Io {
    *                  to override the default loaded file
    */
   public constructor() {
-    this.config = new Provider();
-    this.config.argv().file({ file: 'cog.json' }).env('_');
-
-    if (this.config.get('mongo')) {
-      this.mongo = new MongoDB(this);
+    if (!existsSync('cog.json')) {
+      console.error('Fatal Error: Could not parse cog.json file');
+      process.exit(1);
     }
 
-    if (this.config.get('mq') && !this.config.get('rabbit')) {
-      this.config.set('rabbit', this.config.get('mq'));
+    this.config = JSON.parse(readFileSync('cog.json', {encoding: 'utf-8'}));
+
+    if (this.config.mongo) {
+      this.mongo = new Mongo(this);
     }
 
-    if (this.config.get('rabbit')) {
-      this.rabbit = new RabbitMQ(this);
+    if (this.config.mq && !this.config.rabbit) {
+      this.config.rabbit = this.config.mq;
+    }
+
+    if (this.config.rabbit) {
+      this.rabbit = new Rabbit(this);
       this.mq = this.rabbit;
     }
 
-    if (this.config.get('store') && !this.config.get('redis')) {
-      this.config.get('store');
+    if (this.config.store && !this.config.redis) {
+      this.config.redis = this.config.store;
     }
 
-    if (this.config.get('redis')) {
+    if (this.config.redis) {
       this.redis = new Redis(this);
       this.store = this.redis;
     }
@@ -67,7 +81,7 @@ class Io {
    * Generate UUIDv1.
    * @returns {string} The unique ID.
    */
-  public generateUUID(): string {
+  public generateUuid(): string {
     return uuid();
   }
 }

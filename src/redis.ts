@@ -1,26 +1,24 @@
 import RedisClient from 'ioredis';
 import Io from './io';
 
+export { RedisOptions } from 'ioredis';
+
 export class Redis extends RedisClient {
   public options: RedisClient.RedisOptions;
 
   public constructor(io: Io) {
-    const config = io.config;
-    if (config.get('redis') === true) {
-      config.set('redis', {});
-    }
-    config.defaults({
-      store: {
-        redis: {
-          host: 'localhost',
-          port: 6379,
-          db: 0
-        }
-      }
-    });
+    const config: RedisClient.RedisOptions = Object.assign(
+      {
+        host: 'localhost',
+        port: 6379,
+        db: 0
+      },
+      typeof io.config.redis === 'boolean' ? {} : io.config.redis
+    );
 
-    super(config.get('redis'));
-    this.options = config.get('redis');
+    super(config);
+    this.options = config;
+    io.config.redis = this.options;
   }
 
   /**

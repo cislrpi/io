@@ -1,6 +1,6 @@
 {
   "name": "@cisl/io",
-  "version": "1.0.0-dev6",
+  "version": "1.0.0-dev7",
   "description": "A framework for building distributed applications",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

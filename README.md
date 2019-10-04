@@ -26,22 +26,14 @@ const otherIo = new Io();
 
 ### Configuration
 
-The `cog.json` file is parsed and saved as a `io.config` object, so that you can query any configurations with the following function:
-```js
-io.config.get('rootKey:nestedKey');
-```
-The config object also reads in command line arguments and environment variables.
-For environment variables, replace ":" with "_".
-You can use command line arguments to override settings in the cog.json file to temporarily switch exchanges for example.
-
-We use the [nconf](https://github.com/indexzero/nconf) to do this.
-For more information about the config object, you can read the nconf documentation.
+The configuration for applications using `@cisl/io` should be stored in the `cog.json` file. This is then internally stored
+as a JSON object at `io.config`.
 
 ### RabbitMQ
-RabbitMQ requires the `mq` value to be set, where `true` will use the defaults below. Any field not set will use these defaults:
+RabbitMQ requires the `rabbit` value to be set, where `true` will use the defaults below. Any field not set will use these defaults:
 ```json
 {
-  "mq": {
+  "rabbit": {
     "url": "localhost",
     "username": "guest",
     "password": "guest",
@@ -50,11 +42,10 @@ RabbitMQ requires the `mq` value to be set, where `true` will use the defaults b
   }
 }
 ```
-This configuration object has username and password in it,
-so please don't share it with others and don't commit it to your repository.
-Your applications can only communicate with each other if they use the same configuration.
+This configuration object has username and password in it, so please don't share it with others and don't commit it to your
+repository. Your applications can only communicate with each other if they use the same configuration.
 
-You can access the RabbitMQ CelIO object by using `io.mq`.
+You can access the RabbitMQ CelIO object by using `io.rabbit`.
 
 #### Usage
 ```typescript
@@ -69,24 +60,24 @@ interface RpcResponse {
 }
 
 // Publish to a RabbitMQ topic on the configured exchange
-io.mq.publishTopic(topic: string, content: Buffer | any, options: amqplib.Options.Publish = {}): void
+io.rabbit.publishTopic(topic: string, content: Buffer | any, options: amqplib.Options.Publish = {}): void
 
 // Listen to a topic for any new content
-io.mq.onTopic(topic: string, handler: PublishCallback, exchange?: string): Promise<any>
+io.rabbit.onTopic(topic: string, handler: PublishCallback, exchange?: string): Promise<any>
 
 // Publish to a RPC queue, expecting a callback through the promise
-io.mq.publishRpc(queue: string, content: Buffer | string, options: amqplib.Options.Publish = {}): Promise<RpcResponse>
+io.rabbit.publishRpc(queue: string, content: Buffer | string, options: amqplib.Options.Publish = {}): Promise<RpcResponse>
 
 // Listen on a RPC queue, sending content back through handler
-io.mq.onRpc(queue: string, handler: RpcReplyCallback, exclusive: boolean = true): void
+io.rabbit.onRpc(queue: string, handler: RpcReplyCallback, exclusive: boolean = true): void
 
 // Get a list of all queues
-io.mq.getQueues(): Promise<any>
+io.rabbit.getQueues(): Promise<any>
 
 // Listen for any queue creations
-io.mq.onQueueCreated(handler: (properties: amqplib.MessageProperties) => void): void
+io.rabbit.onQueueCreated(handler: (properties: amqplib.MessageProperties) => void): void
 // Listen for any queue deletions
-io.mq.onQueueDeleted(handler: (properties: amqplib.MessageProperties) => void): void
+io.rabbit.onQueueDeleted(handler: (properties: amqplib.MessageProperties) => void): void
 ```
 
 For `publishTopic` and `publishRpc`, see
@@ -107,54 +98,36 @@ subscribes to `transcript.result.final` and `transcript.result.interim`, whereas
 to `transcript.result.final`, `transcript.result.interim`, and `transcript.command`.
 
 ### Redis
+
+`@cisl/io` provides a shallow wrapper around the [ioredis](https://www.npmjs.com/package/ioredis) library,
+such that `io.redis` returns an instantiated and connected to `ioredis.Client` instance. See its
+documentation for additional details on using it.
+
 ```json
 {
-  "store": {
+  "redis": {
     "host": "localhost",
     "port": 6379,
     "db": 0
   }
 }
 ```
-The above are the defaults if you do not define any of them.
+The above are the defaults that will be used if any are missing. See
+(ioredis#options)[https://github.com/luin/ioredis/blob/HEAD/API.md#new-redisport-host-options] for
+the full list of options you can use when connecting the client.
 
 #### Usage
-```typescript
-io.store.database: string | number;
-io.redis: redis.RedisClient;
-
-```
-redis.set("foo", "bar");
-redis.get("foo", function(err, result) {
-  console.log(result);
-});
-redis.del("foo");
-
-// Or using a promise if the last argument isn't a function
-redis.get("foo").then(function(result) {
-  console.log(result);
-});
-
-// Arguments to commands are flattened, so the following are the same:
-redis.sadd("set", 1, 3, 5, 7);
-redis.sadd("set", [1, 3, 5, 7]);
-
-// All arguments are passed directly to the redis server:
-redis.set("key", 100, "EX", 10);
+```javascript
+io.redis;
+console.log(io.redis.getBuiltinCommands());
 ```
 
-io.store.hsetAsync(key: string, field: string, value: any): Promise<number>;
-io.store.hgetallAsync(key: string): Promise<any>;
-io.store.hgetAsync(key: string, field: string): Promise<any>;
-io.store.hdelAsync(key: string, field: string): Promise<number>;
-io.store.saddAsync(key: string, values: string[]): Promise<number>;
-io.store.smembersAsync(key: string): Promise<string[]>;
-io.store.sremAsync(key: string, value: any): Promise<number>;
-io.store.getsetAsync(key: string, value: any): Promise<any>;
-io.store.getAsync(key: string): Promise<any | null>;
-io.store.delAsync(key: string): Promise<any>;
-```
 ### Mongo
+
+`@cisl/io` provides a shallow wrapper around the [mongoose](https://www.npmjs.com/package/mongoose) library, along
+with several useful utility functions for interacting with it.
+
+To configure to the default setup, use `mongo: true`, or you can configure it for your needs using the following settings:
 ```json
 {
   "mongo": {
@@ -168,6 +141,8 @@ io.store.delAsync(key: string): Promise<any>;
 #### Usage
 ```typescript
 io.mongo.mongoose: mongoose.Mongoose;
+io.mongo.model<T>(name: string, schema: mongoose.Schema): Model<T>;
+io.mongo.disconnect();
 ```
 
 ## License

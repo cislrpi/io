@@ -2,7 +2,7 @@ import fs from 'fs';
 import request from 'request';
 import amqplib, { Replies } from 'amqplib';
 
-import Io from './io';
+import { Io } from './io';
 
 interface Response {
   content: Buffer | string | number | object;

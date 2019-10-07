@@ -1,5 +1,5 @@
 import mongoose, { Model, Document } from 'mongoose';
-import Io from './io';
+import { Io } from './io';
 
 export interface MongoOptions {
   host: string;

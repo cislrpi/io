@@ -13,14 +13,16 @@ npm install @cisl/io
 NodeJS
 ```js
 const io = require('@cisl/io');
-// or through class
-const Io = require('@cisl/io/io');
-const io = Io();
+// or through instantation of a new class
+const Io = require('@cisl/io/io').Io;
+const io = new Io();
 ```
 
 TypeScript:
 ```typescript
 import io from '@cisl/io';
+// or through instantation of a new class
+import { Io } from '@cisl/io/io';
 const otherIo = new Io();
 ```
 

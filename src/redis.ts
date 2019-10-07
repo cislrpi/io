@@ -1,5 +1,5 @@
 import RedisClient from 'ioredis';
-import Io from './io';
+import { Io } from './io';
 
 export { RedisOptions } from 'ioredis';
 

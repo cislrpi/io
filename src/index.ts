@@ -1,2 +1,2 @@
-import Io = require('./io');
+import { Io } from './io';
 export = new Io();

@@ -1,4 +1,4 @@
-import {v1 as uuid} from 'uuid';
+import { v1 as uuid } from 'uuid';
 
 import { readFileSync, existsSync } from 'fs';
 
@@ -8,7 +8,7 @@ import { Mongo, MongoOptions } from './mongo';
 
 const pluginFunctions: Function[] = [];
 
-interface Config {
+export interface Config {
   mq: boolean | RabbitOptions;
   rabbit: boolean | RabbitOptions;
   mongo: boolean | MongoOptions;
@@ -20,7 +20,7 @@ interface Config {
 /**
  * Class representing the Io object.
  */
-class Io {
+export class Io {
   public config: Config;
   public mongo?: Mongo;
   public rabbit?: Rabbit;
@@ -85,5 +85,3 @@ class Io {
     return uuid();
   }
 }
-
-export = Io;

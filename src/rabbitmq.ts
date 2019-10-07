@@ -4,7 +4,7 @@ import amqplib, { Replies } from 'amqplib';
 
 import { Io } from './io';
 
-interface Response {
+export interface Response {
   content: Buffer | string | number | object;
   message: amqplib.ConsumeMessage;
 }
@@ -200,7 +200,7 @@ export class Rabbit {
   /**
    * Make remote procedural call (RPC).
    */
-  public async publishRpc(queue_name: string, content: Buffer | string | number | object, options: amqplib.Options.Publish = {}): Promise<Response> {
+  public async publishRpc(queue_name: string, content: Buffer | string | number | object = Buffer.from(''), options: amqplib.Options.Publish = {}): Promise<Response> {
     let consumerTag: string;
     const channel = await this.pch;
     const queue = await channel.assertQueue('', {exclusive: true, autoDelete: true});

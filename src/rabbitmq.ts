@@ -325,19 +325,19 @@ export class Rabbit {
    * Subscribe to queue creation events
    * @param  {queueEventCallback} handler - Callback to handle the event.
    */
-  public onQueueCreated(handler: (properties: amqplib.MessageProperties) => void): void {
+  public onQueueCreated(handler: (queue_name: string, properties: amqplib.MessageProperties) => void): void {
     this.onTopic('queue.created', (response): void => {
-      handler(response.message.properties);
-    });
+      handler(response.message.properties.headers.name, response.message.properties);
+    }, 'amq.rabbitmq.event');
   }
 
   /**
    * Subscribe to queue deletion events
    * @param  {queueEventCallback} handler - Callback to handle the event.
    */
-  public onQueueDeleted(handler: (properties: amqplib.MessageProperties) => void): void {
+  public onQueueDeleted(handler: (queue_name: string, properties: amqplib.MessageProperties) => void): void {
     this.onTopic('queue.deleted', (response): void => {
-      handler(response.message.properties);
-    });
+      handler(response.message.properties.headers.name, response.message.properties);
+    }, 'amq.rabbitmq.event');
   }
 }

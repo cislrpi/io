@@ -49,30 +49,29 @@ You can access the RabbitMQ CelIO object by using `io.rabbit`.
 
 #### Usage
 ```typescript
-type PublishCallback = (content: Buffer | any, message: amqplib.ConsumeMessage) => void;
-
-type ReplyCallback = (content: Error | Buffer | any) => void;
-type RpcReplyCallback = (content: Buffer | any, reply: ReplyCallback, message: amqplib.ConsumeMessage) => void;
-
-interface RpcResponse {
-  content: Buffer | any;
+interface Response {
+  content: Buffer | string | number | object;
   message: amqplib.ConsumeMessage;
 }
 
+type ReplyCallback = (content: Error | Buffer | string | number | object) => void;
+type RpcReplyCallback = (response: Response, reply: ReplyCallback) => void;
+type PublishCallback = (response: Response) => void;
+
 // Publish to a RabbitMQ topic on the configured exchange
-io.rabbit.publishTopic(topic: string, content: Buffer | any, options: amqplib.Options.Publish = {}): void
+io.rabbit.publishTopic(topic: string, content: Buffer | string | number | object, options: amqplib.Options.Publish = {}): Promise<boolean>
 
 // Listen to a topic for any new content
-io.rabbit.onTopic(topic: string, handler: PublishCallback, exchange?: string): Promise<any>
+io.rabbit.onTopic(topic: string, handler: PublishCallback, exchange?: string): Promise<Replies.Consume>
 
 // Publish to a RPC queue, expecting a callback through the promise
-io.rabbit.publishRpc(queue: string, content: Buffer | string, options: amqplib.Options.Publish = {}): Promise<RpcResponse>
+io.rabbit.publishRpc(queue_name: string, content: Buffer | string | number | object, options: amqplib.Options.Publish = {}): Promise<Response>
 
 // Listen on a RPC queue, sending content back through handler
-io.rabbit.onRpc(queue: string, handler: RpcReplyCallback, exclusive: boolean = true): void
+io.rabbit.onRpc(queue_name: string, handler: RpcReplyCallback, exclusive = true): Promise<void>
 
 // Get a list of all queues
-io.rabbit.getQueues(): Promise<any>
+io.rabbit.getQueues(): Promise<unknown>
 
 // Listen for any queue creations
 io.rabbit.onQueueCreated(handler: (properties: amqplib.MessageProperties) => void): void
@@ -80,9 +79,38 @@ io.rabbit.onQueueCreated(handler: (properties: amqplib.MessageProperties) => voi
 io.rabbit.onQueueDeleted(handler: (properties: amqplib.MessageProperties) => void): void
 ```
 
-For `publishTopic` and `publishRpc`, see
+See
 [amqplib](http://www.squaremobius.net/amqp.node/channel_api.html#channel_publish) for acceptable
 values for the `options` argument.
+
+#### Publishing / Receiving and Content-Types
+
+For `publishTopic` and `publishRpc` allows taking in a variety of types, and internally parses it to
+a Buffer and setting the appropriate `content-type` before sending it along RabbitMQ. For example,
+calling:
+```js
+io.rabbit.publishTopic('test', {'test': true});
+```
+
+Will encode the JSON array into a Buffer and set the content-type appropriately to `application/json`.
+
+Conversely, for `onTopic` and `onRpc` will attempt to parse the content off RabbitMQ using the `content-type`.
+If no `content-type` is available or unrecognized, then it will return a Buffer for the content, whereas if
+the `content-type` is `application/json`, then `content` will be a JSON object. See the table below for correspondence
+between `content-type` and the expected type of `Response.content`.
+
+Finally, if you wish to override the automatic content-type selection on the `publish` functions, you can pass in one in
+the `options` value. Io will still handle automatic conversion
+of the value into a Buffer.
+
+| content-type             | value  |
+|--------------------------|--------|
+| text/string              | string |
+| text/number              | number |
+| application/json         | JSON   |
+| application/octet-stream | Buffer |
+| other                    | Buffer |
+
 
 #### Content-Type
 For publishing content, if a content-type is not specified and the content is not a `Buffer`, then

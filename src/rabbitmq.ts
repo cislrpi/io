@@ -17,6 +17,11 @@ type ReplyCallback = (content: Error | Buffer | string | number | object) => voi
 type RpcReplyCallback = (response: Response, reply: ReplyCallback) => void;
 type PublishCallback = (response: Response) => void;
 
+interface QueueState {
+  name: string;
+  state: string;
+}
+
 export interface RabbitOptions {
   url: string;
   hostname: string;
@@ -298,11 +303,11 @@ export class Rabbit {
    * Get a list of queues declared in the rabbitmq server.
    * @return {Promise}
    */
-  public getQueues(): Promise<unknown> {
+  public getQueues(): Promise<QueueState[]> {
     return new Promise((resolve, reject): void => {
       request({url: `${this.mgmturl}/queues/${this.vhost}?columns=state,name`, json: true}, (err, resp, body): void => {
         if (!err && resp.statusCode === 200) {
-          resolve(body);
+          resolve(JSON.parse(body));
         }
         else {
           if (err) {

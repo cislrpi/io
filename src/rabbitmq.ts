@@ -307,7 +307,7 @@ export class Rabbit {
     return new Promise((resolve, reject): void => {
       request({url: `${this.mgmturl}/queues/${this.vhost}?columns=state,name`, json: true}, (err, resp, body): void => {
         if (!err && resp.statusCode === 200) {
-          resolve(JSON.parse(body));
+          resolve(body);
         }
         else {
           if (err) {

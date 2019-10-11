@@ -158,7 +158,7 @@ export class Rabbit {
    * @param  {Object} [options] - Publishing options. Leaving it undefined is fine.
    * @return {void}
    */
-  public async publishTopic(topic: string, content: Buffer | string | number | object, options: amqplib.Options.Publish = {}): Promise<boolean> {
+  public async publishTopic(topic: string, content: Buffer | string | number | object = Buffer.from(''), options: amqplib.Options.Publish = {}): Promise<boolean> {
     const encodedContent = this.encodeContent(content);
     options.contentType = options.contentType || this.getContentType(content);
     const channel = await this.pch;

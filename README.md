@@ -1,4 +1,5 @@
-<div style="text-align:center"><img src="img/moon.svg" style="width: 200px" /></div>
+<p align="center"><img src="img/moon.svg" alt="drawing" width="400"/></p>
+
 
 # @cisl/io
 

@@ -1,8 +1,11 @@
 import fs from 'fs';
 import request from 'request';
 import amqplib, { Replies } from 'amqplib';
+import { Options } from 'amqplib/properties';
 
 import { Io } from './io';
+import { TLSSocketOptions } from 'tls';
+import { hostname } from 'os';
 
 export interface Response {
   content: Buffer | string | number | object;
@@ -23,14 +26,19 @@ interface QueueState {
 }
 
 export interface RabbitOptions {
-  url: string;
+  url?: string;
+  port?: number;
   hostname: string;
   username: string;
   password: string;
   exchange: string;
   vhost: string;
-  ca?: string;
   prefix?: string;
+  ssl?: boolean;
+  cert?: string;
+  key?: string;
+  ca?: string;
+  passphrase?: string;
 }
 
 /**
@@ -48,37 +56,57 @@ export class Rabbit {
   public constructor(io: Io) {
     this.options = Object.assign(
       {
-        url: 'localhost',
         username: 'guest',
         password: 'guest',
         exchange: 'amq.topic',
         vhost: '/',
-        hostname: 'localhost'
+        hostname: 'localhost',
+        port: 5672
       },
       typeof io.config.rabbit === 'boolean' ? {} : io.config.rabbit
     );
 
-    const url = this.options.url;
-    const sepPos = url.lastIndexOf('/');
-    if (sepPos > -1) {
-      this.options.vhost = url.substring(sepPos + 1);
-      this.options.hostname = url.substring(0, sepPos);
-    }
-    else {
-      this.options.hostname = this.options.url;
+    if (this.options.url) {
+      let url = this.options.url.replace(/^amqps?:\/\//, '');
+      const sepPos = url.lastIndexOf('/');
+      if (sepPos > -1) {
+        this.options.vhost = url.substring(sepPos + 1);
+        url = url.substring(0, sepPos);
+      }
+      const [ hostname, port ] = url.split(':', 2);
+      this.options.hostname = hostname;
+      if (port) {
+        this.options.port = parseInt(port);
+      }
     }
 
     const auth = `${this.options.username}:${this.options.password}`;
 
     let pconn = null;
-    let options;
-    if (this.options.ca && fs.existsSync(this.options.ca)) {
-      options = {
-        ca: [fs.readFileSync(this.options.ca)]
-      };
+    const connect_obj: Options.Connect = {
+      protocol: 'amqp',
+      hostname: this.options.hostname,
+      port: this.options.port,
+      username: this.options.username,
+      vhost: this.options.vhost
+    };
+    const connect_options: TLSSocketOptions = {};
+    if (this.options.ssl === true) {
+      if (!this.options.cert || !this.options.key || !this.options.ca) {
+        throw new Error('Missing arguments for using SSL for RabbitMQ');
+      }
+
+      connect_obj.protocol = 'amqps';
+      connect_options.cert = fs.readFileSync(this.options.cert);
+      connect_options.key = fs.readFileSync(this.options.key);
+      connect_options.ca = [fs.readFileSync(this.options.ca)];
+
+      if (this.options.passphrase) {
+        connect_options.passphrase = this.options.passphrase;
+      }
     }
 
-    pconn = amqplib.connect(`amqp://${auth}@${url}`, options);
+    pconn = amqplib.connect(connect_obj, connect_options);
     pconn.catch((err): void => {
       console.error(`RabbitMQ error: ${err}`);
       console.error(`Connection to the rabbitmq root vhost failed. Please make sure that your user ${this.options.username} can access the root vhost!`);

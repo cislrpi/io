@@ -1,6 +1,5 @@
-import { v1 as uuid } from 'uuid';
-
 import { readFileSync, existsSync } from 'fs';
+import { v1 as uuid } from 'uuid';
 
 import { Rabbit, RabbitOptions } from './rabbitmq';
 import { Redis, RedisOptions } from './redis';
@@ -17,6 +16,7 @@ export interface Config {
 
   [key: string]: unknown;
 }
+
 /**
  * Class representing the Io object.
  */

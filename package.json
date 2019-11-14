@@ -39,6 +39,7 @@
   "dependencies": {
     "@types/amqplib": "^0.5.12",
     "@types/ioredis": "^4.0.18",
+    "@types/lodash.merge": "^4.6.6",
     "@types/mongoose": "^5.5.3",
     "@types/node": "^12.0.3",
     "@types/request": "^2.48.1",

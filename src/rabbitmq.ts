@@ -5,7 +5,6 @@ import { Options } from 'amqplib/properties';
 
 import { Io } from './io';
 import { TLSSocketOptions } from 'tls';
-import { hostname } from 'os';
 
 export interface Response {
   content: Buffer | string | number | object;
@@ -80,14 +79,13 @@ export class Rabbit {
       }
     }
 
-    const auth = `${this.options.username}:${this.options.password}`;
-
     let pconn = null;
     const connect_obj: Options.Connect = {
       protocol: 'amqp',
       hostname: this.options.hostname,
       port: this.options.port,
       username: this.options.username,
+      password: this.options.password,
       vhost: this.options.vhost
     };
     const connect_options: TLSSocketOptions = {};
@@ -115,7 +113,7 @@ export class Rabbit {
 
     // Make a shared channel for publishing and subscribe
     this.pch = pconn.then((conn: amqplib.Connection): Promise<amqplib.Channel> => conn.createChannel());
-    this.mgmturl = `http://${auth}@${this.options.hostname}:15672/api`;
+    this.mgmturl = `http://${this.options.username}:${this.options.password}@${this.options.hostname}:15672/api`;
     this.vhost = this.options.vhost === '/' ? '%2f' : this.options.vhost;
     this.prefix = this.options.prefix;
     this.io = io;
@@ -237,6 +235,7 @@ export class Rabbit {
     let consumerTag: string;
     const channel = await this.pch;
     const queue = await channel.assertQueue('', {exclusive: true, autoDelete: true});
+
     return new Promise((resolve, reject): void => {
       options.correlationId = this.io.generateUuid();
       options.replyTo = queue.queue;
@@ -261,6 +260,7 @@ export class Rabbit {
             if (consumerTag) {
               channel.cancel(consumerTag);
             }
+
             if (msg.properties.headers.error) {
               reject(new Error(msg.properties.headers.error));
             }

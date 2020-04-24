@@ -30,10 +30,10 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://internal.cisl.rpi.edu/code/libraries/node/cisl/io"
+    "url": "https://github.com/cislrpi/io"
   },
   "publishConfig": {
-    "registry": "https://internal.cisl.rpi.edu/npm/"
+    "access": "public"
   },
   "license": "MIT",
   "dependencies": {
@@ -54,7 +54,7 @@
     "@typescript-eslint/eslint-plugin": "^2.3.1",
     "@typescript-eslint/parser": "^2.3.1",
     "eslint": "^6.4.0",
-    "tsc-publish": "^0.3.0",
+    "tsc-publish": "^0.5.0",
     "typescript": "^3.5.1"
   }
 }

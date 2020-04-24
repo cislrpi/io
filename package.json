@@ -46,7 +46,7 @@
     "@types/uuid": "^3.4.4",
     "amqplib": "^0.5.2",
     "ioredis": "^4.14.1",
-    "mongoose": "^5.6.6",
+    "mongoose": "^5.7.5",
     "request": "^2.88.0",
     "uuid": "^3.3.2"
   },

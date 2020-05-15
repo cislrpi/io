@@ -41,7 +41,7 @@ class Rabbit {
       exchange: 'amq.topic',
       vhost: '/',
       hostname: 'localhost',
-      port: 5672
+      port: 5672,
     });
 
     this.options = io.config.get<RabbitOptions>('rabbit');
@@ -67,7 +67,7 @@ class Rabbit {
       port: this.options.port,
       username: this.options.username,
       password: this.options.password,
-      vhost: this.options.vhost
+      vhost: this.options.vhost,
     };
     const connect_options: TLSSocketOptions = {};
     if (this.options.ssl === true) {
@@ -195,7 +195,7 @@ class Rabbit {
       if (msg !== null) {
         handler({
           content: this.parseContent(msg.content, msg.properties.contentType),
-          message: msg
+          message: msg,
         });
       }
     }, {noAck: true}).then((consume: amqplib.Replies.Consume): Subscription => {
@@ -204,7 +204,7 @@ class Rabbit {
         {
           unsubscribe: () => {
             return channel.cancel(consume.consumerTag);
-          }
+          },
         }
       );
     });
@@ -283,13 +283,13 @@ class Rabbit {
               Buffer.from(response.message),
               {
                 correlationId: msg.properties.correlationId,
-                headers: { error: response.message }
+                headers: { error: response.message },
               }
             );
           }
           else {
             const options: amqplib.Options.Publish = {
-              correlationId: msg.properties.correlationId
+              correlationId: msg.properties.correlationId,
             };
             const encodedContent = this.encodeContent(response);
             options.contentType = options.contentType || this.getContentType(response);
@@ -304,7 +304,7 @@ class Rabbit {
 
       handler({
         content: this.parseContent(msg.content, msg.properties.contentType),
-        message: msg
+        message: msg,
       }, reply);
     }, { noAck: true });
   }

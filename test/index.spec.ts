@@ -26,4 +26,4 @@ test('calling with options then no options returns same instance', () => {
   expect(io).toBeInstanceOf(Io);
   expect(io2).toBeInstanceOf(Io);
   expect(io).toStrictEqual(io2);
-})
+});

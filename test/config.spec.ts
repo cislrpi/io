@@ -48,7 +48,7 @@ test('get key expressly set undefined', () => {
 test('defaults', () => {
   const config = new Config({});
   config.defaults({
-    channels: ['far']
+    channels: ['far'],
   });
   expect(config.get('channels')).toStrictEqual(['far']);
 });

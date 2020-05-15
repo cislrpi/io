@@ -10,7 +10,7 @@ class Mongo {
     io.config.defaults({
       host: 'localhost',
       port: 27017,
-      db: 'cais'
+      db: 'cais',
     });
 
     this.options = io.config.get<MongoOptions>('mongo');
@@ -27,7 +27,7 @@ class Mongo {
       useNewUrlParser: true,
       useFindAndModify: false,
       useCreateIndex: true,
-      useUnifiedTopology: true
+      useUnifiedTopology: true,
     };
     if (this.options.user) {
       options.user = this.options.user;

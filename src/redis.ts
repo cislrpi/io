@@ -1,24 +1,19 @@
 import RedisClient from 'ioredis';
-import { Io } from './io';
+import Io from './io';
+import { RedisOptions } from './types';
 
-export { RedisOptions } from 'ioredis';
-
-export class Redis extends RedisClient {
-  public options: RedisClient.RedisOptions;
+class Redis extends RedisClient {
+  public options: RedisOptions;
 
   public constructor(io: Io) {
-    const config: RedisClient.RedisOptions = Object.assign(
-      {
-        host: 'localhost',
-        port: 6379,
-        db: 0
-      },
-      typeof io.config.redis === 'boolean' ? {} : io.config.redis
-    );
+    io.config.defaults({
+      host: 'localhost',
+      port: 6379,
+      db: 0,
+    });
 
-    super(config);
-    this.options = config;
-    io.config.redis = this.options;
+    super(io.config.get('redis'));
+    this.options = io.config.get<RedisOptions>('redis');
   }
 
   /**
@@ -40,3 +35,5 @@ export class Redis extends RedisClient {
     return subscriber;
   }
 }
+
+export = Redis;

@@ -1,28 +1,19 @@
 import mongoose, { Model, Document } from 'mongoose';
-import { Io } from './io';
+import Io from './io';
+import { MongoOptions } from './types';
 
-export interface MongoOptions {
-  host: string;
-  port: number;
-  db: string;
-  user?: string;
-  pass?: string;
-}
-
-export class Mongo {
+class Mongo {
   public mongoose: mongoose.Mongoose;
   public options: MongoOptions;
 
   public constructor(io: Io) {
-    this.options = Object.assign(
-      {
-        host: 'localhost',
-        port: 27017,
-        db: 'cais'
-      },
-      typeof io.config.mongo === 'boolean' ? {} : io.config.mongo
-    );
-    io.config.mongo = this.options;
+    io.config.defaults({
+      host: 'localhost',
+      port: 27017,
+      db: 'cais'
+    });
+
+    this.options = io.config.get<MongoOptions>('mongo');
 
     let conn_string = `mongodb://`;
     conn_string += `${this.options.host}`;
@@ -62,3 +53,5 @@ export class Mongo {
     return this.mongoose.disconnect();
   }
 }
+
+export = Mongo;

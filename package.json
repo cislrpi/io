@@ -5,7 +5,9 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "lint": "eslint src/*",
+    "test": "jest",
+    "lint": "eslint src/**/*.ts test/**/*.ts",
+    "lint:fix": "eslint --fix src/**/*.ts test/**/*.ts",
     "build": "tsc",
     "watch": "tsc -w",
     "prepublishOnly": "echo \"Do not run publish directly, run tsc-publish\" && exit 1",
@@ -36,10 +38,14 @@
     "access": "public"
   },
   "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/cislrpi/io/issues"
+  },
+  "homepage": "https://github.com/cislrpi/io#readme",
   "dependencies": {
+    "@cisl/cog-loader": "^1.0.0-dev.4",
     "@types/amqplib": "^0.5.12",
     "@types/ioredis": "^4.0.18",
-    "@types/lodash.merge": "^4.6.6",
     "@types/mongoose": "^5.5.3",
     "@types/node": "^12.0.3",
     "@types/request": "^2.48.1",
@@ -51,10 +57,13 @@
     "uuid": "^3.3.2"
   },
   "devDependencies": {
-    "@typescript-eslint/eslint-plugin": "^2.3.1",
-    "@typescript-eslint/parser": "^2.3.1",
+    "@types/jest": "^25.2.2",
+    "@typescript-eslint/eslint-plugin": "^2.33.0",
+    "@typescript-eslint/parser": "^2.33.0",
     "eslint": "^6.4.0",
+    "jest": "^25.5.4",
+    "ts-jest": "^25.5.1",
     "tsc-publish": "^0.5.0",
-    "typescript": "^3.5.1"
+    "typescript": "^3.9.0"
   }
 }

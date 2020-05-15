@@ -1,26 +1,18 @@
-import { readFileSync, existsSync } from 'fs';
 import { v1 as uuid } from 'uuid';
+import loadCogFile from '@cisl/cog-loader';
 
-import { Rabbit, RabbitOptions } from './rabbitmq';
-import { Redis, RedisOptions } from './redis';
-import { Mongo, MongoOptions } from './mongo';
+import { IoCog, IoOptions } from './types';
+import Rabbit from './rabbitmq';
+import Redis from './redis';
+import Mongo from './mongo';
+import Config from './config';
 
 const pluginFunctions: Function[] = [];
-
-export interface Config {
-  mq: boolean | RabbitOptions;
-  rabbit: boolean | RabbitOptions;
-  mongo: boolean | MongoOptions;
-  redis: boolean | RedisOptions;
-  store: boolean | RedisOptions;
-
-  [key: string]: unknown;
-}
 
 /**
  * Class representing the Io object.
  */
-export class Io {
+class Io {
   public config: Config;
   public mongo?: Mongo;
   public rabbit?: Rabbit;
@@ -35,32 +27,19 @@ export class Io {
    * @param  {string|object} [config] - string pointing to a file to use or an object containing settings
    *                  to override the default loaded file
    */
-  public constructor() {
-    if (!existsSync('cog.json')) {
-      console.error('Fatal Error: Could not parse cog.json file');
-      process.exit(1);
-    }
+  public constructor(options?: IoOptions) {
+    this.config = new Config((loadCogFile(options) as IoCog));
 
-    this.config = JSON.parse(readFileSync('cog.json', {encoding: 'utf-8'}));
-
-    if (this.config.mongo) {
+    if (this.config.has('mongo')) {
       this.mongo = new Mongo(this);
     }
 
-    if (this.config.mq && !this.config.rabbit) {
-      this.config.rabbit = this.config.mq;
-    }
-
-    if (this.config.rabbit) {
+    if (this.config.has('rabbit')) {
       this.rabbit = new Rabbit(this);
       this.mq = this.rabbit;
     }
 
-    if (this.config.store && !this.config.redis) {
-      this.config.redis = this.config.store;
-    }
-
-    if (this.config.redis) {
+    if (this.config.has('redis')) {
       this.redis = new Redis(this);
       this.store = this.redis;
     }
@@ -85,3 +64,5 @@ export class Io {
     return uuid();
   }
 }
+
+export = Io;

@@ -3,67 +3,48 @@ import request from 'request';
 import amqplib, { Replies } from 'amqplib';
 import { Options } from 'amqplib/properties';
 
-import { Io } from './io';
+import Io from './io';
 import { TLSSocketOptions } from 'tls';
 
-export interface Response {
-  content: Buffer | string | number | object;
-  message: amqplib.ConsumeMessage;
-}
+import { RabbitResponse, RabbitOptions } from './types';
 
 interface Subscription extends amqplib.Replies.Consume {
   unsubscribe: () => void;
 }
 
 type ReplyCallback = (content: Error | Buffer | string | number | object) => void;
-type RpcReplyCallback = (response: Response, reply: ReplyCallback) => void;
-type PublishCallback = (response: Response) => void;
+type RpcReplyCallback = (response: RabbitResponse, reply: ReplyCallback) => void;
+type PublishCallback = (response: RabbitResponse) => void;
 
 interface QueueState {
   name: string;
   state: string;
 }
 
-export interface RabbitOptions {
-  url?: string;
-  port?: number;
-  hostname: string;
-  username: string;
-  password: string;
-  exchange: string;
-  vhost: string;
-  prefix?: string;
-  ssl?: boolean;
-  cert?: string;
-  key?: string;
-  ca?: string;
-  passphrase?: string;
-}
-
 /**
  * Class representing the RabbitManager object.
  */
-export class Rabbit {
+class Rabbit {
   public options: RabbitOptions;
 
   private pch: Promise<amqplib.Channel>;
   private mgmturl: string;
   private vhost: string;
   private prefix?: string;
+  private exchange: string;
   private io: Io;
 
   public constructor(io: Io) {
-    this.options = Object.assign(
-      {
-        username: 'guest',
-        password: 'guest',
-        exchange: 'amq.topic',
-        vhost: '/',
-        hostname: 'localhost',
-        port: 5672
-      },
-      typeof io.config.rabbit === 'boolean' ? {} : io.config.rabbit
-    );
+    io.config.defaults({
+      username: 'guest',
+      password: 'guest',
+      exchange: 'amq.topic',
+      vhost: '/',
+      hostname: 'localhost',
+      port: 5672
+    });
+
+    this.options = io.config.get<RabbitOptions>('rabbit');
 
     if (this.options.url) {
       let url = this.options.url.replace(/^amqps?:\/\//, '');
@@ -114,8 +95,9 @@ export class Rabbit {
     // Make a shared channel for publishing and subscribe
     this.pch = pconn.then((conn: amqplib.Connection): Promise<amqplib.Channel> => conn.createChannel());
     this.mgmturl = `http://${this.options.username}:${this.options.password}@${this.options.hostname}:15672/api`;
-    this.vhost = this.options.vhost === '/' ? '%2f' : this.options.vhost;
+    this.vhost = this.options.vhost === '/' ? '%2f' : (this.options.vhost || '');
     this.prefix = this.options.prefix;
+    this.exchange = io.config.get<string>('rabbit:exchange');
     this.io = io;
   }
 
@@ -188,8 +170,8 @@ export class Rabbit {
     const encodedContent = this.encodeContent(content);
     options.contentType = options.contentType || this.getContentType(content);
     const channel = await this.pch;
-    await channel.checkExchange(this.options.exchange);
-    return channel.publish(this.options.exchange, topic, encodedContent, options);
+    await channel.checkExchange(this.exchange);
+    return channel.publish(this.exchange, topic, encodedContent, options);
   }
 
   /**
@@ -206,9 +188,9 @@ export class Rabbit {
 
     const channel_options = {exclusive: true, autoDelete: true};
     const channel = await this.pch;
-    await channel.checkExchange(this.options.exchange);
+    await channel.checkExchange(this.exchange);
     const queue = await channel.assertQueue('', channel_options);
-    await channel.bindQueue(queue.queue, exchange || this.options.exchange, topic);
+    await channel.bindQueue(queue.queue, exchange || this.exchange, topic);
     return channel.consume(queue.queue, (msg): void => {
       if (msg !== null) {
         handler({
@@ -231,7 +213,7 @@ export class Rabbit {
   /**
    * Make remote procedural call (RPC).
    */
-  public async publishRpc(queue_name: string, content: Buffer | string | number | object = Buffer.from(''), options: amqplib.Options.Publish = {}): Promise<Response> {
+  public async publishRpc(queue_name: string, content: Buffer | string | number | object = Buffer.from(''), options: amqplib.Options.Publish = {}): Promise<RabbitResponse> {
     let consumerTag: string;
     const channel = await this.pch;
     const queue = await channel.assertQueue('', {exclusive: true, autoDelete: true});
@@ -369,3 +351,5 @@ export class Rabbit {
     }, 'amq.rabbitmq.event');
   }
 }
+
+export = Rabbit;

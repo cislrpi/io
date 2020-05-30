@@ -328,9 +328,9 @@ class Rabbit {
         }
       };
 
-      const ackFunc = noAck ? undefined : () => {
+      const ackFunc = noAck ? undefined : (): void => {
         channel.ack(msg);
-      }
+      };
 
       (msg as RabbitMessage).content = this.parseContent(msg.content, options.contentType || msg.properties.contentType);
       handler((msg as RabbitMessage), reply, ackFunc);

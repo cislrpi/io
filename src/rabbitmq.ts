@@ -6,15 +6,17 @@ import { Options } from 'amqplib/properties';
 import Io from './io';
 import { TLSSocketOptions } from 'tls';
 
-import { RabbitResponse, RabbitOptions } from './types';
+import { RabbitMessage, RabbitOptions, RabbitOnTopicOptions, RabbitOnRpcOptions } from './types';
 
 interface Subscription extends amqplib.Replies.Consume {
   unsubscribe: () => void;
 }
 
+
+
 type ReplyCallback = (content: Error | Buffer | string | number | object) => void;
-type RpcReplyCallback = (response: RabbitResponse, reply: ReplyCallback) => void;
-type PublishCallback = (response: RabbitResponse) => void;
+type RpcReplyCallback = (message: RabbitMessage, reply: ReplyCallback) => void;
+type PublishCallback = (message: RabbitMessage) => void;
 
 interface QueueState {
   name: string;
@@ -108,7 +110,7 @@ class Rabbit {
     return topic_name;
   }
 
-  private parseContent(content: Buffer, content_type: string): Buffer | string | number {
+  private parseContent(content: Buffer, content_type?: string): Buffer | string | number {
     let final_content: Buffer | string | number = content;
     if (content_type === 'application/json') {
       final_content = JSON.parse(content.toString());
@@ -174,6 +176,8 @@ class Rabbit {
     return channel.publish(this.exchange, topic, encodedContent, options);
   }
 
+  public async onTopic(topic: string, handler: PublishCallback): Promise<Replies.Consume>;
+  public async onTopic(topic: string, options: RabbitOnTopicOptions, handler: PublishCallback): Promise<Replies.Consume>;
   /**
    * Subscribe to a topic.
    * @param  {string} topic - The topic to subscribe to. Should be of a form 'tag1.tag2...'. Supports wildcard.
@@ -183,20 +187,28 @@ class Rabbit {
    * @return {Promise} A subscription object which can be used to unsubscribe by calling
    * promise.then(subscription=>subscription.unsubscribe())
    */
-  public async onTopic(topic: string, handler: PublishCallback, exchange?: string): Promise<Replies.Consume> {
+  public onTopic(topic: string, options: RabbitOnTopicOptions|PublishCallback, handler?: PublishCallback): Promise<Replies.Consume> {
+    if (!handler && typeof options === 'function') {
+      return this._onTopic(topic, {}, options);
+    }
+    else if (handler) {
+      return this._onTopic(topic, options as RabbitOnTopicOptions, handler);
+    }
+    throw new Error('Invalid type signature');
+  }
+
+  private async _onTopic(topic: string, options: RabbitOnTopicOptions, handler: PublishCallback): Promise<Replies.Consume> {
     topic = this.resolveTopicName(topic);
 
     const channel_options = {exclusive: true, autoDelete: true};
     const channel = await this.pch;
     await channel.checkExchange(this.exchange);
     const queue = await channel.assertQueue('', channel_options);
-    await channel.bindQueue(queue.queue, exchange || this.exchange, topic);
+    await channel.bindQueue(queue.queue, options.exchange || this.exchange, topic);
     return channel.consume(queue.queue, (msg): void => {
       if (msg !== null) {
-        handler({
-          content: this.parseContent(msg.content, msg.properties.contentType),
-          message: msg,
-        });
+        (msg as RabbitMessage).content = this.parseContent(msg.content, options.contentType || msg.properties.contentType);
+        handler((msg as RabbitMessage));
       }
     }, {noAck: true}).then((consume: amqplib.Replies.Consume): Subscription => {
       return Object.assign(
@@ -213,7 +225,7 @@ class Rabbit {
   /**
    * Make remote procedural call (RPC).
    */
-  public async publishRpc(queue_name: string, content: Buffer | string | number | object = Buffer.from(''), options: amqplib.Options.Publish = {}): Promise<RabbitResponse> {
+  public async publishRpc(queue_name: string, content: Buffer | string | number | object = Buffer.from(''), options: amqplib.Options.Publish = {}): Promise<RabbitMessage> {
     let consumerTag: string;
     const channel = await this.pch;
     const queue = await channel.assertQueue('', {exclusive: true, autoDelete: true});
@@ -247,7 +259,8 @@ class Rabbit {
               reject(new Error(msg.properties.headers.error));
             }
             else {
-              resolve({content: this.parseContent(msg.content, msg.properties.contentType), message: msg});
+              (msg as RabbitMessage).content = this.parseContent(msg.content, msg.properties.contentType);
+              resolve((msg as RabbitMessage));
             }
           }
           else {
@@ -262,13 +275,25 @@ class Rabbit {
     });
   }
 
+  public async onRpc(queue_name: string, handler: RpcReplyCallback): Promise<void>;
+  public async onRpc(queue_name: string, options: RabbitOnRpcOptions, handler: RpcReplyCallback): Promise<void>;
+  public onRpc(queue_name: string, options: RabbitOnRpcOptions|RpcReplyCallback, handler?: RpcReplyCallback): Promise<void> {
+    if (!handler && typeof options === 'function') {
+      return this._onRpc(queue_name, {}, options);
+    }
+    else if (handler) {
+      return this._onRpc(queue_name, options as RabbitOnRpcOptions, handler);
+    }
+    throw new Error('Invalid type signature');
+  }
+
   /**
    * Receive RPCs from a queue and handle them.
    */
-  public async onRpc(queue_name: string, handler: RpcReplyCallback, exclusive = true): Promise<void> {
+  public async _onRpc(queue_name: string, options: RabbitOnRpcOptions, handler: RpcReplyCallback): Promise<void> {
     const channel = await this.pch;
     channel.prefetch(1);
-    const queue = await channel.assertQueue(queue_name, {exclusive, autoDelete: true});
+    const queue = await channel.assertQueue(queue_name, {exclusive: options.exclusive || true, autoDelete: true});
     await channel.consume(queue.queue, (msg: amqplib.ConsumeMessage | null) => {
       let replyCount = 0;
       const reply: ReplyCallback = (response: Error | Buffer | string | number | object): void => {
@@ -288,12 +313,12 @@ class Rabbit {
             );
           }
           else {
-            const options: amqplib.Options.Publish = {
+            const publishOptions: amqplib.Options.Publish = {
               correlationId: msg.properties.correlationId,
             };
             const encodedContent = this.encodeContent(response);
-            options.contentType = options.contentType || this.getContentType(response);
-            channel.sendToQueue(msg.properties.replyTo, encodedContent, options);
+            publishOptions.contentType = options.contentType || this.getContentType(response);
+            channel.sendToQueue(msg.properties.replyTo, encodedContent, publishOptions);
           }
         }
       };
@@ -302,10 +327,8 @@ class Rabbit {
         throw new Error('Request for doCall was null');
       }
 
-      handler({
-        content: this.parseContent(msg.content, msg.properties.contentType),
-        message: msg,
-      }, reply);
+      (msg as RabbitMessage).content = this.parseContent(msg.content, options.contentType || msg.properties.contentType);
+      handler((msg as RabbitMessage), reply);
     }, { noAck: true });
   }
 
@@ -336,9 +359,9 @@ class Rabbit {
    * @param  {queueEventCallback} handler - Callback to handle the event.
    */
   public onQueueCreated(handler: (queue_name: string, properties: amqplib.MessageProperties) => void): void {
-    this.onTopic('queue.created', (response): void => {
-      handler(response.message.properties.headers.name, response.message.properties);
-    }, 'amq.rabbitmq.event');
+    this.onTopic('queue.created', {exchange: 'amq.rabbitmq.event'}, (message): void => {
+      handler(message.properties.headers.name, message.properties);
+    });
   }
 
   /**
@@ -346,9 +369,9 @@ class Rabbit {
    * @param  {queueEventCallback} handler - Callback to handle the event.
    */
   public onQueueDeleted(handler: (queue_name: string, properties: amqplib.MessageProperties) => void): void {
-    this.onTopic('queue.deleted', (response): void => {
-      handler(response.message.properties.headers.name, response.message.properties);
-    }, 'amq.rabbitmq.event');
+    this.onTopic('queue.deleted', {exchange: 'amq.rabbitmq.event'}, (message): void => {
+      handler(message.properties.headers.name, message.properties);
+    });
   }
 }
 

@@ -1,5 +1,5 @@
 import { Cog, CogLoaderOptions } from '@cisl/cog-loader';
-import { ConsumeMessage } from 'amqplib';
+import { Message } from 'amqplib';
 
 import { RedisOptions } from 'ioredis';
 export { RedisOptions } from 'ioredis';
@@ -25,9 +25,21 @@ export interface IoCog extends Cog {
   [key: string]: unknown;
 }
 
-export interface RabbitResponse {
+export interface RabbitMessage extends Omit<Message, 'content'> {
   content: Buffer | string | number | object;
-  message: ConsumeMessage;
+}
+
+interface RabbitBaseOnOptions {
+  contentType?: string;
+}
+
+export interface RabbitOnTopicOptions extends RabbitBaseOnOptions {
+  exchange?: string;
+}
+
+export interface RabbitOnRpcOptions extends RabbitBaseOnOptions {
+  /** set whether RPC queue is exclusive. Defaults to true. */
+  exclusive?: boolean;
 }
 
 export interface RabbitOptions {

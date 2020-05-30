@@ -3,3 +3,8 @@ test
 cog*
 dump.rdb
 temp.jpg
+img/
+.github/
+src/
+jest.config.js
+tsconfig.*

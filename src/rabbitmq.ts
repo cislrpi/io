@@ -15,7 +15,7 @@ interface Subscription extends amqplib.Replies.Consume {
 
 
 type ReplyCallback = (content: Error | Buffer | string | number | object) => void;
-type RpcReplyCallback = (message: RabbitMessage, reply: ReplyCallback) => void;
+type RpcReplyCallback = (message: RabbitMessage, reply: ReplyCallback, awkFunc?: () => void) => void;
 type PublishCallback = (message: RabbitMessage) => void;
 
 interface QueueState {
@@ -292,10 +292,15 @@ class Rabbit {
    */
   public async _onRpc(queue_name: string, options: RabbitOnRpcOptions, handler: RpcReplyCallback): Promise<void> {
     const channel = await this.pch;
+    const noAck = handler.length < 3;
     channel.prefetch(1);
     const queue = await channel.assertQueue(queue_name, {exclusive: options.exclusive || true, autoDelete: true});
     await channel.consume(queue.queue, (msg: amqplib.ConsumeMessage | null) => {
       let replyCount = 0;
+      if (msg === null) {
+        throw new Error('Request for onRpc was null');
+      }
+
       const reply: ReplyCallback = (response: Error | Buffer | string | number | object): void => {
         if (replyCount >= 1) {
           throw new Error('Replied more than once.');
@@ -323,13 +328,13 @@ class Rabbit {
         }
       };
 
-      if (msg === null) {
-        throw new Error('Request for doCall was null');
+      const ackFunc = noAck ? undefined : () => {
+        channel.ack(msg);
       }
 
       (msg as RabbitMessage).content = this.parseContent(msg.content, options.contentType || msg.properties.contentType);
-      handler((msg as RabbitMessage), reply);
-    }, { noAck: true });
+      handler((msg as RabbitMessage), reply, ackFunc);
+    }, { noAck });
   }
 
   /**

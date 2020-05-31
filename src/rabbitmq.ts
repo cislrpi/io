@@ -36,12 +36,14 @@ export class Rabbit {
 
   public constructor(io: Io) {
     io.config.defaults({
-      username: 'guest',
-      password: 'guest',
-      exchange: 'amq.topic',
-      vhost: '/',
-      hostname: 'localhost',
-      port: 5672,
+      rabbit: {
+        username: 'guest',
+        password: 'guest',
+        exchange: 'amq.topic',
+        vhost: '/',
+        hostname: 'localhost',
+        port: 5672,
+      },
     });
 
     this.options = io.config.get<RabbitOptions>('rabbit');

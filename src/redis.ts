@@ -7,9 +7,11 @@ export class Redis extends RedisClient {
 
   public constructor(io: Io) {
     io.config.defaults({
-      host: 'localhost',
-      port: 6379,
-      db: 0,
+      redis: {
+        host: 'localhost',
+        port: 6379,
+        db: 0,
+      },
     });
 
     super(io.config.get('redis'));

@@ -39,12 +39,10 @@ export class Io {
 
     if (this.config.has('rabbit')) {
       this.rabbit = new Rabbit(this);
-      this.mq = this.rabbit;
     }
 
     if (this.config.has('redis')) {
       this.redis = new Redis(this);
-      this.store = this.redis;
     }
 
     for (const pluginFunction of pluginFunctions) {

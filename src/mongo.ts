@@ -8,9 +8,11 @@ export class Mongo {
 
   public constructor(io: Io) {
     io.config.defaults({
-      host: 'localhost',
-      port: 27017,
-      db: 'cais',
+      mongo: {
+        host: 'localhost',
+        port: 27017,
+        db: 'cais',
+      },
     });
 
     this.options = io.config.get<MongoOptions>('mongo');

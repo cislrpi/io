@@ -185,6 +185,22 @@ io.mongo.model<T>(name: string, schema: mongoose.Schema): Model<T>;
 io.mongo.disconnect();
 ```
 
+## Registering Plugins
+
+To extend the behavior of `@cisl/io`, you can register plugins. Io instances will only have access
+to plugins registered before they were created. To register a plugin, use the `registerPlugins` function
+available off the `io` import:
+
+```javascript
+const io = require('@cisl/io');
+const { registerSpeaker } = require('@cisl/io-speaker');
+const { registerDisplay } = require('@cisl/io-display');
+const { registerTranscript } = require('@cisl/io-transcript');
+
+io.registerPlugins(registerSpeaker);
+io.registerPlugins(registerDisplay, registerTranscript);
+```
+
 ## License
 
 [MIT License](LICENSE)

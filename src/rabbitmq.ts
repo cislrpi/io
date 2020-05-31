@@ -6,15 +6,13 @@ import { Options } from 'amqplib/properties';
 import Io from './io';
 import { TLSSocketOptions } from 'tls';
 
-import { RabbitMessage, RabbitOptions, RabbitOnTopicOptions, RabbitOnRpcOptions } from './types';
+import { RabbitMessage, RabbitOptions, RabbitOnTopicOptions, RabbitOnRpcOptions, RabbitContentType } from './types';
 
 interface Subscription extends amqplib.Replies.Consume {
   unsubscribe: () => void;
 }
 
-
-
-type ReplyCallback = (content: Error | Buffer | string | number | object) => void;
+type ReplyCallback = (content: Error | Buffer | string | number | Record<string, unknown>) => void;
 type RpcReplyCallback = (message: RabbitMessage, reply: ReplyCallback, awkFunc?: () => void) => void;
 type PublishCallback = (message: RabbitMessage) => void;
 
@@ -26,7 +24,7 @@ interface QueueState {
 /**
  * Class representing the RabbitManager object.
  */
-class Rabbit {
+export class Rabbit {
   public options: RabbitOptions;
 
   private pch: Promise<amqplib.Channel>;
@@ -124,7 +122,7 @@ class Rabbit {
     return final_content;
   }
 
-  private getContentType(content: Buffer | string | number | object): string {
+  private getContentType(content: RabbitContentType): string {
     if (Buffer.isBuffer(content)) {
       return 'application/octet-stream';
     }
@@ -139,7 +137,7 @@ class Rabbit {
     }
   }
 
-  private encodeContent(content: Buffer | string | number | object): Buffer {
+  private encodeContent(content: RabbitContentType): Buffer {
     let final: Buffer;
     if (!Buffer.isBuffer(content)) {
       let string_content = '';
@@ -168,7 +166,7 @@ class Rabbit {
    * @param  {Object} [options] - Publishing options. Leaving it undefined is fine.
    * @return {void}
    */
-  public async publishTopic(topic: string, content: Buffer | string | number | object = Buffer.from(''), options: amqplib.Options.Publish = {}): Promise<boolean> {
+  public async publishTopic(topic: string, content: RabbitContentType = Buffer.from(''), options: amqplib.Options.Publish = {}): Promise<boolean> {
     const encodedContent = this.encodeContent(content);
     options.contentType = options.contentType || this.getContentType(content);
     const channel = await this.pch;
@@ -217,7 +215,7 @@ class Rabbit {
           unsubscribe: () => {
             return channel.cancel(consume.consumerTag);
           },
-        }
+        },
       );
     });
   }
@@ -225,7 +223,7 @@ class Rabbit {
   /**
    * Make remote procedural call (RPC).
    */
-  public async publishRpc(queue_name: string, content: Buffer | string | number | object = Buffer.from(''), options: amqplib.Options.Publish = {}): Promise<RabbitMessage> {
+  public async publishRpc(queue_name: string, content: RabbitContentType = Buffer.from(''), options: amqplib.Options.Publish = {}): Promise<RabbitMessage> {
     let consumerTag: string;
     const channel = await this.pch;
     const queue = await channel.assertQueue('', {exclusive: true, autoDelete: true});
@@ -301,7 +299,7 @@ class Rabbit {
         throw new Error('Request for onRpc was null');
       }
 
-      const reply: ReplyCallback = (response: Error | Buffer | string | number | object): void => {
+      const reply: ReplyCallback = (response: Error | RabbitContentType): void => {
         if (replyCount >= 1) {
           throw new Error('Replied more than once.');
         }
@@ -314,7 +312,7 @@ class Rabbit {
               {
                 correlationId: msg.properties.correlationId,
                 headers: { error: response.message },
-              }
+              },
             );
           }
           else {
@@ -380,4 +378,4 @@ class Rabbit {
   }
 }
 
-export = Rabbit;
+export default Rabbit;

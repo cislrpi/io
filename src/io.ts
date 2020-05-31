@@ -7,12 +7,15 @@ import Redis from './redis';
 import Mongo from './mongo';
 import Config from './config';
 
-const pluginFunctions: Function[] = [];
+const pluginFunctions: ((io: Io) => void)[] = [];
 
 /**
  * Class representing the Io object.
+ *
+ * Note, we must export this as a regular class to allow for module
+ * augmentation in plugins.
  */
-class Io {
+export class Io {
   public config: Config;
   public mongo?: Mongo;
   public rabbit?: Rabbit;
@@ -49,7 +52,7 @@ class Io {
     }
   }
 
-  public registerPlugins(...registerFunctions: Function[]): void {
+  public registerPlugins(...registerFunctions: ((io: Io) => void)[]): void {
     for (const registerFunction of registerFunctions) {
       registerFunction(this);
     }
@@ -65,4 +68,4 @@ class Io {
   }
 }
 
-export = Io;
+export default Io;

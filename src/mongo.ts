@@ -2,7 +2,7 @@ import mongoose, { Model, Document } from 'mongoose';
 import Io from './io';
 import { MongoOptions } from './types';
 
-class Mongo {
+export class Mongo {
   public mongoose: mongoose.Mongoose;
   public options: MongoOptions;
 
@@ -54,4 +54,4 @@ class Mongo {
   }
 }
 
-export = Mongo;
+export default Mongo;

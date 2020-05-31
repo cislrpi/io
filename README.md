@@ -1,4 +1,4 @@
-<p align="center"><img src="img/moon.svg" alt="drawing" width="400"/></p>
+<p style="text-align: center"><img src="img/moon.svg" alt="drawing" width="400"/></p>
 
 
 # @cisl/io
@@ -6,14 +6,16 @@
 A framework for building distributed applications and the coolest of Jupiter's moons.
 
 ## Installation
+
 ```bash
 npm install @cisl/io
 ```
 
 ## Usage
+
 NodeJS
 ```js
-const io = require('@cisl/io');
+const io = require('@cisl/io')();
 // or through instantation of a new class
 const Io = require('@cisl/io/io').Io;
 const io = new Io();
@@ -51,15 +53,18 @@ repository. Your applications can only communicate with each other if they use t
 You can access the RabbitMQ CelIO object by using `io.rabbit`.
 
 #### Usage
+
 ```typescript
-interface Response {
+// where Message is an interface from https://www.squaremobius.net/amqp.node/
+interface RabbitMessage extends Omit<Message, 'content'> {
   content: Buffer | string | number | object;
-  message: amqplib.ConsumeMessage;
+  fields: MessageFields;
+  properties: MessageProperties;
 }
 
 type ReplyCallback = (content: Error | Buffer | string | number | object) => void;
-type RpcReplyCallback = (response: Response, reply: ReplyCallback) => void;
-type PublishCallback = (response: Response) => void;
+type RpcReplyCallback = (message: RabbitMessage, reply: ReplyCallback, awkFunc?: () => void) => void;
+type PublishCallback = (message: RabbitMessage) => void;
 
 // Publish to a RabbitMQ topic on the configured exchange
 io.rabbit.publishTopic(topic: string, content: Buffer | string | number | object, options: amqplib.Options.Publish = {}): Promise<boolean>
@@ -116,6 +121,7 @@ of the value into a Buffer.
 
 
 #### Content-Type
+
 For publishing content, if a content-type is not specified and the content is not a `Buffer`, then
 `Io` will assume that it can be run through `JSON.stringify` and will set the content-type to
 `application/json` automatically. On receving content, if the content-type is set to `application/json`,
@@ -123,6 +129,7 @@ then `Io` will automatically run `JSON.parse` and return that content, else it w
 object for the user to manually deal with.
 
 #### Queue Names
+
 When subscribing to events, you can include in topic name wildcards `*` and `#`.
 `*` substitues one word, and `#` substitues multiple words. For example, `transcript.result.*`
 subscribes to `transcript.result.final` and `transcript.result.interim`, whereas `transcript.#` subscribes
@@ -148,6 +155,7 @@ The above are the defaults that will be used if any are missing. See
 the full list of options you can use when connecting the client.
 
 #### Usage
+
 ```javascript
 io.redis;
 console.log(io.redis.getBuiltinCommands());
@@ -170,6 +178,7 @@ To configure to the default setup, use `mongo: true`, or you can configure it fo
 ```
 
 #### Usage
+
 ```typescript
 io.mongo.mongoose: mongoose.Mongoose;
 io.mongo.model<T>(name: string, schema: mongoose.Schema): Model<T>;
@@ -177,7 +186,9 @@ io.mongo.disconnect();
 ```
 
 ## License
+
 [MIT License](LICENSE)
 
 ## Icon Attribution
+
 [Moon](https://thenounproject.com/search/?q=moon&i=139166) by MarkieAnn Packer from the Noun Project

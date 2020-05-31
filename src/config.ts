@@ -1,6 +1,6 @@
 import { IoCog } from './types';
 
-class Config {
+export class Config {
   private _config: IoCog;
 
   constructor(config: IoCog) {
@@ -71,4 +71,4 @@ class Config {
   }
 }
 
-export = Config;
+export default Config;

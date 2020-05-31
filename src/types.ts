@@ -25,8 +25,10 @@ export interface IoCog extends Cog {
   [key: string]: unknown;
 }
 
+export type RabbitContentType = Buffer | string | number | Record<string, unknown>;
+
 export interface RabbitMessage extends Omit<Message, 'content'> {
-  content: Buffer | string | number | object;
+  content: RabbitContentType;
 }
 
 interface RabbitBaseOnOptions {

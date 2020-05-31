@@ -2,7 +2,7 @@ import RedisClient from 'ioredis';
 import Io from './io';
 import { RedisOptions } from './types';
 
-class Redis extends RedisClient {
+export class Redis extends RedisClient {
   public options: RedisOptions;
 
   public constructor(io: Io) {
@@ -22,7 +22,7 @@ class Redis extends RedisClient {
    * @param  {function} handler - Callback function to handle the change event
    * @returns {any} - The subscriber. Use subsriber.unsubscribe((err, result)=>{}) to unsubscribe.
    */
-  public onChange(key: string, handler: Function): RedisClient.Redis {
+  public onChange(key: string, handler: (event: unknown) => void): RedisClient.Redis {
     const keyChannel = `__keyspace@${this.options.db}__:${key}`;
 
     const subscriber = this.duplicate();
@@ -36,4 +36,4 @@ class Redis extends RedisClient {
   }
 }
 
-export = Redis;
+export default Redis;

@@ -50,13 +50,6 @@ export class Io {
     }
   }
 
-  public registerPlugins(...registerFunctions: ((io: Io) => void)[]): void {
-    for (const registerFunction of registerFunctions) {
-      registerFunction(this);
-    }
-    pluginFunctions.concat(registerFunctions);
-  }
-
   /**
    * Generate UUIDv1.
    * @returns {string} The unique ID.
@@ -64,6 +57,10 @@ export class Io {
   public generateUuid(): string {
     return uuid();
   }
+}
+
+export function registerPlugins(...registerFunctions: ((io: Io) => void)[]): void {
+  pluginFunctions.concat(registerFunctions);
 }
 
 export default Io;

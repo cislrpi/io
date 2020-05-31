@@ -1,5 +1,5 @@
 import { createHash } from 'crypto';
-import Io from './io';
+import Io, { registerPlugins } from './io';
 import { IoOptions } from './types';
 
 const instances: {[key: string]: Io} = {};
@@ -18,5 +18,9 @@ function io(options?: IoOptions): Io {
   }
   return instances[hash];
 }
+
+io.registerPlugins = (...registerFunctions: ((io: Io) => void)[]): void => {
+  registerPlugins(...registerFunctions);
+};
 
 export = io;

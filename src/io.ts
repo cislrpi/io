@@ -60,7 +60,7 @@ export class Io {
 }
 
 export function registerPlugins(...registerFunctions: ((io: Io) => void)[]): void {
-  pluginFunctions.concat(registerFunctions);
+  pluginFunctions.push(...registerFunctions);
 }
 
 export default Io;

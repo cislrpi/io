@@ -1,7 +1,7 @@
 import { join } from 'path';
 
 import loadIo from '../src/index';
-import Io from '../src/io';
+import { Io } from '../src/io';
 
 const spy = jest.spyOn(process, 'cwd');
 spy.mockReturnValue(join(__dirname, 'data'));

@@ -19,9 +19,7 @@ export class Io {
   public config: Config;
   public mongo?: Mongo;
   public rabbit?: Rabbit;
-  public mq?: Rabbit;
   public redis?: Redis;
-  public store?: Redis;
 
   public plugins: {[key: string]: Plugin} = {};
 

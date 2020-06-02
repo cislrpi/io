@@ -2,8 +2,7 @@ import { createHash } from 'crypto';
 import Io, { registerPlugins } from './io';
 import { IoOptions } from './types';
 
-const instances: {[key: string]: Io} = {};
-
+let instances: {[key: string]: Io} = {};
 const emptyHash = createHash('md5').update('').digest('hex');
 
 function io(options?: IoOptions): Io {
@@ -18,6 +17,11 @@ function io(options?: IoOptions): Io {
   }
   return instances[hash];
 }
+
+// utility function, should really be used just for testing
+io.clearInstances = (): void => {
+  instances = {};
+};
 
 io.registerPlugins = (...registerFunctions: ((io: Io) => void)[]): void => {
   registerPlugins(...registerFunctions);

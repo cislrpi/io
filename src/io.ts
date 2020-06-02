@@ -2,7 +2,7 @@ import { v1 as uuid } from 'uuid';
 import loadCogFile from '@cisl/cog-loader';
 
 import { IoCog, IoOptions } from './types';
-import Rabbit from './rabbitmq';
+import Rabbit from './rabbit';
 import Redis from './redis';
 import Mongo from './mongo';
 import Config from './config';

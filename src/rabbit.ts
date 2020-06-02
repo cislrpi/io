@@ -12,9 +12,9 @@ interface Subscription extends amqplib.Replies.Consume {
   unsubscribe: () => void;
 }
 
-type ReplyCallback = (content: Error | Buffer | string | number | Record<string, unknown>) => void;
-type RpcReplyCallback = (message: RabbitMessage, reply: ReplyCallback, awkFunc?: () => void) => void;
-type PublishCallback = (message: RabbitMessage) => void;
+type ReplyCallback = (content: Error | RabbitContentType) => void;
+type RpcReplyCallback = (message: RabbitMessage, reply: ReplyCallback, awkFunc: (() => void) | undefined | Error, err?: Error | undefined ) => void;
+type PublishCallback = (message: RabbitMessage, err: Error | undefined) => void;
 
 interface QueueState {
   name: string;
@@ -110,8 +110,8 @@ export class Rabbit {
     return topic_name;
   }
 
-  private parseContent(content: Buffer, content_type?: string): Buffer | string | number {
-    let final_content: Buffer | string | number = content;
+  private parseContent(content: Buffer, content_type?: string): RabbitContentType {
+    let final_content: RabbitContentType = content;
     if (content_type === 'application/json') {
       final_content = JSON.parse(content.toString());
     }
@@ -207,8 +207,14 @@ export class Rabbit {
     await channel.bindQueue(queue.queue, options.exchange || this.exchange, topic);
     return channel.consume(queue.queue, (msg): void => {
       if (msg !== null) {
-        (msg as RabbitMessage).content = this.parseContent(msg.content, options.contentType || msg.properties.contentType);
-        handler((msg as RabbitMessage));
+        let err;
+        try {
+          (msg as RabbitMessage).content = this.parseContent(msg.content, options.contentType || msg.properties.contentType);
+        }
+        catch (exc) {
+          err = exc;
+        }
+        handler((msg as RabbitMessage), err);
       }
     }, {noAck: true}).then((consume: amqplib.Replies.Consume): Subscription => {
       return Object.assign(
@@ -229,7 +235,6 @@ export class Rabbit {
     let consumerTag: string;
     const channel = await this.pch;
     const queue = await channel.assertQueue('', {exclusive: true, autoDelete: true});
-
     return new Promise((resolve, reject): void => {
       options.correlationId = this.io.generateUuid();
       options.replyTo = queue.queue;
@@ -331,9 +336,20 @@ export class Rabbit {
       const ackFunc = noAck ? undefined : (): void => {
         channel.ack(msg);
       };
+      let err;
+      try {
+        (msg as RabbitMessage).content = this.parseContent(msg.content, options.contentType || msg.properties.contentType);
+      }
+      catch (exc) {
+        err = exc;
+      }
 
-      (msg as RabbitMessage).content = this.parseContent(msg.content, options.contentType || msg.properties.contentType);
-      handler((msg as RabbitMessage), reply, ackFunc);
+      if (ackFunc) {
+        handler((msg as RabbitMessage), reply, ackFunc, err);
+      }
+      else {
+        handler((msg as RabbitMessage), reply, err);
+      }
     }, { noAck });
   }
 

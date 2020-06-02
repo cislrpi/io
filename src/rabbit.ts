@@ -27,6 +27,7 @@ interface QueueState {
 export class Rabbit {
   public options: RabbitOptions;
 
+  private conn: amqplib.Connection | null;
   private pch: Promise<amqplib.Channel>;
   private mgmturl: string;
   private vhost: string;
@@ -87,7 +88,11 @@ export class Rabbit {
       }
     }
 
+    this.conn = null;
     pconn = amqplib.connect(connect_obj, connect_options);
+    pconn.then((conn) => {
+      this.conn = conn;
+    });
     pconn.catch((err): void => {
       console.error(`RabbitMQ error: ${err}`);
       console.error(`Connection to the rabbitmq root vhost failed. Please make sure that your user ${this.options.username} can access the root vhost!`);
@@ -101,6 +106,13 @@ export class Rabbit {
     this.prefix = this.options.prefix;
     this.exchange = io.config.get<string>('rabbit:exchange');
     this.io = io;
+  }
+
+  public close(): Promise<void> {
+    if (this.conn) {
+      return this.conn.close();
+    }
+    return new Promise((resolve) => resolve());
   }
 
   private resolveTopicName(topic_name: string): string {
@@ -252,12 +264,12 @@ export class Rabbit {
         }, options.expiration + 100);
       }
 
-      channel.consume(queue.queue, (msg) => {
+      channel.consume(queue.queue, async (msg) => {
         if (msg !== null) {
           if (msg.properties.correlationId === options.correlationId) {
             clearTimeout(timeoutId);
             if (consumerTag) {
-              channel.cancel(consumerTag);
+              await channel.cancel(consumerTag);
             }
 
             if (msg.properties.headers.error) {

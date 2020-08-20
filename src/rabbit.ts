@@ -43,7 +43,6 @@ export class Rabbit {
         exchange: 'amq.topic',
         vhost: '/',
         hostname: 'localhost',
-        port: 5672,
       },
     });
 
@@ -67,11 +66,15 @@ export class Rabbit {
     const connect_obj: Options.Connect = {
       protocol: 'amqp',
       hostname: this.options.hostname,
-      port: this.options.port,
       username: this.options.username,
       password: this.options.password,
       vhost: this.options.vhost,
     };
+
+    if (this.options.port) {
+      connect_obj.port = this.options.port;
+    }
+
     const connect_options: TLSSocketOptions = {};
     if (this.options.tls === true || this.options.ssl === true) {
       if (!this.options.cert && !this.options.key && !this.options.ca) {

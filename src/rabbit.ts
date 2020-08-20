@@ -73,15 +73,21 @@ export class Rabbit {
       vhost: this.options.vhost,
     };
     const connect_options: TLSSocketOptions = {};
-    if (this.options.ssl === true) {
-      if (!this.options.cert || !this.options.key || !this.options.ca) {
+    if (this.options.tls === true || this.options.ssl === true) {
+      if (!this.options.cert && !this.options.key && !this.options.ca) {
         throw new Error('Missing arguments for using SSL for RabbitMQ');
       }
 
       connect_obj.protocol = 'amqps';
-      connect_options.cert = fs.readFileSync(this.options.cert);
-      connect_options.key = fs.readFileSync(this.options.key);
-      connect_options.ca = [fs.readFileSync(this.options.ca)];
+      if (this.options.cert) {
+        connect_options.cert = fs.readFileSync(this.options.cert);
+      }
+      if (this.options.key) {
+        connect_options.key = fs.readFileSync(this.options.key);
+      }
+      if (this.options.ca) {
+        connect_options.ca = [fs.readFileSync(this.options.ca)];
+      }
 
       if (this.options.passphrase) {
         connect_options.passphrase = this.options.passphrase;

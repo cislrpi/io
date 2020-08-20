@@ -54,6 +54,7 @@ export interface RabbitOptions {
   vhost?: string;
   prefix?: string;
   ssl?: boolean;
+  tls?: boolean;
   cert?: string;
   key?: string;
   ca?: string;

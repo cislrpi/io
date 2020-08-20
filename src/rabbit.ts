@@ -152,25 +152,21 @@ export class Rabbit {
   }
 
   private encodeContent(content: RabbitContentType): Buffer {
-    let final: Buffer;
-    if (!Buffer.isBuffer(content)) {
-      let string_content = '';
-      if (typeof content === 'string') {
-        string_content = content;
-      }
-      else if (typeof content === 'number') {
-        string_content = content.toString();
-      }
-      else {
-        string_content = JSON.stringify(content);
-      }
-      final = Buffer.from(string_content);
-    }
-    else {
-      final = content;
+    if (Buffer.isBuffer(content)) {
+      return content;
     }
 
-    return final;
+    let string_content = '';
+    if (typeof content === 'string') {
+      string_content = content;
+    }
+    else if (typeof content === 'number') {
+      string_content = content.toString();
+    }
+    else {
+      string_content = JSON.stringify(content);
+    }
+    return Buffer.from(string_content);
   }
 
   /**

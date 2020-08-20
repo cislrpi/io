@@ -45,45 +45,58 @@ test('get key expressly set undefined', () => {
   expect(config.get('test')).toBe(undefined);
 });
 
-test('defaults', () => {
-  const config = new Config({});
-  config.defaults({
-    channels: ['far'],
+describe('defaults', () => {
+  test('defaults', () => {
+    const config = new Config({});
+    config.defaults({
+      channels: ['far'],
+    });
+    expect(config.get('channels')).toStrictEqual(['far']);
   });
-  expect(config.get('channels')).toStrictEqual(['far']);
-});
 
-test('defaults over true key', () => {
-  const config = new Config({test: true});
-  config.defaults({
-    test: 'test',
+  test('defaults over true key', () => {
+    const config = new Config({test: true});
+    config.defaults({
+      test: 'test',
+    });
+    expect(config.get('test')).toBe('test');
   });
-  expect(config.get('test')).toBe('test');
-});
 
-test('defaults does not overwrite existing value', () => {
-  const config = new Config({test: true, bar: 'foo', baz: false});
-  config.defaults({
-    test: 'test',
-    baz: 'value',
+  test('defaults does not overwrite existing value', () => {
+    const config = new Config({test: true, bar: 'foo', baz: false});
+    config.defaults({
+      test: 'test',
+      baz: 'value',
+    });
+    expect(config.get('test')).toBe('test');
+    expect(config.get('bar')).toBe('foo');
+    expect(config.get('baz')).toBe(false);
+    config.defaults({
+      test: 'test',
+      baz: 'value',
+    });
+    expect(config.get('test')).toBe('test');
+    expect(config.get('bar')).toBe('foo');
+    expect(config.get('baz')).toBe(false);
   });
-  expect(config.get('test')).toBe('test');
-  expect(config.get('bar')).toBe('foo');
-  expect(config.get('baz')).toBe(false);
-  config.defaults({
-    test: 'test',
-    baz: 'value',
-  });
-  expect(config.get('test')).toBe('test');
-  expect(config.get('bar')).toBe('foo');
-  expect(config.get('baz')).toBe(false);
-});
 
-describe('defaults does not overwrite falsey values', () => {
-  test.each([[null], [false], [''], [undefined]])('.defaults for %s', (value) => {
-    const config = new Config({test: value});
-    config.defaults({test: 'invalid'});
-    expect(config.get('test')).toBe(value);
+  describe('defaults does not overwrite falsey values', () => {
+    test.each([[null], [false], [''], [undefined]])('.defaults for %s', (value) => {
+      const config = new Config({test: value});
+      config.defaults({test: 'invalid'});
+      expect(config.get('test')).toBe(value);
+    });
+  });
+
+  test('recursive defaults', () => {
+    const config = new Config({rabbit: {url: 'localhost'}});
+    config.defaults({
+      rabbit: {
+        exchange: 'amq.topic',
+      },
+    });
+    expect(config.get('rabbit:url')).toBe('localhost');
+    expect(config.get('rabbit:exchange')).toBe('amq.topic');
   });
 });
 

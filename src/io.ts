@@ -31,15 +31,15 @@ export class Io {
   public constructor(options?: IoOptions) {
     this.config = new Config((loadCogFile(options) as IoCog));
 
-    if (this.config.has('mongo')) {
+    if (this.config.hasValue('mongo')) {
       this.mongo = new Mongo(this);
     }
 
-    if (this.config.has('rabbit')) {
+    if (this.config.hasValue('rabbit')) {
       this.rabbit = new Rabbit(this);
     }
 
-    if (this.config.has('redis')) {
+    if (this.config.hasValue('redis')) {
       this.redis = new Redis(this);
     }
 

@@ -121,3 +121,10 @@ describe('test falsey required keys', () => {
     expect(() => config.required(['test'])).toThrowError(new Error('Value required for key: test'));
   });
 });
+
+describe('.hasValue', () => {
+  test.each([[null, false], [undefined, false], [false, false], [true, true], ['', true]])('.hasValue for %s', (value, expected) => {
+    const config = new Config({test: value});
+    expect(config.hasValue('test')).toBe(expected);
+  });
+});

@@ -49,6 +49,11 @@ export class Config {
     }
   }
 
+  public hasValue(key: string): boolean {
+    const value = this.get(key, false);
+    return value !== false && value !== null && value !== undefined;
+  }
+
   public defaults(defaults: {[key: string]: unknown}): void {
     this._config = Config.recursiveDefaults(this._config, defaults);
   }

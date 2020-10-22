@@ -15,7 +15,7 @@ export class Config {
     this._config = config;
   }
 
-  public get<T>(key: string): T {
+  public get<T>(key: string, defaultValue?: unknown): T {
     if (this._config[key]) {
       return this._config[key] as T;
     }
@@ -31,6 +31,10 @@ export class Config {
         i++;
       }
       if (i >= pieces.length) {
+        if (defaultValue !== undefined) {
+          (value as unknown) = defaultValue;
+          break;
+        }
         throw new Error(`Could not find key: ${key}`);
       }
       value = value[pieces.splice(0, pieces.length - i).join(':')] as {[key: string]: unknown};

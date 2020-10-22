@@ -45,6 +45,11 @@ test('get key expressly set undefined', () => {
   expect(config.get('test')).toBe(undefined);
 });
 
+test('get key with default value', () => {
+  const config = new Config({});
+  expect(config.get('value', 'test')).toBe('test');
+});
+
 describe('defaults', () => {
   test('defaults', () => {
     const config = new Config({});

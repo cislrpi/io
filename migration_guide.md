@@ -197,3 +197,42 @@ the README for full instructions on configuration values.
 ### io.store.setState(key, value) -> cislio.redis.getset(key, value)
 ### celio.store.getState(key) -> cislio.redis.get(key)
 ### celio.store.del(key) -> cislio.redis.del(key)
+
+## speaker-worker plugin
+
+The `speaker-worker` plugin is now in a separate plugin that is installable from
+`@cisl/io-speaker`. After installing it via npm, you would then add to your header:
+
+```javascript
+require('@cisl/io-speaker');
+```
+
+and then usage remains the same through `io.speaker` namespace. See
+[@cisl/io-speaker](https://github.com/cislrpi/io-speaker) for more details.
+
+## transcript-worker plugin
+
+The `transcript-worker` plugin is now in a separate plugin that is installable from
+`@cisl/io-transcript`. After installing it via npm, you would then add to your header:
+
+```javascript
+require('@cisl/io-transcript');
+```
+
+and then usage remains the same through `io.transcript` namespace. See
+[@cisl/io-transcript](https://github.com/cislrpi/io-transcript) for more details.
+
+## display-worker plugin
+
+__NOTE:__ Probably not ready until moving to
+[bishopcais/display-worker](https://github.com/bishopcais/display-worker).
+
+The `display-worker` plugin is now a separate plugin that is installable from
+`@cisl/io-display`. After installing it via npm, you would then add to your header:
+
+```javascript
+require('@cisl/io-display');
+```
+
+and then usage remains the same through `io.display` namespace. See
+[@cisl/io-display](https://github.com/cislrpi/io-display) for more details.

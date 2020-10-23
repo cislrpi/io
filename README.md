@@ -5,6 +5,8 @@
 
 A framework for building distributed applications and the coolest of Jupiter's moons.
 
+If coming from `@cel/io`, please see the [migration guide](migration_guide.md).
+
 ## Installation
 
 ```bash
@@ -29,10 +31,20 @@ import { Io } from '@cisl/io/io';
 const otherIo = new Io();
 ```
 
-### Configuration
+## Configuration
 
 The configuration for applications using `@cisl/io` should be stored in the `cog.json` file. This is then internally stored
 as a JSON object at `io.config`.
+
+## API
+
+### Core
+
+The core of `Io`, which is always available consists of the following methods:
+
+#### generateUuid(): string
+
+This function when calls, returns a v4 uuid string with dashes.
 
 ### RabbitMQ
 RabbitMQ requires the `rabbit` value to be set, where `true` will use the defaults below. Any field not set will use these defaults:
@@ -187,18 +199,20 @@ io.mongo.disconnect();
 
 ## Registering Plugins
 
-To extend the behavior of `@cisl/io`, you can register plugins. Io instances will only have access
-to plugins registered before they were created. To register a plugin, use the `registerPlugins` function
-available off the `io` import:
+To extend the behavior of `@cisl/io`, you can register plugins. To register a
+plugin, you need to only import the file. As part of loading it, it will
+register itself with `@cisl/io` and any existing `Io` instances you may have
+created.
+
+For example:
 
 ```javascript
-const io = require('@cisl/io');
-const { registerSpeaker } = require('@cisl/io-speaker');
-const { registerDisplay } = require('@cisl/io-display');
-const { registerTranscript } = require('@cisl/io-transcript');
+const io = require('@cisl/io')();
+require('@cisl/io-speaker');
+require('@cisl/io-transcript');
 
-io.registerPlugins(registerSpeaker);
-io.registerPlugins(registerDisplay, registerTranscript);
+io.speaker.speak(/* ... */);
+io.transcript.tagChannel(/* ... */);
 ```
 
 ## License

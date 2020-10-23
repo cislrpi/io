@@ -2,7 +2,6 @@ import { Cog, CogLoaderOptions } from '@cisl/cog-loader';
 import { Message } from 'amqplib';
 
 import { RedisOptions } from 'ioredis';
-export { RedisOptions } from 'ioredis';
 
 export interface MongoOptions {
   host: string;

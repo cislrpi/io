@@ -252,6 +252,7 @@ export class Rabbit {
     let consumerTag: string;
     const channel = await this.pch;
     const queue = await channel.assertQueue('', {exclusive: true, autoDelete: true});
+    const contentType = options.contentType || null;
     return new Promise((resolve, reject): void => {
       options.correlationId = this.io.generateUuid();
       options.replyTo = queue.queue;
@@ -281,7 +282,7 @@ export class Rabbit {
               reject(new Error(msg.properties.headers.error));
             }
             else {
-              (msg as RabbitMessage).content = this.parseContent(msg.content, msg.properties.contentType);
+              (msg as RabbitMessage).content = this.parseContent(msg.content, contentType || msg.properties.contentType);
               resolve((msg as RabbitMessage));
             }
           }

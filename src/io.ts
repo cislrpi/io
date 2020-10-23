@@ -7,7 +7,7 @@ import Redis from './redis';
 import Mongo from './mongo';
 import Config from './config';
 
-const pluginFunctions: ((io: Io) => void)[] = [];
+const registeredFunctions: ((io: Io) => void)[] = [];
 
 /**
  * Class representing the Io object.
@@ -43,9 +43,7 @@ export class Io {
       this.redis = new Redis(this);
     }
 
-    for (const pluginFunction of pluginFunctions) {
-      pluginFunction(this);
-    }
+    runRegisterFunctions(this, registeredFunctions);
   }
 
   /**
@@ -57,8 +55,15 @@ export class Io {
   }
 }
 
+export function runRegisterFunctions(io: Io, registerFunctions: ((io: Io) => void)[]): void {
+  for (const registerFunction of registerFunctions) {
+    registerFunction(io);
+  }
+
+}
+
 export function registerPlugins(...registerFunctions: ((io: Io) => void)[]): void {
-  pluginFunctions.push(...registerFunctions);
+  registeredFunctions.push(...registerFunctions);
 }
 
 export default Io;

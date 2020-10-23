@@ -1,5 +1,5 @@
 import { createHash } from 'crypto';
-import Io, { registerPlugins } from './io';
+import Io, { registerPlugins, runRegisterFunctions } from './io';
 import { IoOptions } from './types';
 
 let instances: {[key: string]: Io} = {};
@@ -25,6 +25,9 @@ io.clearInstances = (): void => {
 
 io.registerPlugins = (...registerFunctions: ((io: Io) => void)[]): void => {
   registerPlugins(...registerFunctions);
+  for (const hash in instances) {
+    runRegisterFunctions(instances[hash], registerFunctions);
+  }
 };
 
 export = io;

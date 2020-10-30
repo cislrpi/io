@@ -3,6 +3,8 @@ import { Rabbit } from '../src/rabbit';
 import { join } from 'path';
 import uuidv4 from 'uuid/v4';
 
+const rabbitCog = join(__dirname, 'data', 'cog.rabbit.json');
+
 describe('rabbit, topic', () => {
   [
     [Buffer.from([1,2,3,4])],
@@ -11,7 +13,7 @@ describe('rabbit, topic', () => {
     [{foo: {test: [1, 2, 3]}, bar: false}],
   ].forEach(([value]) => {
     test(`.publishTopic(${JSON.stringify(value)})`, (done) => {
-      const io = new Io({cogPath: join(__dirname, 'data', 'cog.rabbit.json')});
+      const io = new Io({cogPath: rabbitCog});
       expect(io.rabbit).toBeInstanceOf(Rabbit);
       const topicName = `test.topic.${uuidv4().replace('-', '')}`;
       if (!io.rabbit) {
@@ -40,7 +42,7 @@ describe('rabbit, rpc', () => {
     [{foo: {test: [1, 2, 3]}, bar: false}, {bar: true}],
   ].forEach(([req, res]) => {
     test('rabbit rpc', (done) => {
-      const io = new Io({cogPath: join(__dirname, 'data', 'cog.rabbit.json')});
+      const io = new Io({cogPath: rabbitCog});
       expect(io.rabbit).toBeInstanceOf(Rabbit);
       if (!io.rabbit) {
         return expect(true).toBeFalsy;
@@ -64,3 +66,26 @@ describe('rabbit, rpc', () => {
   });
 });
 
+test('rpc with replyTo', (done) => {
+  const io = new Io({cogPath: rabbitCog});
+  expect(io.rabbit).toBeInstanceOf(Rabbit);
+  if (!io.rabbit) {
+    return expect(true).toBeFalsy;
+  }
+
+  const rpcName = `rpc-test${uuidv4().replace('-', '')}`;
+  const queueName = `queue-test${uuidv4().replace('-', '')}`;
+  io.rabbit.onQueue(queueName, (msg) => {
+    expect(msg.content).toStrictEqual('hello');
+    (io.rabbit as Rabbit).close().then(() => done());
+  });
+
+  io.rabbit.onRpc(rpcName, (msg, reply) => {
+    expect(msg.content).toStrictEqual('test');
+    reply('hello');
+  });
+
+  io.rabbit.publishRpc(rpcName, 'test', {replyTo: queueName}).then((msg) => {
+    expect(msg).toBeNull;
+  });
+});

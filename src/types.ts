@@ -1,5 +1,5 @@
 import { Cog, CogLoaderOptions } from '@cisl/cog-loader';
-import { Message } from 'amqplib';
+import { Message, Options } from 'amqplib';
 
 import { RedisOptions } from 'ioredis';
 export { RedisOptions } from 'ioredis';
@@ -43,6 +43,8 @@ export interface RabbitOnRpcOptions extends RabbitBaseOnOptions {
   /** set whether RPC queue is exclusive. Defaults to true. */
   exclusive?: boolean;
 }
+
+export type RabbitOnQueueOptions = RabbitBaseOnOptions & Options.AssertQueue;
 
 export interface RabbitOptions {
   url?: string;

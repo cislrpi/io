@@ -1,5 +1,5 @@
 import fs from 'fs';
-import request from 'request';
+import fetch from 'node-fetch';
 import amqplib, { Replies } from 'amqplib';
 import { Options as ConnectOptions } from 'amqplib/properties';
 
@@ -422,22 +422,10 @@ export class Rabbit {
    * Get a list of queues declared in the rabbitmq server.
    * @return {Promise}
    */
-  public getQueues(): Promise<QueueState[]> {
-    return new Promise((resolve, reject): void => {
-      request({url: `${this.mgmturl}/queues/${this.vhost}?columns=state,name`, json: true}, (err, resp, body): void => {
-        if (!err && resp.statusCode === 200) {
-          resolve(body);
-        }
-        else {
-          if (err) {
-            reject(err);
-          }
-          else {
-            reject(body);
-          }
-        }
-      });
-    });
+  public async getQueues(): Promise<QueueState[]> {
+    const req = await fetch(`${this.mgmturl}/queues/${this.vhost}?columns=state,name`);
+    const json = await req.json();
+    return json;
   }
 
   /**

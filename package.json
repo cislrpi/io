@@ -53,12 +53,13 @@
     "amqplib": "^0.5.2",
     "ioredis": "^4.14.1",
     "mongoose": "^5.7.5",
-    "request": "^2.88.0",
+    "node-fetch": "^2.6.1",
     "uuid": "^3.3.2"
   },
   "devDependencies": {
     "@masterodin/eslint-config-typescript": "^1.0.0",
     "@types/jest": "^25.2.2",
+    "@types/node-fetch": "^2.5.7",
     "@typescript-eslint/eslint-plugin": "^3.0.2",
     "@typescript-eslint/parser": "^3.0.2",
     "eslint": "^7.1.0",

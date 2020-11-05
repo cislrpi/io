@@ -187,14 +187,14 @@ you will need to rename the key in the `cog.json` file from `store` to `redis`.
 `@cisl/io` will recognize the older `store` key, but it is suggested to change it. See
 the README for full instructions on configuration values.
 
-### io.store.addToHash(key, field, value) -> io.redis.hset(key, field, value)
-### io.store.getHash(key) -> io.redis.hgetall(key)
-### io.store.getHashField(key, field) -> io.redis.hget(key, field)
-### io.store.removeFromHash(key, field) -> io.redis.hdel(key, field)
-### io.store.addToSet(key, ...values) -> io.redis.sadd(key, values)
-### io.store.getSet(key) -> io.redis.smembers(key)
-### io.store.removeFromSet(key, val) -> io.redis.srem(key, val)
-### io.store.setState(key, value) -> cislio.redis.getset(key, value)
+### celio.store.addToHash(key, field, value) -> cislio.redis.hset(key, field, value)
+### celio.store.getHash(key) -> cislio.redis.hgetall(key)
+### celio.store.getHashField(key, field) -> cislio.redis.hget(key, field)
+### celio.store.removeFromHash(key, field) -> cislio.redis.hdel(key, field)
+### celio.store.addToSet(key, ...values) -> cislio.redis.sadd(key, values)
+### celio.store.getSet(key) -> cislio.redis.smembers(key)
+### celio.store.removeFromSet(key, val) -> cislio.redis.srem(key, val)
+### celio.store.setState(key, value) -> cislio.redis.getset(key, value)
 ### celio.store.getState(key) -> cislio.redis.get(key)
 ### celio.store.del(key) -> cislio.redis.del(key)
 
@@ -213,14 +213,14 @@ and then usage remains the same through `io.speaker` namespace. See
 ## transcript-worker plugin
 
 The `transcript-worker` plugin is now in a separate plugin that is installable from
-`@cisl/io-transcript`. After installing it via npm, you would then add to your header:
+`@cisl/io-celio-transcript`. After installing it via npm, you would then add to your header:
 
 ```javascript
-require('@cisl/io-transcript');
+require('@cisl/io-celio-transcript');
 ```
 
-and then usage remains the same through `io.transcript` namespace. See
-[@cisl/io-transcript](https://github.com/cislrpi/io-transcript) for more details.
+and then usage remains the same through `cisl.transcript` namespace. See
+[@cisl/io-celio-transcript](https://github.com/cislrpi/io-celio-transcript) for more details.
 
 ## display-worker plugin
 

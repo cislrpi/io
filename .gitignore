@@ -4,3 +4,4 @@ lib/
 npm-debug.log
 /cog.json
 dist/
+package-lock.json

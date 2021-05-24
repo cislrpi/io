@@ -1,5 +1,9 @@
 # Changelog
 
+### v1.2.1
+
+* Update minimum supported version of mongoose to ^5.11 for builtin typescript definitions
+
 ### v1.2.0
 
 * Replace request dependency with node-fetch

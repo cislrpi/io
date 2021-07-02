@@ -89,3 +89,20 @@ test('rpc with replyTo', (done) => {
     expect(msg).toBeNull;
   });
 });
+
+test('no content-type set', (done) => {
+  const io = new Io({cogPath: rabbitCog});
+  expect(io.rabbit).toBeInstanceOf(Rabbit);
+  if (!io.rabbit) {
+    return expect(true).toBeFalsy;
+  }
+
+  const topicName = `test.topic.${uuidv4().replace('-', '')}`;
+  io.rabbit.onTopic(topicName, (msg) => {
+    expect(msg.properties.contentType).toBeNull;
+    expect(msg.content).toStrictEqual({hello: 'world'});
+    (<Rabbit>io.rabbit).close().then(done());
+  });
+
+  io.rabbit.publishTopic(topicName, {hello: 'world'}, {contentType: ''});
+});

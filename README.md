@@ -163,7 +163,7 @@ documentation for additional details on using it.
 }
 ```
 The above are the defaults that will be used if any are missing. See
-(ioredis#options)[https://github.com/luin/ioredis/blob/HEAD/API.md#new-redisport-host-options] for
+[ioredis#options](https://github.com/luin/ioredis/blob/HEAD/API.md#new-redisport-host-options) for
 the full list of options you can use when connecting the client.
 
 #### Usage

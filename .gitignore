@@ -5,3 +5,5 @@ npm-debug.log
 /cog.json
 dist/
 package-lock.json
+docs/
+.DS_Store

@@ -8,6 +8,8 @@ import { TLSSocketOptions } from 'tls';
 
 import { RabbitMessage, RabbitOptions, RabbitOnTopicOptions, RabbitOnRpcOptions, RabbitOnQueueOptions, RabbitContentType } from './types';
 
+import type Bluebird from 'bluebird';
+
 interface Subscription extends amqplib.Replies.Consume {
   unsubscribe: () => void;
 }
@@ -29,7 +31,7 @@ export class Rabbit {
   public options: RabbitOptions;
 
   private conn: amqplib.Connection | null;
-  private pch: Promise<amqplib.Channel>;
+  private pch: Bluebird<amqplib.Channel>;
   private mgmturl: string;
   private vhost: string;
   private prefix?: string;
@@ -110,7 +112,7 @@ export class Rabbit {
     });
 
     // Make a shared channel for publishing and subscribe
-    this.pch = pconn.then((conn: amqplib.Connection): Promise<amqplib.Channel> => conn.createChannel());
+    this.pch = pconn.then((conn: amqplib.Connection) => conn.createChannel());
     this.mgmturl = `http://${this.options.username}:${this.options.password}@${this.options.hostname}:15672/api`;
     this.vhost = this.options.vhost === '/' ? '%2f' : (this.options.vhost || '');
     this.prefix = this.options.prefix;
@@ -119,10 +121,14 @@ export class Rabbit {
   }
 
   public close(): Promise<void> {
-    if (this.conn) {
-      return this.conn.close();
-    }
-    return new Promise((resolve) => resolve());
+    return new Promise((resolve) => {
+      if (!this.conn) {
+        return resolve();
+      }
+      this.conn.close().then(() => {
+        resolve();
+      });
+    });
   }
 
   private resolveTopicName(topic_name: string): string {
@@ -309,7 +315,31 @@ export class Rabbit {
 
       channel.sendToQueue(queueName, this.encodeContent(content), options);
       if (replyTo) {
-        resolve();
+        resolve({
+          content: null,
+          fields: {
+            deliveryTag: 0,
+            redelivered: false,
+            exchange: this.exchange,
+            routingKey: queue.queue,
+          },
+          properties: {
+            contentType: null,
+            contentEncoding: null,
+            headers: {},
+            deliveryMode: null,
+            priority: 0,
+            correlationId: options.correlationId,
+            replyTo: options.replyTo,
+            expiration: 0,
+            timestamp: 0,
+            messageId: null,
+            type: null,
+            userId: null,
+            appId: null,
+            clusterId: null,
+          },
+        });
       }
     });
   }

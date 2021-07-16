@@ -1,0 +1,345 @@
+<!doctype html>
+<html class="default no-js">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>@cisl/io</title>
+	<meta name="description" content="Documentation for @cisl/io">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="assets/css/main.css">
+	<script async src="assets/js/search.js" id="search-script"></script>
+</head>
+<body>
+<header>
+	<div class="tsd-page-toolbar">
+		<div class="container">
+			<div class="table-wrap">
+				<div class="table-cell" id="tsd-search" data-index="assets/js/search.json" data-base=".">
+					<div class="field">
+						<label for="tsd-search-field" class="tsd-widget search no-caption">Search</label>
+						<input id="tsd-search-field" type="text" />
+					</div>
+					<ul class="results">
+						<li class="state loading">Preparing search index...</li>
+						<li class="state failure">The search index is not available</li>
+					</ul>
+					<a href="index.html" class="title">@cisl/io</a>
+				</div>
+				<div class="table-cell" id="tsd-widgets">
+					<div id="tsd-filter">
+						<a href="#" class="tsd-widget options no-caption" data-toggle="options">Options</a>
+						<div class="tsd-filter-group">
+							<div class="tsd-select" id="tsd-filter-visibility">
+								<span class="tsd-select-label">All</span>
+								<ul class="tsd-select-list">
+									<li data-value="public">Public</li>
+									<li data-value="protected">Public/Protected</li>
+									<li data-value="private" class="selected">All</li>
+								</ul>
+							</div>
+							<input type="checkbox" id="tsd-filter-inherited" checked />
+							<label class="tsd-widget" for="tsd-filter-inherited">Inherited</label>
+							<input type="checkbox" id="tsd-filter-externals" checked />
+							<label class="tsd-widget" for="tsd-filter-externals">Externals</label>
+						</div>
+					</div>
+					<a href="#" class="tsd-widget menu no-caption" data-toggle="menu">Menu</a>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="tsd-page-title">
+		<div class="container">
+			<h1>@cisl/io</h1>
+		</div>
+	</div>
+</header>
+<div class="container container-main">
+	<div class="row">
+		<div class="col-8 col-content">
+			<div class="tsd-panel tsd-typography">
+				<p style="text-align: center"><img src="img/moon.svg" alt="drawing" width="400"/></p>
+				<a href="#cislio" id="cislio" style="color: inherit; text-decoration: none;">
+					<h1>@cisl/io</h1>
+				</a>
+				<p>A framework for building distributed applications and the coolest of Jupiter&#39;s moons.</p>
+				<p>If coming from <code>@cel/io</code>, please see the <a href="migration_guide.md">migration guide</a>.</p>
+				<a href="#installation" id="installation" style="color: inherit; text-decoration: none;">
+					<h2>Installation</h2>
+				</a>
+				<pre><code class="language-bash"><span style="color: #000000">npm install @cisl/io</span>
+</code></pre>
+				<a href="#usage" id="usage" style="color: inherit; text-decoration: none;">
+					<h2>Usage</h2>
+				</a>
+				<p>NodeJS</p>
+				<pre><code class="language-js"><span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">io</span><span style="color: #000000"> = </span><span style="color: #795E26">require</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;@cisl/io&#039;</span><span style="color: #000000">)();</span>
+<span style="color: #008000">// or through instantation of a new class</span>
+<span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">Io</span><span style="color: #000000"> = </span><span style="color: #795E26">require</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;@cisl/io/io&#039;</span><span style="color: #000000">).</span><span style="color: #001080">Io</span><span style="color: #000000">;</span>
+<span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">io</span><span style="color: #000000"> = </span><span style="color: #0000FF">new</span><span style="color: #000000"> </span><span style="color: #795E26">Io</span><span style="color: #000000">();</span>
+</code></pre>
+				<p>TypeScript:</p>
+				<pre><code class="language-typescript"><span style="color: #AF00DB">import</span><span style="color: #000000"> </span><span style="color: #001080">io</span><span style="color: #000000"> </span><span style="color: #AF00DB">from</span><span style="color: #000000"> </span><span style="color: #A31515">&#039;@cisl/io&#039;</span><span style="color: #000000">;</span>
+<span style="color: #008000">// or through instantation of a new class</span>
+<span style="color: #AF00DB">import</span><span style="color: #000000"> { </span><span style="color: #001080">Io</span><span style="color: #000000"> } </span><span style="color: #AF00DB">from</span><span style="color: #000000"> </span><span style="color: #A31515">&#039;@cisl/io/io&#039;</span><span style="color: #000000">;</span>
+<span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">otherIo</span><span style="color: #000000"> = </span><span style="color: #0000FF">new</span><span style="color: #000000"> </span><span style="color: #795E26">Io</span><span style="color: #000000">();</span>
+</code></pre>
+				<a href="#configuration" id="configuration" style="color: inherit; text-decoration: none;">
+					<h2>Configuration</h2>
+				</a>
+				<p>The configuration for applications using <code>@cisl/io</code> should be stored in the <code>cog.json</code> file. This is then internally stored
+				as a JSON object at <code>io.config</code>.</p>
+				<a href="#api" id="api" style="color: inherit; text-decoration: none;">
+					<h2>API</h2>
+				</a>
+				<a href="#core" id="core" style="color: inherit; text-decoration: none;">
+					<h3>Core</h3>
+				</a>
+				<p>The core of <code>Io</code>, which is always available consists of the following methods:</p>
+				<a href="#generateuuid-string" id="generateuuid-string" style="color: inherit; text-decoration: none;">
+					<h4>generateUuid(): string</h4>
+				</a>
+				<p>This function when calls, returns a v4 uuid string with dashes.</p>
+				<a href="#rabbitmq" id="rabbitmq" style="color: inherit; text-decoration: none;">
+					<h3>RabbitMQ</h3>
+				</a>
+				<p>RabbitMQ requires the <code>rabbit</code> value to be set, where <code>true</code> will use the defaults below. Any field not set will use these defaults:</p>
+				<pre><code class="language-json"><span style="color: #000000">{</span>
+<span style="color: #000000">  </span><span style="color: #0451A5">&quot;rabbit&quot;</span><span style="color: #000000">: {</span>
+<span style="color: #000000">    </span><span style="color: #0451A5">&quot;url&quot;</span><span style="color: #000000">: </span><span style="color: #A31515">&quot;localhost&quot;</span><span style="color: #000000">,</span>
+<span style="color: #000000">    </span><span style="color: #0451A5">&quot;username&quot;</span><span style="color: #000000">: </span><span style="color: #A31515">&quot;guest&quot;</span><span style="color: #000000">,</span>
+<span style="color: #000000">    </span><span style="color: #0451A5">&quot;password&quot;</span><span style="color: #000000">: </span><span style="color: #A31515">&quot;guest&quot;</span><span style="color: #000000">,</span>
+<span style="color: #000000">    </span><span style="color: #0451A5">&quot;exchange&quot;</span><span style="color: #000000">: </span><span style="color: #A31515">&quot;amq.topic&quot;</span><span style="color: #000000">,</span>
+<span style="color: #000000">    </span><span style="color: #0451A5">&quot;ca&quot;</span><span style="color: #000000">: </span><span style="color: #0000FF">null</span>
+<span style="color: #000000">  }</span>
+<span style="color: #000000">}</span>
+</code></pre>
+				<p>This configuration object has username and password in it, so please don&#39;t share it with others and don&#39;t commit it to your
+				repository. Your applications can only communicate with each other if they use the same configuration.</p>
+				<p>You can access the RabbitMQ CelIO object by using <code>io.rabbit</code>.</p>
+				<a href="#usage-1" id="usage-1" style="color: inherit; text-decoration: none;">
+					<h4>Usage</h4>
+				</a>
+				<pre><code class="language-typescript"><span style="color: #008000">// where Message is an interface from https://www.squaremobius.net/amqp.node/</span>
+<span style="color: #0000FF">interface</span><span style="color: #000000"> </span><span style="color: #267F99">RabbitMessage</span><span style="color: #000000"> </span><span style="color: #0000FF">extends</span><span style="color: #000000"> </span><span style="color: #267F99">Omit</span><span style="color: #000000">&lt;</span><span style="color: #267F99">Message</span><span style="color: #000000">, </span><span style="color: #A31515">&#039;content&#039;</span><span style="color: #000000">&gt; {</span>
+<span style="color: #000000">  </span><span style="color: #001080">content</span><span style="color: #000000">: </span><span style="color: #267F99">Buffer</span><span style="color: #000000"> | </span><span style="color: #267F99">string</span><span style="color: #000000"> | </span><span style="color: #267F99">number</span><span style="color: #000000"> | </span><span style="color: #267F99">object</span><span style="color: #000000">;</span>
+<span style="color: #000000">  </span><span style="color: #001080">fields</span><span style="color: #000000">: </span><span style="color: #267F99">MessageFields</span><span style="color: #000000">;</span>
+<span style="color: #000000">  </span><span style="color: #001080">properties</span><span style="color: #000000">: </span><span style="color: #267F99">MessageProperties</span><span style="color: #000000">;</span>
+<span style="color: #000000">}</span>
+
+<span style="color: #0000FF">type</span><span style="color: #000000"> </span><span style="color: #267F99">ReplyCallback</span><span style="color: #000000"> = (</span><span style="color: #001080">content</span><span style="color: #000000">: </span><span style="color: #267F99">Error</span><span style="color: #000000"> | </span><span style="color: #267F99">Buffer</span><span style="color: #000000"> | </span><span style="color: #267F99">string</span><span style="color: #000000"> | </span><span style="color: #267F99">number</span><span style="color: #000000"> | </span><span style="color: #267F99">object</span><span style="color: #000000">) </span><span style="color: #0000FF">=&gt;</span><span style="color: #000000"> </span><span style="color: #267F99">void</span><span style="color: #000000">;</span>
+<span style="color: #0000FF">type</span><span style="color: #000000"> </span><span style="color: #267F99">RpcReplyCallback</span><span style="color: #000000"> = (</span><span style="color: #001080">message</span><span style="color: #000000">: </span><span style="color: #267F99">RabbitMessage</span><span style="color: #000000">, </span><span style="color: #001080">reply</span><span style="color: #000000">: </span><span style="color: #267F99">ReplyCallback</span><span style="color: #000000">, </span><span style="color: #795E26">awkFunc</span><span style="color: #000000">?: () </span><span style="color: #0000FF">=&gt;</span><span style="color: #000000"> </span><span style="color: #267F99">void</span><span style="color: #000000">) </span><span style="color: #0000FF">=&gt;</span><span style="color: #000000"> </span><span style="color: #267F99">void</span><span style="color: #000000">;</span>
+<span style="color: #0000FF">type</span><span style="color: #000000"> </span><span style="color: #267F99">PublishCallback</span><span style="color: #000000"> = (</span><span style="color: #001080">message</span><span style="color: #000000">: </span><span style="color: #267F99">RabbitMessage</span><span style="color: #000000">) </span><span style="color: #0000FF">=&gt;</span><span style="color: #000000"> </span><span style="color: #267F99">void</span><span style="color: #000000">;</span>
+
+<span style="color: #008000">// Publish to a RabbitMQ topic on the configured exchange</span>
+<span style="color: #001080">io</span><span style="color: #000000">.</span><span style="color: #001080">rabbit</span><span style="color: #000000">.</span><span style="color: #795E26">publishTopic</span><span style="color: #000000">(</span><span style="color: #001080">topic</span><span style="color: #000000">: </span><span style="color: #001080">string</span><span style="color: #000000">, </span><span style="color: #001080">content</span><span style="color: #000000">: </span><span style="color: #001080">Buffer</span><span style="color: #000000"> | </span><span style="color: #001080">string</span><span style="color: #000000"> | </span><span style="color: #001080">number</span><span style="color: #000000"> | </span><span style="color: #001080">object</span><span style="color: #000000">, </span><span style="color: #001080">options</span><span style="color: #000000">: </span><span style="color: #001080">amqplib</span><span style="color: #000000">.</span><span style="color: #001080">Options</span><span style="color: #000000">.</span><span style="color: #001080">Publish</span><span style="color: #000000"> = {}): </span><span style="color: #267F99">Promise</span><span style="color: #000000">&lt;</span><span style="color: #001080">boolean</span><span style="color: #000000">&gt;</span>
+
+<span style="color: #008000">// Listen to a topic for any new content</span>
+<span style="color: #001080">io</span><span style="color: #000000">.</span><span style="color: #001080">rabbit</span><span style="color: #000000">.</span><span style="color: #795E26">onTopic</span><span style="color: #000000">(</span><span style="color: #001080">topic</span><span style="color: #000000">: </span><span style="color: #001080">string</span><span style="color: #000000">, </span><span style="color: #001080">handler</span><span style="color: #000000">: </span><span style="color: #001080">PublishCallback</span><span style="color: #000000">, </span><span style="color: #001080">exchange</span><span style="color: #000000">?: </span><span style="color: #001080">string</span><span style="color: #000000">): </span><span style="color: #267F99">Promise</span><span style="color: #000000">&lt;</span><span style="color: #001080">Replies</span><span style="color: #000000">.</span><span style="color: #001080">Consume</span><span style="color: #000000">&gt;</span>
+
+<span style="color: #008000">// Publish to a RPC queue, expecting a callback through the promise</span>
+<span style="color: #001080">io</span><span style="color: #000000">.</span><span style="color: #001080">rabbit</span><span style="color: #000000">.</span><span style="color: #795E26">publishRpc</span><span style="color: #000000">(</span><span style="color: #001080">queue_name</span><span style="color: #000000">: </span><span style="color: #001080">string</span><span style="color: #000000">, </span><span style="color: #001080">content</span><span style="color: #000000">: </span><span style="color: #001080">Buffer</span><span style="color: #000000"> | </span><span style="color: #001080">string</span><span style="color: #000000"> | </span><span style="color: #001080">number</span><span style="color: #000000"> | </span><span style="color: #001080">object</span><span style="color: #000000">, </span><span style="color: #001080">options</span><span style="color: #000000">: </span><span style="color: #001080">amqplib</span><span style="color: #000000">.</span><span style="color: #001080">Options</span><span style="color: #000000">.</span><span style="color: #001080">Publish</span><span style="color: #000000"> = {}): </span><span style="color: #267F99">Promise</span><span style="color: #000000">&lt;</span><span style="color: #001080">Response</span><span style="color: #000000">&gt;</span>
+
+<span style="color: #008000">// Listen on a RPC queue, sending content back through handler</span>
+<span style="color: #001080">io</span><span style="color: #000000">.</span><span style="color: #001080">rabbit</span><span style="color: #000000">.</span><span style="color: #795E26">onRpc</span><span style="color: #000000">(</span><span style="color: #001080">queue_name</span><span style="color: #000000">: </span><span style="color: #001080">string</span><span style="color: #000000">, </span><span style="color: #001080">handler</span><span style="color: #000000">: </span><span style="color: #001080">RpcReplyCallback</span><span style="color: #000000">, </span><span style="color: #001080">exclusive</span><span style="color: #000000"> = </span><span style="color: #0000FF">true</span><span style="color: #000000">): </span><span style="color: #267F99">Promise</span><span style="color: #000000">&lt;</span><span style="color: #0000FF">void</span><span style="color: #000000">&gt;</span>
+
+<span style="color: #008000">// Get a list of all queues</span>
+<span style="color: #001080">io</span><span style="color: #000000">.</span><span style="color: #001080">rabbit</span><span style="color: #000000">.</span><span style="color: #795E26">getQueues</span><span style="color: #000000">(): </span><span style="color: #267F99">Promise</span><span style="color: #000000">&lt;</span><span style="color: #001080">unknown</span><span style="color: #000000">&gt;</span>
+
+<span style="color: #008000">// Listen for any queue creations</span>
+<span style="color: #001080">io</span><span style="color: #000000">.</span><span style="color: #001080">rabbit</span><span style="color: #000000">.</span><span style="color: #795E26">onQueueCreated</span><span style="color: #000000">(</span><span style="color: #001080">handler</span><span style="color: #000000">: (</span><span style="color: #001080">properties</span><span style="color: #000000">: </span><span style="color: #267F99">amqplib</span><span style="color: #000000">.</span><span style="color: #267F99">MessageProperties</span><span style="color: #000000">) </span><span style="color: #0000FF">=&gt;</span><span style="color: #000000"> </span><span style="color: #0000FF">void</span><span style="color: #000000">): </span><span style="color: #0000FF">void</span>
+<span style="color: #008000">// Listen for any queue deletions</span>
+<span style="color: #001080">io</span><span style="color: #000000">.</span><span style="color: #001080">rabbit</span><span style="color: #000000">.</span><span style="color: #795E26">onQueueDeleted</span><span style="color: #000000">(</span><span style="color: #001080">handler</span><span style="color: #000000">: (</span><span style="color: #001080">properties</span><span style="color: #000000">: </span><span style="color: #267F99">amqplib</span><span style="color: #000000">.</span><span style="color: #267F99">MessageProperties</span><span style="color: #000000">) </span><span style="color: #0000FF">=&gt;</span><span style="color: #000000"> </span><span style="color: #0000FF">void</span><span style="color: #000000">): </span><span style="color: #0000FF">void</span>
+</code></pre>
+				<p>See
+					<a href="http://www.squaremobius.net/amqp.node/channel_api.html#channel_publish">amqplib</a> for acceptable
+				values for the <code>options</code> argument.</p>
+				<a href="#publishing--receiving-and-content-types" id="publishing--receiving-and-content-types" style="color: inherit; text-decoration: none;">
+					<h4>Publishing / Receiving and Content-Types</h4>
+				</a>
+				<p>For <code>publishTopic</code> and <code>publishRpc</code> allows taking in a variety of types, and internally parses it to
+					a Buffer and setting the appropriate <code>content-type</code> before sending it along RabbitMQ. For example,
+				calling:</p>
+				<pre><code class="language-js"><span style="color: #001080">io</span><span style="color: #000000">.</span><span style="color: #001080">rabbit</span><span style="color: #000000">.</span><span style="color: #795E26">publishTopic</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;test&#039;</span><span style="color: #000000">, {</span><span style="color: #A31515">&#039;test&#039;</span><span style="color: #001080">:</span><span style="color: #000000"> </span><span style="color: #0000FF">true</span><span style="color: #000000">});</span>
+</code></pre>
+				<p>Will encode the JSON array into a Buffer and set the content-type appropriately to <code>application/json</code>.</p>
+				<p>Conversely, for <code>onTopic</code> and <code>onRpc</code> will attempt to parse the content off RabbitMQ using the <code>content-type</code>.
+					If no <code>content-type</code> is available or unrecognized, then it will return a Buffer for the content, whereas if
+					the <code>content-type</code> is <code>application/json</code>, then <code>content</code> will be a JSON object. See the table below for correspondence
+				between <code>content-type</code> and the expected type of <code>Response.content</code>.</p>
+				<p>Finally, if you wish to override the automatic content-type selection on the <code>publish</code> functions, you can pass in one in
+					the <code>options</code> value. Io will still handle automatic conversion
+				of the value into a Buffer.</p>
+				<table>
+					<thead>
+						<tr>
+							<th>content-type</th>
+							<th>value</th>
+						</tr>
+					</thead>
+					<tbody><tr>
+							<td>text/string</td>
+							<td>string</td>
+						</tr>
+						<tr>
+							<td>text/number</td>
+							<td>number</td>
+						</tr>
+						<tr>
+							<td>application/json</td>
+							<td>JSON</td>
+						</tr>
+						<tr>
+							<td>application/octet-stream</td>
+							<td>Buffer</td>
+						</tr>
+						<tr>
+							<td>other</td>
+							<td>Buffer</td>
+						</tr>
+				</tbody></table>
+				<a href="#content-type" id="content-type" style="color: inherit; text-decoration: none;">
+					<h4>Content-Type</h4>
+				</a>
+				<p>For publishing content, if a content-type is not specified and the content is not a <code>Buffer</code>, then
+					<code>Io</code> will assume that it can be run through <code>JSON.stringify</code> and will set the content-type to
+					<code>application/json</code> automatically. On receving content, if the content-type is set to <code>application/json</code>,
+					then <code>Io</code> will automatically run <code>JSON.parse</code> and return that content, else it will return the <code>Buffer</code>
+				object for the user to manually deal with.</p>
+				<a href="#queue-names" id="queue-names" style="color: inherit; text-decoration: none;">
+					<h4>Queue Names</h4>
+				</a>
+				<p>When subscribing to events, you can include in topic name wildcards <code>*</code> and <code>#</code>.
+					<code>*</code> substitues one word, and <code>#</code> substitues multiple words. For example, <code>transcript.result.*</code>
+					subscribes to <code>transcript.result.final</code> and <code>transcript.result.interim</code>, whereas <code>transcript.#</code> subscribes
+				to <code>transcript.result.final</code>, <code>transcript.result.interim</code>, and <code>transcript.command</code>.</p>
+				<a href="#redis" id="redis" style="color: inherit; text-decoration: none;">
+					<h3>Redis</h3>
+				</a>
+				<p><code>@cisl/io</code> provides a shallow wrapper around the <a href="https://www.npmjs.com/package/ioredis">ioredis</a> library,
+					such that <code>io.redis</code> returns an instantiated and connected to <code>ioredis.Client</code> instance. See its
+				documentation for additional details on using it.</p>
+				<pre><code class="language-json"><span style="color: #000000">{</span>
+<span style="color: #000000">  </span><span style="color: #0451A5">&quot;redis&quot;</span><span style="color: #000000">: {</span>
+<span style="color: #000000">    </span><span style="color: #0451A5">&quot;host&quot;</span><span style="color: #000000">: </span><span style="color: #A31515">&quot;localhost&quot;</span><span style="color: #000000">,</span>
+<span style="color: #000000">    </span><span style="color: #0451A5">&quot;port&quot;</span><span style="color: #000000">: </span><span style="color: #098658">6379</span><span style="color: #000000">,</span>
+<span style="color: #000000">    </span><span style="color: #0451A5">&quot;db&quot;</span><span style="color: #000000">: </span><span style="color: #098658">0</span>
+<span style="color: #000000">  }</span>
+<span style="color: #000000">}</span>
+</code></pre>
+				<p>The above are the defaults that will be used if any are missing. See
+					<a href="https://github.com/luin/ioredis/blob/HEAD/API.md#new-redisport-host-options">ioredis#options</a> for
+				the full list of options you can use when connecting the client.</p>
+				<a href="#usage-2" id="usage-2" style="color: inherit; text-decoration: none;">
+					<h4>Usage</h4>
+				</a>
+				<pre><code class="language-javascript"><span style="color: #001080">io</span><span style="color: #000000">.</span><span style="color: #001080">redis</span><span style="color: #000000">;</span>
+<span style="color: #001080">console</span><span style="color: #000000">.</span><span style="color: #795E26">log</span><span style="color: #000000">(</span><span style="color: #001080">io</span><span style="color: #000000">.</span><span style="color: #001080">redis</span><span style="color: #000000">.</span><span style="color: #795E26">getBuiltinCommands</span><span style="color: #000000">());</span>
+</code></pre>
+				<a href="#mongo" id="mongo" style="color: inherit; text-decoration: none;">
+					<h3>Mongo</h3>
+				</a>
+				<p><code>@cisl/io</code> provides a shallow wrapper around the <a href="https://www.npmjs.com/package/mongoose">mongoose</a> library, along
+				with several useful utility functions for interacting with it.</p>
+				<p>To configure to the default setup, use <code>mongo: true</code>, or you can configure it for your needs using the following settings:</p>
+				<pre><code class="language-json"><span style="color: #000000">{</span>
+<span style="color: #000000">  </span><span style="color: #0451A5">&quot;mongo&quot;</span><span style="color: #000000">: {</span>
+<span style="color: #000000">    </span><span style="color: #0451A5">&quot;host&quot;</span><span style="color: #000000">: </span><span style="color: #A31515">&quot;localhost&quot;</span><span style="color: #000000">,</span>
+<span style="color: #000000">    </span><span style="color: #0451A5">&quot;port&quot;</span><span style="color: #000000">: </span><span style="color: #098658">27017</span><span style="color: #000000">,</span>
+<span style="color: #000000">    </span><span style="color: #0451A5">&quot;dbname&quot;</span><span style="color: #000000">: </span><span style="color: #A31515">&quot;cais&quot;</span>
+<span style="color: #000000">  }</span>
+<span style="color: #000000">}</span>
+</code></pre>
+				<a href="#usage-3" id="usage-3" style="color: inherit; text-decoration: none;">
+					<h4>Usage</h4>
+				</a>
+				<pre><code class="language-typescript"><span style="color: #001080">io</span><span style="color: #000000">.</span><span style="color: #001080">mongo</span><span style="color: #000000">.</span><span style="color: #001080">mongoose</span><span style="color: #000000">: </span><span style="color: #001080">mongoose</span><span style="color: #000000">.</span><span style="color: #001080">Mongoose</span><span style="color: #000000">;</span>
+<span style="color: #001080">io</span><span style="color: #000000">.</span><span style="color: #001080">mongo</span><span style="color: #000000">.</span><span style="color: #795E26">model</span><span style="color: #000000">&lt;</span><span style="color: #267F99">T</span><span style="color: #000000">&gt;(</span><span style="color: #001080">name</span><span style="color: #000000">: </span><span style="color: #001080">string</span><span style="color: #000000">, </span><span style="color: #001080">schema</span><span style="color: #000000">: </span><span style="color: #001080">mongoose</span><span style="color: #000000">.</span><span style="color: #001080">Schema</span><span style="color: #000000">): </span><span style="color: #001080">Model</span><span style="color: #000000">&lt;</span><span style="color: #0070C1">T</span><span style="color: #000000">&gt;;</span>
+<span style="color: #001080">io</span><span style="color: #000000">.</span><span style="color: #001080">mongo</span><span style="color: #000000">.</span><span style="color: #795E26">disconnect</span><span style="color: #000000">();</span>
+</code></pre>
+				<a href="#registering-plugins" id="registering-plugins" style="color: inherit; text-decoration: none;">
+					<h2>Registering Plugins</h2>
+				</a>
+				<p>To extend the behavior of <code>@cisl/io</code>, you can register plugins. To register a
+					plugin, you need to only import the file. As part of loading it, it will
+					register itself with <code>@cisl/io</code> and any existing <code>Io</code> instances you may have
+				created.</p>
+				<p>For example:</p>
+				<pre><code class="language-javascript"><span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">io</span><span style="color: #000000"> = </span><span style="color: #795E26">require</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;@cisl/io&#039;</span><span style="color: #000000">)();</span>
+<span style="color: #795E26">require</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;@cisl/io-speaker&#039;</span><span style="color: #000000">);</span>
+<span style="color: #795E26">require</span><span style="color: #000000">(</span><span style="color: #A31515">&#039;@cisl/io-transcript&#039;</span><span style="color: #000000">);</span>
+
+<span style="color: #001080">io</span><span style="color: #000000">.</span><span style="color: #001080">speaker</span><span style="color: #000000">.</span><span style="color: #795E26">speak</span><span style="color: #000000">(</span><span style="color: #008000">/* ... */</span><span style="color: #000000">);</span>
+<span style="color: #001080">io</span><span style="color: #000000">.</span><span style="color: #001080">transcript</span><span style="color: #000000">.</span><span style="color: #795E26">tagChannel</span><span style="color: #000000">(</span><span style="color: #008000">/* ... */</span><span style="color: #000000">);</span>
+</code></pre>
+				<a href="#license" id="license" style="color: inherit; text-decoration: none;">
+					<h2>License</h2>
+				</a>
+				<p><a href="LICENSE">MIT License</a></p>
+				<a href="#icon-attribution" id="icon-attribution" style="color: inherit; text-decoration: none;">
+					<h2>Icon Attribution</h2>
+				</a>
+				<p><a href="https://thenounproject.com/search/?q=moon&amp;i=139166">Moon</a> by MarkieAnn Packer from the Noun Project</p>
+			</div>
+		</div>
+		<div class="col-4 col-menu menu-sticky-wrap menu-highlight">
+			<nav class="tsd-navigation primary">
+				<ul>
+					<li class=" ">
+						<a href="modules.html">Modules</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/config.html">config</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/index.html">index</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/io.html">io</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/mongo.html">mongo</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/rabbit.html">rabbit</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/redis.html">redis</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/types.html">types</a>
+					</li>
+				</ul>
+			</nav>
+			<nav class="tsd-navigation secondary menu-sticky">
+				<ul class="before-current">
+				</ul>
+			</nav>
+		</div>
+	</div>
+</div>
+<footer class="with-border-bottom">
+	<div class="container">
+		<h2>Legend</h2>
+		<div class="tsd-legend-group">
+			<ul class="tsd-legend">
+				<li class="tsd-kind-namespace"><span class="tsd-kind-icon">Namespace</span></li>
+				<li class="tsd-kind-function"><span class="tsd-kind-icon">Function</span></li>
+				<li class="tsd-kind-type-alias"><span class="tsd-kind-icon">Type alias</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-interface"><span class="tsd-kind-icon">Interface</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-class"><span class="tsd-kind-icon">Class</span></li>
+			</ul>
+		</div>
+	</div>
+</footer>
+<div class="container tsd-generator">
+	<p>Generated using <a href="https://typedoc.org/" target="_blank">TypeDoc</a></p>
+</div>
+<div class="overlay"></div>
+<script src="assets/js/main.js"></script>
+</body>
+</html>

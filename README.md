@@ -1,3 +1,5 @@
+> :warning: **NOTE** This package is deprecated! Please use [`@bishopcais/io`](https://github.com/bishopcais/io) instead!
+
 <p style="text-align: center"><img src="img/moon.svg" alt="drawing" width="400"/></p>
 
 

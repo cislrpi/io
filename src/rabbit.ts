@@ -140,15 +140,27 @@ export class Rabbit {
 
   private parseContent(content: Buffer, content_type?: string): RabbitContentType {
     let final_content: RabbitContentType = content;
-    if (content_type === 'application/json') {
-      final_content = JSON.parse(content.toString());
+    if (content_type) {
+      if (content_type === 'application/json') {
+        final_content = JSON.parse(content.toString());
+      }
+      else if (content_type === 'text/string') {
+        final_content = content.toString();
+      }
+      else if (content_type === 'text/number') {
+        final_content = parseFloat(content.toString());
+      }
     }
-    else if (content_type === 'text/string') {
-      final_content = content.toString();
+    else {
+      try {
+        final_content = content.toString();
+        final_content = JSON.parse(<string>final_content);
+      }
+      catch (e) {
+        // pass
+      }
     }
-    else if (content_type === 'text/number') {
-      final_content = parseFloat(content.toString());
-    }
+
     return final_content;
   }
 
@@ -194,7 +206,9 @@ export class Rabbit {
    */
   public async publishTopic(topic: string, content: RabbitContentType = Buffer.from(''), options: amqplib.Options.Publish = {}): Promise<boolean> {
     const encodedContent = this.encodeContent(content);
-    options.contentType = options.contentType || this.getContentType(content);
+    if (options.contentType === undefined) {
+      options.contentType = this.getContentType(content);
+    }
     const channel = await this.pch;
     await channel.checkExchange(this.exchange);
     return channel.publish(this.exchange, topic, encodedContent, options);
